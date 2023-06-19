@@ -22,7 +22,7 @@ store.client.on("Room.timeline" as any, (event: MatrixEvent, room2: Room) => {
 </script>
 
 <template>
-	<div class="max-w-full max-h-full flex flex-col justify-between">
+	<div class="w-full max-h-full flex flex-col justify-between">
 		<div class="grow max-w-full p-6 flex flex-col gap-4 overflow-scroll">
 			<FvMessage v-for="message of messages" :key="message.getId()" :message="message" />
 		</div>
