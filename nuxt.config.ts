@@ -1,9 +1,16 @@
 import { nodePolyfills } from "vite-plugin-node-polyfills";
+import wasm from "vite-plugin-wasm";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
 	devtools: { enabled: true },
-	modules: ["@unocss/nuxt", "nuxt-headlessui", "nuxt-icon", "@vueuse/nuxt"],
+	modules: [
+		"@unocss/nuxt",
+		"nuxt-headlessui",
+		"nuxt-icon",
+		"@vueuse/nuxt",
+		"@pinia/nuxt",
+	],
 	ssr: false,
 	vite: {
 		plugins: [
@@ -15,6 +22,27 @@ export default defineNuxtConfig({
 				// Whether to polyfill `node:` protocol imports.
 				protocolImports: true,
 			}),
+			wasm(),
 		],
-	}
+	},
+	runtimeConfig: {
+		public: {
+			TOKEN: process.env.TOKEN,
+		},
+	},
+	app: {
+		head: {
+			script: [
+				{
+					hid: "matrix-olm",
+					src: "/olm.js",
+					defer: false,
+				},
+			],
+		},
+		pageTransition: {
+			mode: "out-in",
+			name: "page",
+		}
+	},
 });
