@@ -2,25 +2,33 @@
 import { MatrixClient } from "matrix-js-sdk";
 import { useStore } from "~/utils/store";
 import { MatrixRoom } from "~/classes/Room";
+import { MatrixUser } from "~/classes/User";
 const store = useStore();
 
 const client = store.client;
 const roomList = ref<MatrixRoom[]>([]);
+const spaces = ref<MatrixRoom[]>([]);
 
 if (!client) throw createError("Client not working!");
 
 watch(async () => await store.client?.getJoinedRooms(), async (rooms) => {
 	roomList.value = ((await rooms)?.joined_rooms.map(roomId => client.getRoom(roomId) && new MatrixRoom(roomId, client as MatrixClient)).filter(a => a) as MatrixRoom[]) ?? [];
+	spaces.value = roomList.value.filter(r => r.isSpace()) ?? [];
 }, {
 	immediate: true,
-})
+});
+
+const avatar = store.client?.getUserId() && new MatrixUser(store.client?.getUserId()!, store.client as MatrixClient).getAvatarUrl();
 </script>
 
 <template>
 	<div class="max-w-full w-full h-screen bg-dark-800 flex flex-row divide-gray-400 p-0 overflow-hidden font-inter">
-		<div class="w-20 bg-dark-950 shrink-0">
+		<div class="w-16 bg-dark-950 shrink-0 flex flex-col items-center py-2 gap-3">
+			<div v-for="space of spaces" :key="space.id" class="h-10 w-10 rounded-md overflow-hidden flex items-center justify-center shrink-0 shadow">
+				<img :src="space.getAvatarUrl() ?? 'https://placehold.co/400'" class="w-full h-full object-cover" />
+			</div>
 		</div>
-		<div class="bg-dark-900 p-3 flex flex-col gap-4 overflow-x-hidden overflow-y-scroll w-80 shrink-0">
+		<div class="bg-dark-900 p-3 flex flex-col gap-4 overflow-x-hidden overflow-y-scroll relative w-80 shrink-0">
 			<PreviewsFvRoomPreview v-for="room of roomList" :key="room.id" :room="(room as any)" />
 		</div>
 		<div class="grow flex overflow-x-hidden">

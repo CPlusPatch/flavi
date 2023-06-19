@@ -6,6 +6,7 @@ interface InputProps extends /* @vue-ignore */ InputHTMLAttributes {
 	name: string;
 	icon?: string;
 	hideIcon?: boolean;
+	wrapperClasses?: string;
 }
 
 const props = defineProps<InputProps>();
@@ -18,7 +19,7 @@ export default {
 </script>
 
 <template>
-	<div class="relative">
+	<div class="relative" :class="wrapperClasses">
 		<input
 			:name="props.name"
 			:disabled="props.loading"

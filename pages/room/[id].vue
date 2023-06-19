@@ -23,13 +23,13 @@ store.client.on("Room.timeline" as any, (event: MatrixEvent, room2: Room) => {
 
 <template>
 	<div class="w-full max-h-full flex flex-col justify-between">
-		<div class="grow max-w-full p-6 flex flex-col gap-4 overflow-scroll">
+		<div class="grow max-w-full p-6 flex flex-col gap-6 overflow-scroll">
 			<FvMessage v-for="message of messages" :key="message.getId()" :message="message" />
 		</div>
 		<div class="w-full">
 			<div class="w-full h-15 bg-dark-950 flex items-center px-2 gap-2 justify-between">
-				<FVInput name="post" class="!bg-dark-900 !border-orange !grow" placeholder="Type here to send a post"/>
-				<FvButton theme="orange" class="!p-2">
+				<FVInput icon="ic:round-message" wrapper-classes="grow" name="post" class="!bg-dark-900 !border-none" placeholder="Type here to send a post"/>
+				<FvButton theme="orange" class="!p-1.5">
 					<Icon name="ic:round-send" class="h-6 w-6"/>
 				</FvButton>
 			</div>

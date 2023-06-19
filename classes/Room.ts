@@ -23,6 +23,10 @@ export class MatrixRoom {
 		return this.room.name;
 	}
 
+	public isSpace(): boolean {
+		return this.room.isSpaceRoom()
+	}
+
 	public getAvatarUrl(size: number = 96): string | null {
 		const url =
 			this.room?.getAvatarUrl(
