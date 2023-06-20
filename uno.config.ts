@@ -19,6 +19,13 @@ export default defineConfig({
 		presetWebFonts(),
 		presetForms(),
 	],
+	content: {
+		pipeline: {
+			include: [
+				/\.(vue|svelte|[jt]sx|mdx?|astro|elm|php|phtml|html|ts)($|\?)/,
+			],
+		},
+	},
 	theme: {
 		colors: {
 			dark: {

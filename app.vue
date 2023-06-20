@@ -1,12 +1,13 @@
 <script setup lang="ts">
 window.global ||= window;
 
-import { EventEmitterEvents, IndexedDBCryptoStore, IndexedDBStore, createClient } from "matrix-js-sdk";
+import { DeviceVerification, EventEmitterEvents, IndexedDBCryptoStore, IndexedDBStore, MatrixEvent, createClient } from "matrix-js-sdk";
 import { useStore } from "~/utils/store";
 // import Olm from "@matrix-org/olm";
 import "~/styles/index.css";
 import "@unocss/reset/tailwind.css";
 import EventEmitter from "events";
+import { VerificationRequest } from "matrix-js-sdk/lib/crypto/verification/request/VerificationRequest";
 
 /* if (process.client) {
 	(global as any)["Olm"] = Olm;
