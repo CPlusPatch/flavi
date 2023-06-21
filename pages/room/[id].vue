@@ -12,13 +12,10 @@ if (!store.client) throw createError("Client not working");
 const room = ref(new MatrixRoom(id, store.client as MatrixClient));
 const messages = ref(room.value.getMessages());
 
-const updateTimeline = (event: MatrixEvent, room2?: Room, _toStartOfTimeline?: boolean, _removed?: boolean, _data?: IRoomTimelineData) => {
+const updateTimeline = (event: MatrixEvent, room2?: Room, _toStartOfTimeline?: boolean, _removed?: boolean, data?: IRoomTimelineData) => {
 	if (room2?.roomId === room.value.id) {
 		console.log(event);
-		messages.value = [
-			...messages.value,
-			event
-		]
+		messages.value = data?.timeline.getEvents() ?? [];
 	}
 }
 

@@ -26,7 +26,7 @@ const matrixClient = createClient({
 	accessToken: useRuntimeConfig().public.TOKEN,
 	userId: myUserId,
 	store: indexedDBStore,
-	deviceId: "ANSLNBZBTY",
+	deviceId: "YXJHRPITMU",
 	cryptoStore: new IndexedDBCryptoStore(indexedDB, 'crypto-store'),
 	verificationMethods: [
 		verificationMethods.SAS,
@@ -37,7 +37,6 @@ const store = useStore();
 
 await matrixClient.initCrypto();
 await matrixClient.startClient();
-console.log(matrixClient.getCrypto());
 matrixClient.setGlobalErrorOnUnknownDevices(false);
 store.client = matrixClient;
 
@@ -53,13 +52,18 @@ matrixClient.on(CryptoEvent.VerificationRequest, async (request) => {
 	const verifier = request.beginKeyVerification(verificationMethods.SAS);
 
 	verifier.on(VerifierEvent.ShowSas, async (sasData) => {
-		setTimeout(async () => {
-			await sasData.confirm();
-		}, 4000);
+		await sasData.confirm();
 	});
 
 	await verifier.verify();
 });
+
+/* const recoveryKey = await matrixClient.createRecoveryKeyFromPassphrase(prompt("Passphrase") ?? "");
+await matrixClient.bootstrapSecretStorage({
+	createSecretStorageKey: async () => recoveryKey,
+	setupNewKeyBackup: true,
+	setupNewSecretStorage: true,
+}); */
 
 /* const keys = await decryptMegolmKeyFile(await (await fetch("/dakey.txt")).arrayBuffer(), "test");
 
