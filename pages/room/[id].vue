@@ -40,7 +40,7 @@ onUnmounted(() => {
 const send = async (e: Event) => {
 	const body = messageBody.value;
 	messageBody.value = "";
-	await store.client?.sendTextMessage(room.value.id, body);
+	if (body !== "") await store.client?.sendTextMessage(room.value.id, body);
 }
 </script>
 

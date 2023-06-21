@@ -8,13 +8,13 @@ const props = defineProps<{
 
 const client = useStore().client;
 
-const lastMessage = props.room.getLastTextMessage();
+const lastMessage = ref(props.room.getLastTextMessage());
 </script>
 
 <template>
 	<NuxtLink :to="`/room/${room.id}`" class="flex flex-row gap-2 duration-200">
 		<div class="h-12 w-12 rounded-md overflow-hidden flex items-center justify-center shrink-0 shadow">
-			<img :src="room.getAvatarUrl(96) ?? `https://api.dicebear.com/6.x/initials/svg?seed=${room.getName()}`" class="w-full h-full object-cover" />
+			<img :src="room.getAvatarUrl(96) ?? `https://api.dicebear.com/6.x/initials/svg?seed=${room.getName()}&fontWeight=600`" class="w-full h-full object-cover" />
 		</div>
 		<div class="flex flex-col h-full justify-around text-sm">
 			<h3 class="m-0 line-clamp-1 text-ellipsis text-gray-100 font-semibold" :title="room.getName()">{{ room.getName() }}</h3>

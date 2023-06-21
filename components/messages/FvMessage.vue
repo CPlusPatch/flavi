@@ -26,7 +26,7 @@ const color = await user.getUserColor();
 
 			</div>
 			<div v-else class="h-10 hover:-translate-y-1 duration-200 w-10 rounded-md overflow-hidden flex items-center justify-center shrink-0">
-				<img :src="user.getAvatarUrl() ?? 'https://placehold.co/400'" class="w-full h-full object-cover" />
+				<img :src="user.getAvatarUrl() ?? `https://api.dicebear.com/6.x/initials/svg?seed=${user.getDisplayName()}&fontWeight=900`" class="w-full h-full object-cover" />
 			</div>
 			<div class="flex flex-col gap-1 text-sm grow overflow-hidden break-words">
 				<div v-if="previousMessage?.sender?.userId !== user.id" :class="['font-semibold', color]">
@@ -43,7 +43,7 @@ const color = await user.getUserColor();
 				2023/02/38
 			</div>
 		</div>
-		<div v-if="message.event.type === 'm.room.member'" class="flex flex-row gap-2 font-italic text-gray-200 items-center mx-auto text-sm">
+		<div v-if="message.event.type === 'm.room.member'" class="flex flex-row gap-2 font-italic text-gray-200 justify-center mx-auto text-sm">
 			<div class="h-5 w-5 rounded-md overflow-hidden flex items-center justify-center shrink-0">
 				<img :src="store.client?.mxcUrlToHttp(message.getContent().avatar_url ?? '', 96, 96, 'scale') ?? 'https://placehold.co/400'" class="w-full h-full object-cover" />
 			</div>

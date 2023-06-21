@@ -25,7 +25,7 @@ const avatar = store.client?.getUserId() && new MatrixUser(store.client?.getUser
 	<div class="max-w-full w-full h-screen bg-dark-800 flex flex-row divide-gray-400 p-0 overflow-hidden font-inter">
 		<div class="w-16 bg-dark-950 shrink-0 flex flex-col items-center py-2 gap-3">
 			<div v-for="space of spaces" :key="space.id" class="h-10 w-10 rounded-md overflow-hidden flex items-center justify-center shrink-0 shadow">
-				<img :src="space.getAvatarUrl() ?? `https://api.dicebear.com/6.x/initials/svg?seed=${space.getName()}`" class="w-full h-full object-cover" />
+				<img :src="space.getAvatarUrl() ?? `https://api.dicebear.com/6.x/initials/svg?seed=${space.getName()}&fontWeight=600`" class="w-full h-full object-cover" />
 			</div>
 		</div>
 		<div class="bg-dark-900 p-3 flex flex-col gap-4 overflow-x-hidden overflow-y-scroll relative w-80 shrink-0">

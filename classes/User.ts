@@ -23,6 +23,10 @@ export class MatrixUser {
 		return this.user.avatarUrl ?? null;
 	}
 
+	/**
+	 * Calculate color based on display name hash
+	 * @returns UnoCSS color class
+	 */
 	public async getUserColor(): Promise<string> {
 		const nameHash = await crypto.subtle.digest(
 			"sha-1",
@@ -63,6 +67,6 @@ export class MatrixUser {
 			size,
 			"scale",
 			false
-		);
+		) || null;
 	}
 }

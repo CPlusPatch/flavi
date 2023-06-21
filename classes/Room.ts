@@ -1,4 +1,4 @@
-import { EventTimeline, MatrixClient, MatrixEvent, Room } from "matrix-js-sdk";
+import { Direction, EventTimeline, MatrixClient, MatrixEvent, Room } from "matrix-js-sdk";
 
 export class MatrixRoom {
 	private room: Room;
@@ -28,25 +28,13 @@ export class MatrixRoom {
 	}
 
 	public getLastTextMessage(): MatrixEvent | null {
-		let timeline: EventTimeline | null = this.room.getLiveTimeline();
-		let events = timeline.getEvents();
+		const timeline: EventTimeline | null = this.room.getLiveTimeline();
+		let events = [
+			...timeline.getEvents().reverse(),
+			...(timeline.getNeighbouringTimeline(Direction.Backward)?.getEvents() ?? []).reverse(),
+		];
 
-		for (let i = 0; i < 20; i++) {
-			const event = events.at(-i);
-
-			if (event && event.getContent().msgtype == "m.text") {
-				return event;
-			} else {
-				timeline = timeline?.getNeighbouringTimeline(EventTimeline.BACKWARDS) ?? null;
-				events = [
-					...(timeline?.getEvents() ?? []),
-					...events,
-				]
-			}
-		}
-
-
-		return null
+		return events.find(e => e.getContent().msgtype === "m.text") ?? null
 	}
 
 	public getName(): string {
