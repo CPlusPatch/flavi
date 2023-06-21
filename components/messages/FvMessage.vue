@@ -20,7 +20,7 @@ const color = await user.getUserColor();
 </script>
 
 <template>
-	<div>
+	<div v-if="message">
 		<div class="flex flex-row gap-2 w-full max-w-full" v-if="message.getContent().msgtype === 'm.text' || message.getContent().msgtype === 'm.bad.encrypted'">
 			<div class="w-10 shrink-0" v-if="previousMessage?.sender?.userId === user.id">
 
