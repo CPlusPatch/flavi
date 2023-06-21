@@ -52,7 +52,7 @@ const send = async (e: Event) => {
 		<div class="grow max-w-full px-6 pt-6 overflow-y-scroll overscroll-y-contain snap-y snap-proximity message-view-container">
 			<div class="flex flex-col gap-6 message-view">
 				<TransitionGroup >
-					<FvMessage v-for="message of messages" :key="message.event.event_id" :message="(message as MatrixEvent)" />
+					<FvMessage v-for="(message, index) of messages" :key="message.event.event_id" :message="(message as MatrixEvent)" :previousMessage="(messages[index - 1] as MatrixEvent)"/>
 				</TransitionGroup>
 			</div>
 		</div>

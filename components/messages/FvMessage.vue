@@ -7,6 +7,7 @@ const store = useStore();
 
 const props = defineProps<{
 	message: MatrixEvent;
+	previousMessage?: MatrixEvent;
 }>();
 
 const user = new MatrixUser(props.message.event.sender ?? '', store.client as MatrixClient);
@@ -21,11 +22,14 @@ const color = await user.getUserColor();
 <template>
 	<div>
 		<div class="flex flex-row gap-2 w-full max-w-full" v-if="message.getContent().msgtype === 'm.text' || message.getContent().msgtype === 'm.bad.encrypted'">
-			<div class="h-10 hover:-translate-y-1 duration-200 w-10 rounded-md overflow-hidden flex items-center justify-center shrink-0">
+			<div class="w-10 shrink-0" v-if="previousMessage?.sender?.userId === user.id">
+
+			</div>
+			<div v-else class="h-10 hover:-translate-y-1 duration-200 w-10 rounded-md overflow-hidden flex items-center justify-center shrink-0">
 				<img :src="user.getAvatarUrl() ?? 'https://placehold.co/400'" class="w-full h-full object-cover" />
 			</div>
 			<div class="flex flex-col gap-1 text-sm grow overflow-hidden break-words">
-				<div :class="['font-semibold', color]">
+				<div v-if="previousMessage?.sender?.userId !== user.id" :class="['font-semibold', color]">
 					{{ user.getDisplayName() }}
 				</div>
 				<div class="text-gray-200 flex flex-col gap-2" v-html="(props.message.getContent().body as string).split('\n').map(p => `<p>${p}</p>`).join('')"  v-if="message.getContent().msgtype === 'm.text'">
