@@ -1,13 +1,13 @@
 <script setup lang="ts">
 window.global ||= window;
 
-import { DeviceVerification, EventEmitterEvents, IndexedDBCryptoStore, IndexedDBStore, MatrixEvent, createClient } from "matrix-js-sdk";
+import { ClientEvent, CryptoEvent, IndexedDBCryptoStore, IndexedDBStore, createClient } from "matrix-js-sdk";
 import { useStore } from "~/utils/store";
 // import Olm from "@matrix-org/olm";
 import "~/styles/index.css";
 import "@unocss/reset/tailwind.css";
-import EventEmitter from "events";
-import { VerificationRequest } from "matrix-js-sdk/lib/crypto/verification/request/VerificationRequest";
+import { VerifierEvent } from "matrix-js-sdk/lib/crypto-api";
+import { verificationMethods } from "matrix-js-sdk/lib/crypto";
 
 /* if (process.client) {
 	(global as any)["Olm"] = Olm;
@@ -29,7 +29,7 @@ const matrixClient = createClient({
 	deviceId: "ANSLNBZBTY",
 	cryptoStore: new IndexedDBCryptoStore(indexedDB, 'crypto-store'),
 	verificationMethods: [
-		'm.sas.v1',
+		verificationMethods.SAS,
 	],
 });
 
@@ -37,13 +37,29 @@ const store = useStore();
 
 await matrixClient.initCrypto();
 await matrixClient.startClient();
+console.log(matrixClient.getCrypto());
+matrixClient.setGlobalErrorOnUnknownDevices(false);
 store.client = matrixClient;
 
 await new Promise<void>(resolve => {
-	matrixClient.once("sync" as any, () => {
-		resolve()
-	})
-})
+	matrixClient.once(ClientEvent.Sync, () => {
+		resolve();
+	});
+});
+
+matrixClient.on(CryptoEvent.VerificationRequest, async (request) => {
+	await request.accept();
+
+	const verifier = request.beginKeyVerification(verificationMethods.SAS);
+
+	verifier.on(VerifierEvent.ShowSas, async (sasData) => {
+		setTimeout(async () => {
+			await sasData.confirm();
+		}, 4000);
+	});
+
+	await verifier.verify();
+});
 
 /* const keys = await decryptMegolmKeyFile(await (await fetch("/dakey.txt")).arrayBuffer(), "test");
 

@@ -8,7 +8,7 @@ const props = defineProps<{
 
 const client = useStore().client;
 
-const messages = (await props.room.getMessages())
+const lastMessage = props.room.getLastTextMessage();
 </script>
 
 <template>
@@ -18,7 +18,7 @@ const messages = (await props.room.getMessages())
 		</div>
 		<div class="flex flex-col h-full justify-around text-sm">
 			<h3 class="m-0 line-clamp-1 text-ellipsis text-gray-100 font-semibold" :title="room.getName()">{{ room.getName() }}</h3>
-			<span class="text-gray-300 line-clamp-1" :title="messages[0].getContent().body">{{ messages[0].getContent().displayname }}: {{ messages[0].getContent().body }}</span>
+			<span class="text-gray-300 line-clamp-1" v-if="lastMessage" :title="lastMessage.getContent().body">{{ lastMessage.getContent().displayname }}: {{ lastMessage.getContent().body }}</span>
 		</div>
 	</NuxtLink>
 </template>

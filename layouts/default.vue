@@ -29,7 +29,7 @@ const avatar = store.client?.getUserId() && new MatrixUser(store.client?.getUser
 			</div>
 		</div>
 		<div class="bg-dark-900 p-3 flex flex-col gap-4 overflow-x-hidden overflow-y-scroll relative w-80 shrink-0">
-			<PreviewsFvRoomPreview v-for="room of roomList" :key="room.id" :room="(room as any)" />
+			<PreviewsFvRoomPreview v-for="room of roomList.sort((a, b) => b.getLastMessageDate().getTime() - a.getLastMessageDate().getTime())" :key="room.id" :room="(room as any)" />
 		</div>
 		<div class="grow flex overflow-x-hidden">
 			
