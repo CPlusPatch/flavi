@@ -19,10 +19,8 @@ events.value = room.value.timeline.getEvents();
 
 const updateTimeline = async (event: MatrixEvent, room2?: Room, _toStartOfTimeline?: boolean, _removed?: boolean, data?: IRoomTimelineData) => {
 	if (room2?.roomId === room.value.id && !sentFromMe.includes(event.getId() ?? "")) {
-		console.error("TIMELINE UPDAT");
-		key.value = nanoid();
-		events.value = room2.getLiveTimeline().getEvents();
 		room.value.refreshTimeline();
+		events.value = [...room.value.timeline.getEvents()]; // We do this to avoid proxies and trigger an update
 	}
 }
 
@@ -57,8 +55,8 @@ const send = async (e: Event) => {
 <template>
 	<div class="w-full max-h-full flex flex-col justify-between">
 		<div class="grow max-w-full px-6 pt-6 overflow-y-scroll no-scrollbar overscroll-y-contain snap-y snap-proximity message-view-container">
-			<div :key="key" class="flex flex-col gap-6 message-view">
-				<FvMessage v-for="(message, index) of room.timeline.getEvents().filter(e => !e.isRedaction())" :key="message.event.event_id" :message="(message as MatrixEvent)" :previousMessage="events[index - 1]"/>
+			<div class="flex flex-col gap-6 message-view">
+				<FvMessage v-for="(message, index) of events.filter(e => !e.isRedaction())" :key="message.getId() ?? ''" :message="(message as MatrixEvent)" :previousMessage="events[index - 1]"/>
 			</div>
 		</div>
 		<div class="w-full">
