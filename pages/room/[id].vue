@@ -2,7 +2,6 @@
 import { IRoomTimelineData, MatrixClient, MatrixEvent, Room, RoomEvent } from "matrix-js-sdk";
 import { MatrixRoom } from "~/classes/Room";
 import FvMessage from "~/components/messages/FvMessage.vue";
-import { nanoid } from "nanoid";
 
 const id = useRoute().params.id as string;
 
@@ -13,7 +12,6 @@ if (!store.client) throw createError("Client not working");
 const room = ref(new MatrixRoom(id, store.client as MatrixClient));
 const sentFromMe: string[] = [];
 const events = ref<MatrixEvent[]>([]);
-const key = ref(nanoid())
 
 events.value = room.value.timeline.getEvents();
 
