@@ -28,8 +28,8 @@ const avatar = store.client?.getUserId() && new MatrixUser(store.client?.getUser
 				<img :src="space.getAvatarUrl() ?? `https://api.dicebear.com/6.x/initials/svg?seed=${space.getName()}&fontWeight=600`" class="w-full h-full object-cover" />
 			</div>
 		</div>
-		<div class="bg-dark-900 p-3 flex flex-col gap-4 overflow-x-hidden overflow-y-scroll relative w-80 shrink-0">
-			<PreviewsFvRoomPreview v-for="room of roomList.sort((a, b) => b.getLastMessageDate().getTime() - a.getLastMessageDate().getTime())" :key="room.id" :room="(room as any)" />
+		<div class="bg-dark-900 p-3 flex flex-col gap-4 overflow-x-hidden no-scrollbar overflow-y-scroll relative w-80 shrink-0">
+			<PreviewsFvRoomPreview v-for="room of roomList.toSorted((a, b) => b.getLastMessageDate().getTime() - a.getLastMessageDate().getTime())" :key="room.id" :room="(room as any)" />
 		</div>
 		<div class="grow flex overflow-x-hidden">
 			

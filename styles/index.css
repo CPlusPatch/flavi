@@ -6,26 +6,37 @@ body, html {
 	margin: 0;
 }
 
-.no-scroll {
-        -ms-overflow-style: none; /* IE and Edge */
-        scrollbar-width: none; /* Firefox */
+.no-scrollbar {
+	-ms-overflow-style: none; /* IE and Edge */
+	scrollbar-width: none; /* Firefox */
 }
-.no-scroll::-webkit-scrollbar {
-        display: none; /* Chrome, Safari and Opera */
-}
-
-.no-bad-scale {
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
-        -webkit-transform: translateZ(0) scale(1, 1);
-        transform: translateZ(0);
+.no-scrollbar::-webkit-scrollbar {
+	display: none; /* Chrome, Safari and Opera */
 }
 
+.bg-gradient-light {
+        background: linear-gradient(
+                115deg,
+                transparent 0,
+                transparent 20%,
+                rgba(176, 148, 88, 0.1) 35%,
+                rgba(230, 153, 9, 0.1) 70%,
+                transparent 80%,
+                transparent 100%
+        );
+}
+
+.scale-fix {
+	-webkit-backface-visibility: hidden;
+	backface-visibility: hidden;
+	-webkit-transform: translateZ(0) scale(1, 1);
+	transform: translateZ(0);
+}
 
 .font-poppins {
-        font-family: "Poppins";
+	font-family: "Poppins";
 }
 
 .font-inter {
-        font-family: "Inter";
+	font-family: "Inter";
 }

@@ -22,11 +22,11 @@ await indexedDBStore.startup();
 
 const myUserId = "@jesse:cpluspatch.dev";
 const matrixClient = createClient({
-	baseUrl: "http://matrix.cpluspatch.dev/",
-	accessToken: useRuntimeConfig().public.TOKEN,
+	baseUrl: "https://matrix.cpluspatch.dev/",
+	accessToken: localStorage.getItem("token") ?? "",
 	userId: myUserId,
 	store: indexedDBStore,
-	deviceId: "YXJHRPITMU",
+	deviceId: localStorage.getItem("device_id") ?? "YXJHRPITMU",
 	cryptoStore: new IndexedDBCryptoStore(indexedDB, 'crypto-store'),
 	verificationMethods: [
 		verificationMethods.SAS,
@@ -57,13 +57,6 @@ matrixClient.on(CryptoEvent.VerificationRequest, async (request) => {
 
 	await verifier.verify();
 });
-
-/* const recoveryKey = await matrixClient.createRecoveryKeyFromPassphrase(prompt("Passphrase") ?? "");
-await matrixClient.bootstrapSecretStorage({
-	createSecretStorageKey: async () => recoveryKey,
-	setupNewKeyBackup: true,
-	setupNewSecretStorage: true,
-}); */
 
 /* const keys = await decryptMegolmKeyFile(await (await fetch("/dakey.txt")).arrayBuffer(), "test");
 

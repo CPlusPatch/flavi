@@ -1,40 +1,54 @@
-import { Direction, EventTimeline, MatrixClient, MatrixEvent, Room } from "matrix-js-sdk";
-
+import {
+	Direction,
+	EventTimeline,
+	EventTimelineSet,
+	MatrixClient,
+	MatrixEvent,
+	Room,
+} from "matrix-js-sdk";
 export class MatrixRoom {
-	private room: Room;
+	room: Room;
 	private client: MatrixClient;
 	id: string;
+	timeline: EventTimeline;
+	timelineSet: EventTimelineSet;
 
 	constructor(roomId: string, client: MatrixClient) {
 		const room = client.getRoom(roomId);
-
 		if (!room) throw Error("Invalid Room");
-
 		this.room = room;
 		this.client = client;
 		this.id = room.roomId;
+		this.timelineSet = this.room.getUnfilteredTimelineSet()
+		this.timeline = this.timelineSet.getLiveTimeline();
 	}
 
-	public getMessages(): MatrixEvent[] {
-		return this.room.getLiveTimeline().getEvents();
+	private sortEvents(events: MatrixEvent[]) {
+		return events.toSorted(
+			(a, b) =>
+				(b.getDate()?.getTime() ?? 0) - (a.getDate()?.getTime() ?? 0)
+		);
 	}
 
-	public getTimeline() {
-		return this.room.getLiveTimeline();
+	public getLastEvents(): MatrixEvent[] {
+		return this.sortEvents(this.timeline.getEvents());
 	}
 
-	public getPreviousTimeline(timeline: EventTimeline) {
-		return timeline.getNeighbouringTimeline(EventTimeline.BACKWARDS);
+	public refreshTimeline() {
+		this.timelineSet = this.room.getUnfilteredTimelineSet();
+		this.timeline = this.timelineSet.getLiveTimeline();
 	}
 
 	public getLastTextMessage(): MatrixEvent | null {
-		const timeline: EventTimeline | null = this.room.getLiveTimeline();
 		let events = [
-			...timeline.getEvents().reverse(),
-			...(timeline.getNeighbouringTimeline(Direction.Backward)?.getEvents() ?? []).reverse(),
+			...this.timeline.getEvents().toReversed(),
+			...(
+				this.timeline
+					.getNeighbouringTimeline(Direction.Backward)
+					?.getEvents() ?? []
+			).toReversed(),
 		];
-
-		return events.find(e => e.getContent().msgtype === "m.text") ?? null
+		return events.find(e => e.getContent().msgtype === "m.text") ?? null;
 	}
 
 	public getName(): string {
@@ -42,7 +56,7 @@ export class MatrixRoom {
 	}
 
 	public isSpace(): boolean {
-		return this.room.isSpaceRoom()
+		return this.room.isSpaceRoom();
 	}
 
 	public getLastMessageDate(): Date {
@@ -67,13 +81,14 @@ export class MatrixRoom {
 					true,
 					true
 				);
-		
 		return url ?? null;
 	}
-	public async getMember(userId: string) {
-		
-	}
+
 	public getTopic() {
-		
+		return (
+			this.room.currentState
+				.getStateEvents("m.room.topic")[0]
+				?.getContent().topic ?? ""
+		);
 	}
 }

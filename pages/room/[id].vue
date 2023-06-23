@@ -2,6 +2,7 @@
 import { IRoomTimelineData, MatrixClient, MatrixEvent, Room, RoomEvent } from "matrix-js-sdk";
 import { MatrixRoom } from "~/classes/Room";
 import FvMessage from "~/components/messages/FvMessage.vue";
+import { nanoid } from "nanoid";
 
 const id = useRoute().params.id as string;
 
@@ -10,12 +11,18 @@ const store = useStore();
 if (!store.client) throw createError("Client not working");
 
 const room = ref(new MatrixRoom(id, store.client as MatrixClient));
-const messages = ref(room.value.getMessages());
+const sentFromMe: string[] = [];
+const events = ref<MatrixEvent[]>([]);
+const key = ref(nanoid())
 
-const updateTimeline = (event: MatrixEvent, room2?: Room, _toStartOfTimeline?: boolean, _removed?: boolean, data?: IRoomTimelineData) => {
-	if (room2?.roomId === room.value.id) {
-		console.log(event);
-		messages.value = data?.timeline.getEvents() ?? [];
+events.value = room.value.timeline.getEvents();
+
+const updateTimeline = async (event: MatrixEvent, room2?: Room, _toStartOfTimeline?: boolean, _removed?: boolean, data?: IRoomTimelineData) => {
+	if (room2?.roomId === room.value.id && !sentFromMe.includes(event.getId() ?? "")) {
+		console.error("TIMELINE UPDAT");
+		key.value = nanoid();
+		events.value = room2.getLiveTimeline().getEvents();
+		room.value.refreshTimeline();
 	}
 }
 
@@ -23,34 +30,35 @@ store.client.on(RoomEvent.Timeline, updateTimeline);
 
 const messageBody = ref("");
 
-onBeforeRouteLeave(() => {
+onBeforeRouteLeave(removeListeners)
+onUnmounted(removeListeners)
+
+function removeListeners() {
 	store.client?.off(RoomEvent.Timeline, updateTimeline);
-})
+}
 
 onMounted(() => {
 	setTimeout(() => {
 		document.getElementsByClassName("message-view-container")[0].scrollTop = document.getElementsByClassName("message-view-container")[0].scrollHeight;
 	}, 300)
-})
-
-onUnmounted(() => {
-	store.client?.off(RoomEvent.Timeline, updateTimeline);
-})
+});
 
 const send = async (e: Event) => {
 	const body = messageBody.value;
 	messageBody.value = "";
-	if (body !== "") await store.client?.sendTextMessage(room.value.id, body);
+	if (body !== "") {
+		const response = await store.client?.sendTextMessage(room.value.id, body);
+		sentFromMe.push(response?.event_id ?? "");
+	}
 }
+
 </script>
 
 <template>
 	<div class="w-full max-h-full flex flex-col justify-between">
-		<div class="grow max-w-full px-6 pt-6 overflow-y-scroll overscroll-y-contain snap-y snap-proximity message-view-container">
-			<div class="flex flex-col gap-6 message-view">
-				<TransitionGroup >
-					<FvMessage v-for="(message, index) of messages" :key="message.event.event_id" :message="(message as MatrixEvent)" :previousMessage="(messages[index - 1] as MatrixEvent)"/>
-				</TransitionGroup>
+		<div class="grow max-w-full px-6 pt-6 overflow-y-scroll no-scrollbar overscroll-y-contain snap-y snap-proximity message-view-container">
+			<div :key="key" class="flex flex-col gap-6 message-view">
+				<FvMessage v-for="(message, index) of room.timeline.getEvents().filter(e => !e.isRedaction())" :key="message.event.event_id" :message="(message as MatrixEvent)" :previousMessage="events[index - 1]"/>
 			</div>
 		</div>
 		<div class="w-full">
