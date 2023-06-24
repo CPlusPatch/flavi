@@ -2,6 +2,7 @@
 import { IContent, MatrixClient, MatrixEvent } from 'matrix-js-sdk';
 import { MatrixUser } from '~/classes/User';
 import { useStore } from "~/utils/store";
+import encrypt from "browser-encrypt-attachment";
 
 const store = useStore();
 
@@ -17,11 +18,23 @@ const _message = props.message;
 await store.client?.decryptEventIfNeeded(_message);
 
 const color = await user.getUserColor();
+const content = _message.getContent();
+const media_url = ref("");
+
+if (["m.image"].includes(content.msgtype ?? "")) {
+	const link = store.client?.mxcUrlToHttp(content.file.url, undefined, undefined, undefined, false) ?? '';
+	const media = await (await fetch(link)).arrayBuffer();
+
+	const decrypted = await encrypt.decryptAttachment(media, content.file);
+
+	const blob = new Blob([decrypted], { type: content.file.mimetype });
+	media_url.value = URL.createObjectURL(blob);
+}
 </script>
 
 <template>
 	<div v-if="message">
-		<div class="flex flex-row gap-2 w-full max-w-full" v-if="_message.isRedacted() || _message.getContent().msgtype === 'm.text' || _message.getContent().msgtype === 'm.bad.encrypted' || _message.getContent().cyphertext">
+		<div class="flex flex-row gap-2 w-full max-w-full" v-if="_message.isRedacted() || ['m.text', 'm.image', 'm.bad.encryption'].includes(_message.getContent().msgtype ?? '') || _message.getContent().cyphertext">
 			<div class="w-10 shrink-0" v-if="previousMessage?.sender?.userId === user.id">
 
 			</div>
@@ -32,8 +45,9 @@ const color = await user.getUserColor();
 				<div v-if="previousMessage?.sender?.userId !== user.id" :class="['font-semibold', color]">
 					{{ user.getDisplayName() }}
 				</div>
-				<div class="text-gray-200 flex flex-col gap-2" v-html="(_message.getContent().body as string).split('\n').map(p => `<p>${p}</p>`).join('')"  v-if="_message.getContent().msgtype === 'm.text'">
-					
+				<div class="text-gray-200 flex flex-col gap-2" v-html="(_message.getContent().body as string).split('\n').map(p => `<p>${p}</p>`).join('')"  v-if="_message.getContent().msgtype === 'm.text'"></div>
+				<div class="max-w-sm rounded shadow overflow-hidden" v-if="_message.getContent().msgtype === 'm.image'">
+					<img :src="media_url" />
 				</div>
 				<div class="text-gray-200 font-italic" v-if="_message.getContent().msgtype === 'm.bad.encrypted' || _message.getContent().cyphertext">
 					<Icon name="ic:round-lock" class="align-baseline mb-0.5 mr-1" />Encrypted message

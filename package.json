@@ -21,6 +21,7 @@
 		"@pinia/nuxt": "^0.4.11",
 		"@unocss/nuxt": "^0.53.1",
 		"@vueuse/nuxt": "^10.2.0",
+		"browser-encrypt-attachment": "^0.3.0",
 		"matrix-js-sdk": "^26.0.1",
 		"nanoid": "^4.0.2",
 		"nuxt-headlessui": "^1.1.4",

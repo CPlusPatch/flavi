@@ -20,6 +20,9 @@ dependencies:
   '@vueuse/nuxt':
     specifier: ^10.2.0
     version: 10.2.0(nuxt@3.5.2)(vue@3.3.4)
+  browser-encrypt-attachment:
+    specifier: ^0.3.0
+    version: 0.3.0
   matrix-js-sdk:
     specifier: ^26.0.1
     version: 26.0.1
@@ -731,7 +734,7 @@ packages:
       nopt: 5.0.0
       npmlog: 5.0.1
       rimraf: 3.0.2
-      semver: 7.5.2
+      semver: 7.5.3
       tar: 6.1.15
     transitivePeerDependencies:
       - encoding
@@ -2318,6 +2321,10 @@ packages:
 
   /brorand@1.1.0:
     resolution: {integrity: sha512-cKV8tMCEpQs4hK/ik71d6LrPOnpkpGBR0wzxqr68g2m/LB2GxVYQroAjMJZRVM1Y4BCjCKc3vAamxSzOY2RP+w==}
+    dev: false
+
+  /browser-encrypt-attachment@0.3.0:
+    resolution: {integrity: sha512-L7siI766UCH6+arP9yT5wpA5AFxnmGbKiGSsxEVACl1tE0pvDJeQvMmbY2UmJiuffrr0ZJ2+U6Om46wQBqh1Lw==}
     dev: false
 
   /browser-resolve@2.0.0:
@@ -6315,7 +6322,6 @@ packages:
     hasBin: true
     dependencies:
       lru-cache: 6.0.0
-    dev: true
 
   /send@0.18.0:
     resolution: {integrity: sha512-qqWzuOjSFOuqPjFe4NOsMLafToQQwBSOEpS+FwEt3A2V3vKubTquT3vmLTQpFgMXp8AlFWFuP1qKaJZOtPpVXg==}
@@ -7285,7 +7291,7 @@ packages:
     engines: {vscode: ^1.52.0}
     dependencies:
       minimatch: 3.1.2
-      semver: 7.5.2
+      semver: 7.5.3
       vscode-languageserver-protocol: 3.16.0
 
   /vscode-languageserver-protocol@3.16.0:
