@@ -53,8 +53,8 @@ const send = async (e: Event) => {
 <template>
 	<div class="w-full max-h-full flex flex-col justify-between">
 		<div class="grow max-w-full px-6 pt-6 overflow-y-scroll no-scrollbar overscroll-y-contain snap-y snap-proximity message-view-container">
-			<div class="flex flex-col gap-6 message-view">
-				<FvMessage v-for="(message, index) of events.filter(e => !e.isRedaction())" :key="message.getId() ?? ''" :message="(message as MatrixEvent)" :previousMessage="events[index - 1]"/>
+			<div class="flex flex-col message-view">
+				<FvMessage v-for="(message, index) of events.filter(e => !e.isRedaction())" :key="message.getId() ?? ''" :message="(message as MatrixEvent)" :previousEvents="(events.slice(0, index) as MatrixEvent[])"/>
 			</div>
 		</div>
 		<div class="w-full">

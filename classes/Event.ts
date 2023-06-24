@@ -46,13 +46,21 @@ export class MatrixMessage {
 	decryptAttachment = async () => {
 		const content = this.getContent()
 
-		if (!content.file) return null;
+		const isEncrypted = !content.url;
+
+		// Image URL is in a different place depending on if the message is encrypted or not
+		const url = isEncrypted ? content.file.url : content.url
 		
-		const link = this.client?.mxcUrlToHttp(content.file.url) ?? "";
-		const media = await (await fetch(link)).arrayBuffer();
-		const decrypted = await encrypt.decryptAttachment(media, content.file);
-		const blob = new Blob([decrypted], { type: content.file.mimetype });
-		return URL.createObjectURL(blob);
+		const link = this.client?.mxcUrlToHttp(url) ?? "";
+
+		if (isEncrypted) {
+			const media = await (await fetch(link)).arrayBuffer();
+			const decrypted = await encrypt.decryptAttachment(media, content.file);
+			const blob = new Blob([decrypted], { type: content.file.mimetype });
+			return URL.createObjectURL(blob);
+		}
+
+		return link;
 	};
 
 	isMemberEvent = () => {
