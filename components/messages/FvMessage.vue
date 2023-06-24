@@ -28,7 +28,7 @@ if (event.isImage()) {
 </script>
 
 <template>
-	<div v-if="message" class="mt-3 mb-3">
+	<div v-if="message" :class="['mb-3 mt-1', showHeader && 'mt-3']">
 		<div class="flex flex-row gap-2 w-full max-w-full" v-if="event.shouldShowMessage() && !event.isMemberEvent()">
 			<div class="w-10 shrink-0" v-if="!showHeader">
 
