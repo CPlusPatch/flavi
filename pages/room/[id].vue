@@ -75,5 +75,6 @@ const send = async (e: Event) => {
 .message-view > div:last-child {
 	scroll-snap-align: end;
 	padding-bottom: 20px;
+	margin-bottom: 0;
 }
 </style>
