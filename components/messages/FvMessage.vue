@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { IContent, MatrixClient, MatrixEvent } from 'matrix-js-sdk';
 import { MatrixUser } from '~/classes/User';
+import { MatrixMessage } from "~/classes/Event";
 import { useStore } from "~/utils/store";
-import encrypt from "browser-encrypt-attachment";
 
 const store = useStore();
 
@@ -12,29 +12,19 @@ const props = defineProps<{
 }>();
 
 const user = new MatrixUser(props.message.event.sender ?? '', store.client as MatrixClient);
-
-const _message = props.message;
-
-await store.client?.decryptEventIfNeeded(_message);
+const event = new MatrixMessage(props.message, store.client as MatrixClient);
 
 const color = await user.getUserColor();
-const content = _message.getContent();
 const media_url = ref("");
 
-if (["m.image"].includes(content.msgtype ?? "")) {
-	const link = store.client?.mxcUrlToHttp(content.file.url, undefined, undefined, undefined, false) ?? '';
-	const media = await (await fetch(link)).arrayBuffer();
-
-	const decrypted = await encrypt.decryptAttachment(media, content.file);
-
-	const blob = new Blob([decrypted], { type: content.file.mimetype });
-	media_url.value = URL.createObjectURL(blob);
+if (event.isImage()) {
+	media_url.value = await event.decryptAttachment() ?? ""
 }
 </script>
 
 <template>
 	<div v-if="message">
-		<div class="flex flex-row gap-2 w-full max-w-full" v-if="_message.isRedacted() || ['m.text', 'm.image', 'm.bad.encryption'].includes(_message.getContent().msgtype ?? '') || _message.getContent().cyphertext">
+		<div class="flex flex-row gap-2 w-full max-w-full" v-if="event.shouldShowMessage()">
 			<div class="w-10 shrink-0" v-if="previousMessage?.sender?.userId === user.id">
 
 			</div>
@@ -45,26 +35,26 @@ if (["m.image"].includes(content.msgtype ?? "")) {
 				<div v-if="previousMessage?.sender?.userId !== user.id" :class="['font-semibold', color]">
 					{{ user.getDisplayName() }}
 				</div>
-				<div class="text-gray-200 flex flex-col gap-2" v-html="(_message.getContent().body as string).split('\n').map(p => `<p>${p}</p>`).join('')"  v-if="_message.getContent().msgtype === 'm.text'"></div>
-				<div class="max-w-sm rounded shadow overflow-hidden" v-if="_message.getContent().msgtype === 'm.image'">
+				<div class="text-gray-200 flex flex-col gap-2" v-html="(event.getContent().body as string).split('\n').map(p => `<p>${p}</p>`).join('')"  v-if="event.isText()"></div>
+				<div class="max-w-sm rounded shadow overflow-hidden" v-if="event.isImage()">
 					<img :src="media_url" />
 				</div>
-				<div class="text-gray-200 font-italic" v-if="_message.getContent().msgtype === 'm.bad.encrypted' || _message.getContent().cyphertext">
+				<div class="text-gray-200 font-italic" v-if="event.getType() === 'm.bad.encrypted' || event.getContent().cyphertext">
 					<Icon name="ic:round-lock" class="align-baseline mb-0.5 mr-1" />Encrypted message
 				</div>
-				<div class="text-red-200 font-semibold" v-if="_message.isRedacted()">
+				<div class="text-red-200 font-semibold" v-if="event.isRedacted()">
 					<Icon name="ic:round-do-not-disturb-alt" class="align-baseline mb-0.5 mr-1" />Redacted Event
 				</div>
 			</div>
 			<div class="text-gray-300 text-xs">
-				{{ _message.getDate()?.getHours() }}:{{ _message.getDate()?.getMinutes() }}:{{ _message.getDate()?.getSeconds() }}
+				{{ event.event.getDate()?.getHours() }}:{{ event.event.getDate()?.getMinutes() }}:{{ event.event.getDate()?.getSeconds() }}
 			</div>
 		</div>
-		<div v-if="_message.event.type === 'm.room.member'" class="flex flex-row gap-2 font-italic text-gray-200 justify-center mx-auto text-sm">
+		<div v-if="event.isMemberEvent()" class="flex flex-row gap-2 font-italic text-gray-200 justify-center mx-auto text-sm">
 			<div class="h-5 w-5 rounded-md overflow-hidden flex items-center justify-center shrink-0">
-				<img :src="store.client?.mxcUrlToHttp(_message.getContent().avatar_url ?? '', 96, 96, 'scale') ?? 'https://placehold.co/400'" class="w-full h-full object-cover" />
+				<img :src="event.getSenderAvatarUrl()" class="w-full h-full object-cover" />
 			</div>
-			{{ _message.getContent().displayname }} changed their profile
+			{{ event.getSenderDisplayName() }} changed their profile
 		</div>
 	</div>
 </template>
