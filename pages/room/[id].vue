@@ -78,23 +78,12 @@ const loadMoreEvents = async () => {
 		...events.value,
 	]
 
-	const observer = new MutationObserver((mutationList, observer) => {
-		mutationList.forEach((mutation) => {
-			if (mutation.type === "childList") {
-				if (!messageContainer.value) return false;
-				console.error(messageContainer.value.scrollHeight - originalScrollHeight)
+	await nextTick();
 
-				messageContainer.value.scrollTop = messageContainer.value.scrollHeight - originalScrollHeight;
-				observer.disconnect();
-				isLoadingMoreEvents.value = false;
-			}
-		})
-	});
+	if (!messageContainer.value) return false;
 
-	observer.observe(document.getElementsByClassName("message-view")[0], {
-		childList: true,
-	});
-
+	messageContainer.value.scrollTop = messageContainer.value.scrollHeight - originalScrollHeight;
+	isLoadingMoreEvents.value = false;
 }
 
 </script>
