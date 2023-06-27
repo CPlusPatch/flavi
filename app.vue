@@ -31,6 +31,7 @@ const matrixClient = createClient({
 	verificationMethods: [
 		verificationMethods.SAS,
 	],
+	timelineSupport: true,
 });
 
 const store = useStore();

@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { IRoomTimelineData, MatrixClient, MatrixEvent, Room, RoomEvent } from "matrix-js-sdk";
+import { Direction, EventTimeline, IRoomTimelineData, MatrixClient, MatrixEvent, Room, RoomEvent } from "matrix-js-sdk";
 import { MatrixRoom } from "~/classes/Room";
 import FvMessage from "~/components/messages/FvMessage.vue";
 
 const id = useRoute().params.id as string;
 
 const store = useStore();
+const isLoadingMoreEvents = ref(false);
 
 if (!store.client) throw createError("Client not working");
 
 const room = ref(new MatrixRoom(id, store.client as MatrixClient));
 const sentFromMe: string[] = [];
 const events = ref<MatrixEvent[]>([]);
+let pagination = 0;
 
 events.value = room.value.timeline.getEvents();
 
@@ -35,7 +37,7 @@ function removeListeners() {
 
 onMounted(() => {
 	setTimeout(() => {
-		document.getElementsByClassName("message-view-container")[0].scrollTop = document.getElementsByClassName("message-view-container")[0].scrollHeight;
+		document.getElementsByClassName("message-view")[0].scrollTop = document.getElementsByClassName("message-view")[0].scrollHeight;
 	}, 300)
 });
 
@@ -48,14 +50,61 @@ const send = async (e: Event) => {
 	}
 }
 
+const messageContainer = ref<HTMLDivElement | null>(null);
+
+const loadMoreEvents = async () => {
+	if (isLoadingMoreEvents.value) return false;
+	if (!messageContainer.value) return false;
+	isLoadingMoreEvents.value = true;
+	const originalScrollHeight = messageContainer.value?.scrollHeight;
+
+	let timeline: EventTimeline | null = room.value.timelineSet.getLiveTimeline();
+	pagination++;
+	
+	for (let i = 0; i < pagination; i++) {
+		const result = await store.client?.paginateEventTimeline(timeline!, {
+			backwards: true,
+		});
+
+		if (result === false) {
+			return false;
+		} else {
+			timeline = timeline?.getNeighbouringTimeline(Direction.Backward) ?? null;
+		}
+	}
+
+	events.value = [
+		...(timeline?.getEvents() ?? []),
+		...events.value,
+	]
+
+	const observer = new MutationObserver((mutationList, observer) => {
+		mutationList.forEach((mutation) => {
+			if (mutation.type === "childList") {
+				if (!messageContainer.value) return false;
+				console.error(messageContainer.value.scrollHeight - originalScrollHeight)
+
+				messageContainer.value.scrollTop = messageContainer.value.scrollHeight - originalScrollHeight;
+				observer.disconnect();
+				isLoadingMoreEvents.value = false;
+			}
+		})
+	});
+
+	observer.observe(document.getElementsByClassName("message-view")[0], {
+		childList: true,
+	});
+
+}
+
 </script>
 
 <template>
 	<div class="w-full max-h-full flex flex-col justify-between">
-		<div class="grow max-w-full px-6 pt-6 overflow-y-scroll no-scrollbar overscroll-y-contain snap-y snap-proximity message-view-container">
-			<div class="flex flex-col message-view">
-				<FvMessage v-for="(message, index) of events.filter(e => !e.isRedaction())" :key="message.getId() ?? ''" :message="(message as MatrixEvent)" :previousEvents="(events.slice(0, index) as MatrixEvent[])"/>
-			</div>
+		<div class="grow max-w-full px-6 pt-6 overflow-y-scroll no-scrollbar flex flex-col message-view" ref="messageContainer">
+			<MessagesFvMessageSkeleton />
+			<div v-is-visible="loadMoreEvents"><MessagesFvMessageSkeleton /></div>
+			<FvMessage v-for="(message, index) of events.filter(e => !e.isRedaction())" :key="message.getId() ?? ''" :message="(message as MatrixEvent)" :previousEvents="(events.slice(0, index) as MatrixEvent[])"/>
 		</div>
 		<div class="w-full">
 			<form @submit.prevent="send" class="w-full bg-dark-900 flex items-center px-2 gap-2 justify-between pb-7 pt-3">
@@ -73,7 +122,6 @@ const send = async (e: Event) => {
 
 <style>
 .message-view > div:last-child {
-	scroll-snap-align: end;
 	padding-bottom: 20px;
 	margin-bottom: 0;
 }
