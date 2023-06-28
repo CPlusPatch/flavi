@@ -12,8 +12,8 @@ const spaces = ref<MatrixRoom[]>([]);
 if (!client) throw createError("Client not working!");
 
 const timelineChange = async () => {
-	roomList.value = ((await store.client?.getJoinedRooms())?.joined_rooms.map(roomId => client.getRoom(roomId) && new MatrixRoom(roomId, client as MatrixClient)).filter(a => a) as MatrixRoom[]) ?? [];
-	spaces.value = roomList.value.filter(r => r.isSpace()) ?? [];
+	roomList.value = (((await store.client?.getJoinedRooms())?.joined_rooms.map(roomId => client.getRoom(roomId) && new MatrixRoom(roomId, client as MatrixClient)).filter(a => a) as MatrixRoom[]) ?? []).toSorted((a, b) => b.getLastMessageDate().getTime() - a.getLastMessageDate().getTime());
+	spaces.value = (roomList.value.filter(r => r.isSpace()) ?? []).toSorted((a, b) => b.getLastMessageDate().getTime() - a.getLastMessageDate().getTime());
 }
 
 store.client?.on(RoomEvent.Timeline, timelineChange);
@@ -35,7 +35,7 @@ const avatar = store.client?.getUserId() && new MatrixUser(store.client?.getUser
 			</div>
 		</div>
 		<div class="bg-dark-900 p-3 flex flex-col gap-4 overflow-x-hidden no-scrollbar overflow-y-scroll relative w-80 shrink-0">
-			<PreviewsFvRoomPreview v-for="room of roomList.toSorted((a, b) => b.getLastMessageDate().getTime() - a.getLastMessageDate().getTime())" :key="room.id" :room="(room as any)" />
+			<PreviewsFvRoomPreview v-for="room of roomList" :key="room.id" :room="(room as any)" />
 		</div>
 		<div class="grow flex overflow-x-hidden">
 			

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IContent, MatrixClient, MatrixEvent, MatrixEventEvent } from 'matrix-js-sdk';
+import { MatrixClient, MatrixEvent, MatrixEventEvent } from 'matrix-js-sdk';
 import { MatrixUser } from '~/classes/User';
 import { MatrixMessage } from "~/classes/Event";
 import { useStore } from "~/utils/store";
@@ -11,9 +11,9 @@ const props = defineProps<{
 	previousEvents?: MatrixEvent[];
 }>();
 
-const isLoading = ref(true);
+const isLoading = ref(props.message.isBeingDecrypted());
 
-const onDecrypted = (event: MatrixEvent) => {
+const onDecrypted = () => {
 	isLoading.value = false;
 }
 
@@ -44,6 +44,7 @@ const timeAgo = useTimeAgo(event.value.event.getDate() ?? Date.now())
 </script>
 
 <template>
+	<Transition enter-active-class="duration-100" enter-from-class="opacity-0 translate-y-5" enter-to-class="opacity-100 translate-x-0" >
 	<div v-if="message" :class="['mb-3', showHeader && 'mt-3']">
 		<div class="flex flex-row gap-2 w-full max-w-full" v-if="event.shouldShowMessage() && !event.isMemberEvent()">
 			<div class="w-10 shrink-0" v-if="!showHeader">
@@ -57,6 +58,9 @@ const timeAgo = useTimeAgo(event.value.event.getDate() ?? Date.now())
 					{{ user.getDisplayName() }}
 				</div>
 				<div class="text-gray-200 flex flex-col gap-2 break-word" v-html="(((event.getContent().formatted_body) ?? event.getContent().body) as string).split('\n').map(p => `<p>${p}</p>`).join('')"  v-if="event.isText()"></div>
+				<div v-if="isLoading" class="text-gray-400 flex flex-row gap-x-2 items-center">
+					<Spinner theme="orangeDark" /> Decrypting...
+				</div>
 				<div class="max-w-sm rounded shadow overflow-hidden" v-if="event.isImage()">
 					<img :src="media_url" />
 				</div>
@@ -78,4 +82,5 @@ const timeAgo = useTimeAgo(event.value.event.getDate() ?? Date.now())
 			{{ event.getSenderDisplayName() }} changed their profile
 		</div>
 	</div>
+	</Transition>
 </template>

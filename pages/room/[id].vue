@@ -46,8 +46,6 @@ const updateTimeline = async (event: MatrixEvent, room2?: Room, _toStartOfTimeli
 
 store.client.on(RoomEvent.Timeline, updateTimeline);
 
-const messageBody = ref("");
-
 onBeforeRouteLeave(removeListeners)
 onUnmounted(removeListeners)
 
@@ -58,15 +56,6 @@ function removeListeners() {
 onMounted(() => {
 	setScrollBottom(0);
 });
-
-const send = async (e: Event) => {
-	const body = messageBody.value;
-	messageBody.value = "";
-	if (body !== "") {
-		const response = await store.client?.sendTextMessage(room.value.id, body);
-		sentFromMe.push(response?.event_id ?? "");
-	}
-}
 
 const loadMoreEvents = async () => {
 	if (isLoadingMoreEvents.value) return false;
@@ -117,7 +106,7 @@ const loadMoreEvents = async () => {
 const recalculateScrollBottom =  () => {
 	if (!messageContainer.value) return false;
 
-	messageScroll.y.value = messageContainer.value.scrollHeight - messageContainer.value.scrollTop - messageContainer.value.clientHeight;
+	scrollBottom.value = messageContainer.value.scrollHeight - messageContainer.value.scrollTop - messageContainer.value.clientHeight;
 }
 
 /**
@@ -137,18 +126,10 @@ const setScrollBottom = (bottom: number) => {
 		<div @scroll="recalculateScrollBottom" class="grow max-w-full px-6 pt-6 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col" ref="messageContainer">
 			<MessagesFvMessageSkeleton v-if="!hasReachedEndOfTimeline"/>
 			<div v-is-visible="loadMoreEvents" v-if="!hasReachedEndOfTimeline" ><MessagesFvMessageSkeleton /></div>
-			<FvMessage v-for="(message, index) of events" :key="message.getId() ?? ''" :message="(message as MatrixEvent)" :previousEvents="(events.slice(0, index) as MatrixEvent[])"/>
+			<FvMessage v-for="(message, index) of events" :key="message.event.event_id ?? ''" :message="(message as MatrixEvent)" :previousEvents="(events.slice(0, index) as MatrixEvent[])"/>
 		</div>
 		<div class="w-full">
-			<form @submit.prevent="send" class="w-full bg-dark-900 flex items-center px-2 gap-2 justify-between pb-7 pt-3">
-				<button class="p-1.5 hover:scale-102 duration-100">
-					<Icon name="ic:round-file-upload" class="h-6 w-6 text-white"/>
-				</button>
-				<input v-model="messageBody" name="message" class="!bg-dark-800 rounded-lg grow py-2 px-3 text-sm ring-0 outline-none focus:outline-none text-gray-100" placeholder="What's on your mind?"/>
-				<button type="submit" class="p-1.5 hover:scale-102 duration-100">
-					<Icon name="ic:round-send" class="h-6 w-6 text-white"/>
-				</button>
-			</form>
+			<InputFvMessageSender :room="(room as MatrixRoom)" @send="(event_id) => sentFromMe.push(event_id)"/>
 		</div>
 	</div>
 </template>
