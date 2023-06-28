@@ -20,11 +20,10 @@ const indexedDBStore = new IndexedDBStore({
 });
 await indexedDBStore.startup();
 
-const myUserId = "@jesse:cpluspatch.dev";
 const matrixClient = createClient({
 	baseUrl: "https://matrix.cpluspatch.dev/",
 	accessToken: localStorage.getItem("token") ?? "",
-	userId: myUserId,
+	userId: localStorage.getItem("user_id") ?? "@jesse:cpluspatch.dev",
 	store: indexedDBStore,
 	deviceId: localStorage.getItem("device_id") ?? "YXJHRPITMU",
 	cryptoStore: new IndexedDBCryptoStore(indexedDB, 'crypto-store'),

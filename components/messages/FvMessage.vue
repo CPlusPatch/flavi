@@ -37,6 +37,8 @@ if (event.value.isImage()) {
 	media_url.value = await event.value.decryptAttachment() ?? ""
 }
 
+const timeAgo = useTimeAgo(event.value.event.getDate() ?? Date.now())
+
 
 
 </script>
@@ -54,7 +56,7 @@ if (event.value.isImage()) {
 				<div v-if="showHeader" :class="['font-semibold', color]">
 					{{ user.getDisplayName() }}
 				</div>
-				<div class="text-gray-200 flex flex-col gap-2" v-html="(event.getContent().body as string).split('\n').map(p => `<p>${p}</p>`).join('')"  v-if="event.isText()"></div>
+				<div class="text-gray-200 flex flex-col gap-2 break-word" v-html="(((event.getContent().formatted_body) ?? event.getContent().body) as string).split('\n').map(p => `<p>${p}</p>`).join('')"  v-if="event.isText()"></div>
 				<div class="max-w-sm rounded shadow overflow-hidden" v-if="event.isImage()">
 					<img :src="media_url" />
 				</div>
@@ -65,8 +67,8 @@ if (event.value.isImage()) {
 					<Icon name="ic:round-do-not-disturb-alt" class="align-baseline mb-0.5 mr-1" />Redacted Event
 				</div>
 			</div>
-			<div class="text-gray-300 text-xs">
-				{{ event.event.getDate()?.getHours() }}:{{ event.event.getDate()?.getMinutes() }}:{{ event.event.getDate()?.getSeconds() }}
+			<div class="text-gray-400 text-xs w-20 shrink-0 text-right">
+				<span v-if="showHeader">{{ timeAgo }}</span>
 			</div>
 		</div>
 		<div v-if="event.isMemberEvent()" class="flex flex-row gap-2 font-italic text-gray-200 justify-center mx-auto text-sm">

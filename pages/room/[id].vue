@@ -13,14 +13,34 @@ if (!store.client) throw createError("Client not working");
 const room = ref(new MatrixRoom(id, store.client as MatrixClient));
 const sentFromMe: string[] = [];
 const events = ref<MatrixEvent[]>([]);
+const scrollBottom = ref(0);
 let pagination = 0;
+const messageContainer = ref<HTMLDivElement | null>(null);
+const hasReachedEndOfTimeline = ref(false);
 
-events.value = room.value.timeline.getEvents();
+const messageScroll = useScroll(messageContainer);
+useMutationObserver(messageContainer, (mutation) => {
+	mutation.forEach(m => {
+		if (m.type === "childList") setScrollBottom(scrollBottom.value);
+	})
+}, {
+	childList: true,
+})
+
+events.value = room.value.timeline.getEvents().filter(e => !e.isRedaction());
 
 const updateTimeline = async (event: MatrixEvent, room2?: Room, _toStartOfTimeline?: boolean, _removed?: boolean, data?: IRoomTimelineData) => {
 	if (room2?.roomId === room.value.id && !sentFromMe.includes(event.getId() ?? "")) {
 		room.value.refreshTimeline();
-		events.value = [...room.value.timeline.getEvents()]; // We do this to avoid proxies and trigger an update
+		events.value = [...room.value.timeline.getEvents()].filter(e => !e.isRedaction()); // We do this to avoid proxies and trigger an update
+		await nextTick();
+	}
+	
+	
+	if (scrollBottom.value === 0) {
+		setScrollBottom(0);
+	} else {
+		recalculateScrollBottom();
 	}
 }
 
@@ -36,9 +56,7 @@ function removeListeners() {
 }
 
 onMounted(() => {
-	setTimeout(() => {
-		document.getElementsByClassName("message-view")[0].scrollTop = document.getElementsByClassName("message-view")[0].scrollHeight;
-	}, 300)
+	setScrollBottom(0);
 });
 
 const send = async (e: Event) => {
@@ -50,50 +68,76 @@ const send = async (e: Event) => {
 	}
 }
 
-const messageContainer = ref<HTMLDivElement | null>(null);
-
 const loadMoreEvents = async () => {
 	if (isLoadingMoreEvents.value) return false;
 	if (!messageContainer.value) return false;
 	isLoadingMoreEvents.value = true;
-	const originalScrollHeight = messageContainer.value?.scrollHeight;
 
 	let timeline: EventTimeline | null = room.value.timelineSet.getLiveTimeline();
 	pagination++;
 	
 	for (let i = 0; i < pagination; i++) {
-		const result = await store.client?.paginateEventTimeline(timeline!, {
-			backwards: true,
-		});
+		try {
+			await store.client?.paginateEventTimeline(timeline!, {
+				backwards: true,
+			});
+		} catch {
+			try {
+				const newRoom = await store.client?.scrollback(room.value.room as Room, 30);
+				room.value = new MatrixRoom(newRoom?.roomId ?? "", store.client as MatrixClient)
 
-		if (result === false) {
-			return false;
-		} else {
-			timeline = timeline?.getNeighbouringTimeline(Direction.Backward) ?? null;
+				await store.client?.paginateEventTimeline(timeline!, {
+					backwards: true,
+				});
+			} catch {
+				hasReachedEndOfTimeline.value = true;
+				return false;
+			}
 		}
+		timeline = timeline?.getNeighbouringTimeline(Direction.Backward) ?? null;
 	}
 
 	events.value = [
 		...(timeline?.getEvents() ?? []),
 		...events.value,
-	]
+	].filter(e => !e.isRedaction())
 
 	await nextTick();
 
+	// FIXME: Why does this sometimes work?
+	setTimeout(() => {
+		setScrollBottom(scrollBottom.value);
+		isLoadingMoreEvents.value = false;
+	}, 0);
+}
+
+/**
+ * Calculate scrollBottom based on the scrollHeight
+ */
+const recalculateScrollBottom =  () => {
 	if (!messageContainer.value) return false;
 
-	messageContainer.value.scrollTop = messageContainer.value.scrollHeight - originalScrollHeight;
-	isLoadingMoreEvents.value = false;
+	messageScroll.y.value = messageContainer.value.scrollHeight - messageContainer.value.scrollTop - messageContainer.value.clientHeight;
+}
+
+/**
+ * Set the container's scrollBottom property, which doesnt exist in the DOM but
+ * we can calculate it and set it using scrollTop and scrollHeight
+ */
+const setScrollBottom = (bottom: number) => {
+	if (!messageContainer.value) return false;
+
+	messageScroll.y.value = messageContainer.value.scrollHeight - messageContainer.value.clientHeight - bottom;
 }
 
 </script>
 
 <template>
 	<div class="w-full max-h-full flex flex-col justify-between">
-		<div class="grow max-w-full px-6 pt-6 overflow-y-scroll no-scrollbar flex flex-col message-view" ref="messageContainer">
-			<MessagesFvMessageSkeleton />
-			<div v-is-visible="loadMoreEvents"><MessagesFvMessageSkeleton /></div>
-			<FvMessage v-for="(message, index) of events.filter(e => !e.isRedaction())" :key="message.getId() ?? ''" :message="(message as MatrixEvent)" :previousEvents="(events.slice(0, index) as MatrixEvent[])"/>
+		<div @scroll="recalculateScrollBottom" class="grow max-w-full px-6 pt-6 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col" ref="messageContainer">
+			<MessagesFvMessageSkeleton v-if="!hasReachedEndOfTimeline"/>
+			<div v-is-visible="loadMoreEvents" v-if="!hasReachedEndOfTimeline" ><MessagesFvMessageSkeleton /></div>
+			<FvMessage v-for="(message, index) of events" :key="message.getId() ?? ''" :message="(message as MatrixEvent)" :previousEvents="(events.slice(0, index) as MatrixEvent[])"/>
 		</div>
 		<div class="w-full">
 			<form @submit.prevent="send" class="w-full bg-dark-900 flex items-center px-2 gap-2 justify-between pb-7 pt-3">
@@ -108,10 +152,3 @@ const loadMoreEvents = async () => {
 		</div>
 	</div>
 </template>
-
-<style>
-.message-view > div:last-child {
-	padding-bottom: 20px;
-	margin-bottom: 0;
-}
-</style>
