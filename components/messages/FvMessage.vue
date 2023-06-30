@@ -65,7 +65,7 @@ const timeAgo = useTimeAgo(event.value.event.getDate() ?? Date.now())
 					<img :src="media_url" />
 				</div>
 				<div class="max-w-sm rounded shadow overflow-hidden" v-if="event.isVideo()">
-					<MediaFvVideo :file="event.getContent().file" :is-encrypted="event.event.isEncrypted()" :thumbnail_file="event.getContent().info.thumbnail_file" :thumbnail_info="event.getContent().info.thumbnail_info" :info="event.getContent().info"/>
+					<MediaFvVideo :body="event.getContent().body" :file="event.getContent().file" :is-encrypted="event.event.isEncrypted()" :thumbnail_file="event.getContent().info.thumbnail_file" :thumbnail_info="event.getContent().info.thumbnail_info" :info="event.getContent().info"/>
 				</div>
 				<div class="text-gray-200 font-italic" v-if="event.getType() === 'm.bad.encrypted' || event.getContent().cyphertext">
 					<Icon name="ic:round-lock" class="align-baseline mb-0.5 mr-1" />Encrypted message

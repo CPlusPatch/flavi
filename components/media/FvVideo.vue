@@ -11,6 +11,7 @@ const props = defineProps<{
 	file?: any;
 	isEncrypted: boolean;
 	info: any;
+	body: string;
 }>();
 
 const getMediaUrl = async (link: string, type: string, mediaDecryptionData?: any) => {
@@ -29,14 +30,30 @@ const getMediaUrl = async (link: string, type: string, mediaDecryptionData?: any
 	}
 }
 
-const loading = ref(true);
+const video_url = ref<string | null>(null);
+
+const loadMedia = async () => {
+	loading.value = true;
+
+	video_url.value = await getMediaUrl(store.client?.mxcUrlToHttp(props.file.url ?? "") ?? "", props.info.mimetype, props.file);
+	console.error(video_url.value);
+
+	loading.value = false;
+}
+
+
+const loading = ref(false);
 
 const thumbnailUrl = props.thumbnail_info && await getMediaUrl(store.client?.mxcUrlToHttp(props.thumbnail_file.url ?? "") ?? "", props.thumbnail_info.mimetype, props.thumbnail_file);
 </script>
 
 <template>
-	<div class="max-w-60">
-		{{ loading && "Loading..." }}
-		<img :src="thumbnailUrl" class="w-full h-full" />
+	<div class="relative rounded overflow-hidden max-w-60 group">
+		<img v-if="!video_url" :src="thumbnailUrl" class="w-full h-full opacity-70 group-hover:scale-105 duration-500" />
+		<video v-else :src="video_url" class="w-full h-full" controls />
+		<ButtonFvButton v-if="!video_url" @click="loadMedia" theme="gray" class="!p-1 !rounded-full !absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hover:scale-105">
+			<Icon v-if="!loading" name="ic:round-play-arrow" class="w-6 h-6" />
+			<Spinner v-else theme="orangeDark" class="w-6 h-6" />
+		</ButtonFvButton>
 	</div>
 </template>
