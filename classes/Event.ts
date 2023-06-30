@@ -33,29 +33,36 @@ export class MatrixMessage {
 
 	isRedacted = () => {
 		return this.event.isRedacted();
-	}
+	};
 
 	isText = () => {
-		return this.getType() === "m.text"
-	}
+		return this.getType() === "m.text";
+	};
 
 	isImage = () => {
 		return this.getType() === "m.image";
 	};
 
+	isVideo = () => {
+		return this.getType() === "m.video";
+	};
+
 	decryptAttachment = async () => {
-		const content = this.getContent()
+		const content = this.getContent();
 
 		const isEncrypted = !content.url;
 
 		// Image URL is in a different place depending on if the message is encrypted or not
-		const url = isEncrypted ? content.file.url : content.url
-		
+		const url = isEncrypted ? content.file.url : content.url;
+
 		const link = this.client?.mxcUrlToHttp(url) ?? "";
 
 		if (isEncrypted) {
 			const media = await (await fetch(link)).arrayBuffer();
-			const decrypted = await encrypt.decryptAttachment(media, content.file);
+			const decrypted = await encrypt.decryptAttachment(
+				media,
+				content.file
+			);
 			const blob = new Blob([decrypted], { type: content.file.mimetype });
 			return URL.createObjectURL(blob);
 		}
@@ -69,7 +76,8 @@ export class MatrixMessage {
 
 	getSenderAvatarUrl = () => {
 		return (
-			this.client?.mxcUrlToHttp(this.getContent().avatar_url ?? "",) ?? this.getInitialsAvatarUrl()
+			this.client?.mxcUrlToHttp(this.getContent().avatar_url ?? "") ??
+			this.getInitialsAvatarUrl()
 		);
 	};
 

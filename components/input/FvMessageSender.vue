@@ -110,6 +110,9 @@ const send = async (e: Event) => {
 						content.info.thumbnail_url = thumbnailUploadData.url;
 					}
 
+					content.msgtype = "m.video";
+					content.body = file.name || "Video";
+
 					break;
 				}
 
@@ -135,8 +138,10 @@ const send = async (e: Event) => {
 			} else {
 				content.url = uploadData.url;
 			}
-			
+
 			await store.client?.sendMessage(props.room.id, content);
+
+			currentlyUploadingFileProgress.value = 0;
 
 			files.value.splice(0, 1);
 		});
@@ -157,13 +162,18 @@ const fileToURL = (f: File) => URL.createObjectURL(f);
 	<form @submit.prevent="send" class="w-full bg-dark-900 flex flex-col px-2 gap-4 justify-between pb-7 pt-3">
 		<div v-if="files.length > 0" class="flex justify-start gap-2 overflow-x-scroll no-scrollbar p-0.5">
 			<TransitionGroup enter-active-class="duration-200 ease-in-out" enter-from-class="translate-y-10 opacity-0" enter-to-class="translate-y-0 opacity -100" leave-active-class="duration-200 ease-in-out" leave-from-class="scale-100 opacity-100" leave-to-class="scale-95 opacity-0">
-				<div v-for="file of files" :key="file.name" :class="['h-30 overflow-hidden rounded relative ring-1 shrink-0 ring-dark-700',
+				<div v-for="(file, index) of files" :key="file.name" :class="['h-30 overflow-hidden rounded relative ring-1 shrink-0 ring-dark-700',
 					!file.type.includes('image') && 'w-30 flex items-center justify-center']">
 					<ButtonFvButton @click="files = files.filter(f => f.name !== file.name)" theme="gray" class="!absolute !bg-dark-800 top-1 right-1 !p-1 !rounded-full">
 						<Icon name="ic:round-close" />
 					</ButtonFvButton>
 					<img v-if="file.type.includes('image')" :src="fileToURL(file)" class="h-full" />
 					<Icon v-else name="ic:round-insert-drive-file" class="text-white h-5 w-5" />
+					<div v-if="index === 0 && currentlyUploadingFileProgress !== 0" class="bottom-1 absolute right-1 left-1 rounded bg-dark-700 h-2">
+						<div class="h-full bg-orange-500 rounded" :style="{
+							width: `${currentlyUploadingFileProgress * 100}%`
+						}"></div>
+					</div>
 				</div>
 			</TransitionGroup>
 		</div>
