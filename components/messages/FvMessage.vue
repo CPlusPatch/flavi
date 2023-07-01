@@ -29,7 +29,6 @@ const event = ref(new MatrixMessage(props.message, store.client as MatrixClient)
 // Show header if messages are separated by more than 5 hours
 const previousEvent = computed(() => props.previousEvents?.toReversed().find(e => e.getType() === "m.room.message" && e.sender?.userId === user.id));
 const showHeader = computed(() => previousEvent.value && ((event.value.event.getDate()?.getTime() ?? 0) - (previousEvent.value.getDate()?.getTime() ?? 0)) > 1000 * 60 * 60 * 5);
-console.error(showHeader.value)
 
 const color = await user.getUserColor();
 const media_url = ref("");
@@ -39,7 +38,6 @@ if (event.value.isImage()) {
 	media_url.value = await event.value.decryptAttachment() ?? ""
 }
 
-console.error(props.message.getType())
 
 const timeAgo = useTimeAgo(event.value.event.getDate() ?? Date.now())
 
@@ -82,7 +80,7 @@ const log = () => console.error(event.value.getContent())
 				<span v-if="showHeader">{{ timeAgo }}</span>
 			</div>
 		</div>
-		<MessagesFvMemberEvent v-if="event.event.getType() !== 'm.room.message'" :event="(event as MatrixMessage)" />
+		<MessagesFvStateEvent v-if="event.event.getType() !== 'm.room.message'" :event="(event as MatrixMessage)" />
 	</div>
 	</Transition>
 </template>

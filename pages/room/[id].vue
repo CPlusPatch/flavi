@@ -1,23 +1,25 @@
 <script setup lang="ts">
+import { time } from "console";
 import { Direction, EventTimeline, IRoomTimelineData, MatrixClient, MatrixEvent, Room, RoomEvent } from "matrix-js-sdk";
 import { MatrixRoom } from "~/classes/Room";
+import RoomTimeline from "~/classes/RoomTimeline";
 import { MatrixUser } from "~/classes/User";
 import FvMessage from "~/components/messages/FvMessage.vue";
+import events from "~/utils/events";
 
 const id = useRoute().params.id as string;
 
 const store = useStore();
-const isLoadingMoreEvents = ref(false);
 
 if (!store.client) throw createError("Client not working");
 
 const room = ref(new MatrixRoom(id, store.client as MatrixClient));
 const sentFromMe: string[] = [];
-const events = ref<MatrixEvent[]>([]);
 const scrollBottom = ref(0);
-let pagination = 0;
 const messageContainer = ref<HTMLDivElement | null>(null);
-const hasReachedEndOfTimeline = ref(false);
+const timeline = ref<MatrixEvent[]>([]);
+
+const roomTimeline = new RoomTimeline(id, store.client as MatrixClient, () => {});
 
 const messageScroll = useScroll(messageContainer);
 useMutationObserver(messageContainer, (mutation) => {
@@ -28,12 +30,9 @@ useMutationObserver(messageContainer, (mutation) => {
 	childList: true,
 })
 
-events.value = room.value.timeline.getEvents().filter(e => !e.isRedaction());
-
-const updateTimeline = async (event: MatrixEvent, room2?: Room, _toStartOfTimeline?: boolean, _removed?: boolean, data?: IRoomTimelineData) => {
+/* const updateTimeline = async (event: MatrixEvent, room2?: Room, _toStartOfTimeline?: boolean, _removed?: boolean, data?: IRoomTimelineData) => {
 	if (room2?.roomId === room.value.id && !sentFromMe.includes(event.getId() ?? "")) {
-		room.value.refreshTimeline();
-		events.value = [...room.value.timeline.getEvents()].filter(e => !e.isRedaction()); // We do this to avoid proxies and trigger an update
+		timeline.addToTimeline(event);
 		await nextTick();
 	}
 
@@ -45,13 +44,29 @@ const updateTimeline = async (event: MatrixEvent, room2?: Room, _toStartOfTimeli
 	}
 }
 
-store.client.on(RoomEvent.Timeline, updateTimeline);
+store.client.on(RoomEvent.Timeline, updateTimeline); */
+
 
 onBeforeRouteLeave(removeListeners)
 onUnmounted(removeListeners)
 
+const newEvent = (event: MatrixEvent) => {
+	timeline.value = [
+		...roomTimeline.timeline
+	]
+};
+
+const ready = () => {
+	timeline.value = roomTimeline.timeline;
+}
+
+roomTimeline.on(events.events.timeline.EVENT, newEvent)
+roomTimeline.on(events.events.timeline.READY, ready)
+
 function removeListeners() {
-	store.client?.off(RoomEvent.Timeline, updateTimeline);
+	roomTimeline.removeAllListeners();
+	roomTimeline.off(events.events.timeline.EVENT, newEvent);
+	roomTimeline.off(events.events.timeline.READY, ready)
 }
 
 onMounted(() => {
@@ -59,45 +74,17 @@ onMounted(() => {
 });
 
 const loadMoreEvents = async () => {
-	if (isLoadingMoreEvents.value) return false;
-	if (!messageContainer.value) return false;
-	isLoadingMoreEvents.value = true;
+	if (roomTimeline.isOngoingPagination) return false;
 
-	let timeline: EventTimeline | null = room.value.timelineSet.getLiveTimeline();
-	pagination++;
-
-	for (let i = 0; i < pagination; i++) {
-		try {
-			await store.client?.paginateEventTimeline(timeline!, {
-				backwards: true,
-			});
-		} catch {
-			try {
-				const newRoom = await store.client?.scrollback(room.value.room as Room, 30);
-				room.value = new MatrixRoom(newRoom?.roomId ?? "", store.client as MatrixClient)
-
-				await store.client?.paginateEventTimeline(timeline!, {
-					backwards: true,
-				});
-			} catch {
-				hasReachedEndOfTimeline.value = true;
-				return false;
-			}
-		}
-		timeline = timeline?.getNeighbouringTimeline(Direction.Backward) ?? null;
+	if (roomTimeline.canPaginateBackward()) {
+		await roomTimeline.paginateTimeline(true);
 	}
 
-	events.value = [
-		...(timeline?.getEvents() ?? []),
-		...events.value,
-	].filter(e => !e.isRedaction())
-
-	await nextTick();
+	timeline.value = roomTimeline.timeline;
 
 	// FIXME: Why does this sometimes work?
 	setTimeout(() => {
 		setScrollBottom(scrollBottom.value);
-		isLoadingMoreEvents.value = false;
 	}, 0);
 }
 
@@ -116,12 +103,11 @@ const recalculateScrollBottom = () => {
  */
 const setScrollBottom = (bottom: number) => {
 	if (!messageContainer.value) return false;
-
 	messageScroll.y.value = messageContainer.value.scrollHeight - messageContainer.value.clientHeight - bottom;
 }
 
 const members = room.value.room.getMembers().map(m => store.client?.getUser(m.userId) && new MatrixUser(m.userId, store.client as MatrixClient) || null).filter(m => m);
-
+await roomTimeline.loadLiveTimeline();
 </script>
 
 <template>
@@ -130,15 +116,15 @@ const members = room.value.room.getMembers().map(m => store.client?.getUser(m.us
 			<div @scroll="recalculateScrollBottom"
 				class="grow max-w-full px-6 pt-6 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col"
 				ref="messageContainer">
-				<MessagesFvMessageSkeleton v-if="!hasReachedEndOfTimeline" />
-				<div v-is-visible="loadMoreEvents" v-if="!hasReachedEndOfTimeline">
+				<MessagesFvMessageSkeleton v-if="roomTimeline.canPaginateBackward()" />
+				<div v-is-visible="loadMoreEvents" v-if="roomTimeline.canPaginateBackward()">
 					<MessagesFvMessageSkeleton />
 				</div>
-				<FvMessage v-for="(message, index) of events" :key="message.event.event_id ?? ''"
-					:message="(message as MatrixEvent)" :previousEvents="(events.slice(0, index) as MatrixEvent[])" />
+				<FvMessage v-for="(message, index) of timeline.toSorted((a, b) => (a.getDate()?.getTime() ?? 0) - (b.getDate()?.getTime() ?? 0))" :key="message.event.event_id ?? ''"
+					:message="(message as MatrixEvent)" :previousEvents="(timeline.slice(0, index) as MatrixEvent[])" />
 			</div>
 			<div class="w-full">
-				<InputFvMessageSender :room="(room as MatrixRoom)" @send="(event_id) => sentFromMe.push(event_id)" />
+				<InputFvMessageSender :room="(room as MatrixRoom)" @send="(event_id) => {}" />
 			</div>
 		</div>
 		<div class="bg-dark-900 w-70 h-full p-3 shrink-0 flex flex-col gap-2 overflow-hidden">

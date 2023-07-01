@@ -15,7 +15,8 @@ const log = () => console.error(props.event.event.getSender());
 let action: "" | "nameChange" | "nameSet" | "nameRemove" |
 	"join" | "leave" | "avatarChange" | "avatarSet" | "avatarRemove" |
 	"avatarChange" | "setPowerLevels" | "setHistoryVisibility" |
-	"setHistoryVisibility" | "setGuestAccess" = "";
+	"setHistoryVisibility" | "setGuestAccess" | "setEncryption" |
+	"setJoinRules" | "setRoomName" | "setSpaceParent" = "";
 
 
 switch (props.event.event.getType()) {
@@ -52,9 +53,31 @@ switch (props.event.event.getType()) {
 		action = "setGuestAccess";
 		break;
 	}
+	case "m.room.encryption": {
+		action = "setEncryption";
+		break;
+	}
+	case "m.room.join_rules": {
+		action = "setJoinRules";
+		break;
+	}
+	case "m.space.parent": {
+		action = "setSpaceParent";
+		break;
+	}
+	case "m.room.name": {
+		action = "setRoomName";
+		break;
+	}
 }
 
-let ui = {
+let ui: {
+	[name: string]: {
+		icon: string;
+		text: string;
+		value?: () => string
+	}
+} = {
 	join: {
 		icon: "ic:round-subdirectory-arrow-right",
 		text: "joined the room"
@@ -84,7 +107,7 @@ let ui = {
 		text: "set their avatar"
 	},
 	avatarRemove: {
-		icon: "ic:round-image",
+		icon: "ic:round-image-not-supported",
 		text: "removed their avatar"
 	},
 	setPowerLevels: {
@@ -93,11 +116,32 @@ let ui = {
 	},
 	setHistoryVisibility: {
 		icon: "ic:round-timeline",
-		text: "set history visibility"
+		text: "set history visibility to",
+		value: () => props.event.content.history_visibility
 	},
 	setGuestAccess: {
 		icon: "ic:round-supervised-user-circle",
-		text: "set guest access"
+		text: "set guest access to",
+		value: () => props.event.content.guest_access,
+	},
+	setEncryption: {
+		icon: "ic:round-lock",
+		text: "turned encryption",
+		value: () => "ON"
+	},
+	setJoinRules: {
+		icon: "ic:round-insert-invitation",
+		text: "set the join rules for this room to",
+		value: () => props.event.content.guest_access
+	},
+	setRoomName: {
+		icon: "ic:round-drive-file-rename-outline",
+		text: "set the room name to",
+		value: () => props.event.content.name,
+	},
+	setSpaceParent: {
+		icon: "ic:round-account-tree",
+		text: "set the parent space",
 	}
 }
 </script>
@@ -108,7 +152,7 @@ let ui = {
 		<div @click="log" class="h-5 w-5 rounded-md overflow-hidden flex items-center justify-center shrink-0">
 			<img :src="event.content.membership === 'join' ? event.getSenderAvatarUrl() : user.getAvatarUrl()" class="w-full h-full object-cover" />
 		</div>
-		<b class="font-semibold">{{ event.getSenderDisplayName() ?? user.getDisplayName() }}</b>{{ ui[action].text }}
+		<b class="font-semibold">{{ event.getSenderDisplayName() ?? user.getDisplayName() }}</b>{{ ui[action].text }}<b class="font-semibold" v-if="ui[action].value">{{ ui[action].value!() }}</b>
 	</div>
 	
 </template>
