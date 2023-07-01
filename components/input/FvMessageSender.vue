@@ -155,6 +155,10 @@ const send = async () => {
 	sending.value = false;
 }
 
+const pasteFile = (e: ClipboardEvent) => {
+	files.value = [...(e.clipboardData?.files ?? files.value)] 
+}
+
 const fileToURL = (f: File) => URL.createObjectURL(f);
 
 const preventOpeningFileDialog = (e: KeyboardEvent) => {
@@ -207,7 +211,7 @@ const preventOpeningFileDialog = (e: KeyboardEvent) => {
 					@click.prevent="fileInput?.click()">
 					<Icon name="ic:round-file-upload" class="h-6 w-6 text-white" />
 				</button>
-				<input @keydown="preventOpeningFileDialog" v-model="messageBody" name="message" class="bg-transparent w-full outline-none focus:outline-none"
+				<input @paste="pasteFile" @keydown="preventOpeningFileDialog" v-model="messageBody" name="message" class="bg-transparent w-full outline-none focus:outline-none"
 					:placeholder="`Message in ${room.getName()}`" />
 		</div>
 	</div>
