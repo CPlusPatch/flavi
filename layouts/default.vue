@@ -34,12 +34,16 @@ const avatar = store.client?.getUserId() && new MatrixUser(store.client?.getUser
 				<Icon name="tabler:message" class="w-6 h-6" />
 			</div>
 			<SeparatorsFvSeparator />
-			<div v-for="space of spaces" :key="space.id" class="h-10 w-10 hover:translate-x-1 duration-200 rounded-md overflow-hidden flex items-center justify-center shrink-0 shadow">
-				<img :src="space.getAvatarUrl() ?? `https://api.dicebear.com/6.x/initials/svg?seed=${space.getName()}&chars=1`" class="w-full h-full object-cover" />
-			</div>
+			<TransitionGroup move-class="duration-200 transition-all">
+				<div v-for="space of spaces" :key="space.id" class="h-10 w-10 hover:translate-x-1 duration-200 rounded-md overflow-hidden flex items-center justify-center shrink-0 shadow">
+					<img :src="space.getAvatarUrl() ?? `https://api.dicebear.com/6.x/initials/svg?seed=${space.getName()}&chars=1`" class="w-full h-full object-cover" />
+				</div>
+			</TransitionGroup>
 		</div>
 		<div class="bg-dark-900 p-1 flex flex-col gap-1 overflow-x-hidden no-scrollbar overflow-y-scroll relative w-60 shrink-0">
-			<PreviewsFvRoomPreview v-for="room of roomList" :key="room.id" :room="(room as any)" />
+			<TransitionGroup move-class="duration-200 transition-all">
+				<PreviewsFvRoomPreview v-for="room of roomList" :key="room.id" :room="(room as any)" />
+			</TransitionGroup>
 		</div>
 		<slot />
 	</div>

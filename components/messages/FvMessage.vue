@@ -27,7 +27,9 @@ const user = new MatrixUser(props.message.event.sender ?? '', store.client as Ma
 const event = ref(new MatrixMessage(props.message, store.client as MatrixClient));
 
 // Show header if messages are separated by more than 5 hours
-const showHeader = computed(() => props.previousEvents?.at(-1)?.sender?.userId !== user.id || ((event.value.event.getDate()?.getTime() ?? 0) - (props.previousEvents?.at(-1)?.getDate()?.getTime() ?? 0)) > 1000 * 60 * 60 * 5);
+const previousEvent = computed(() => props.previousEvents?.toReversed().find(e => e.getType() === "m.room.message" && e.sender?.userId === user.id));
+const showHeader = computed(() => previousEvent.value && ((event.value.event.getDate()?.getTime() ?? 0) - (previousEvent.value.getDate()?.getTime() ?? 0)) > 1000 * 60 * 60 * 5);
+console.error(showHeader.value)
 
 const color = await user.getUserColor();
 const media_url = ref("");
@@ -37,9 +39,11 @@ if (event.value.isImage()) {
 	media_url.value = await event.value.decryptAttachment() ?? ""
 }
 
+console.error(props.message.getType())
+
 const timeAgo = useTimeAgo(event.value.event.getDate() ?? Date.now())
 
-
+const log = () => console.error(event.value.getContent())
 
 </script>
 
@@ -50,7 +54,7 @@ const timeAgo = useTimeAgo(event.value.event.getDate() ?? Date.now())
 			<div class="w-10 shrink-0" v-if="!showHeader">
 
 			</div>
-			<div v-else class="h-10 hover:-translate-y-1 duration-200 w-10 rounded-md overflow-hidden flex items-center justify-center shrink-0">
+			<div @click="log" v-if="showHeader" class="h-10 hover:-translate-y-1 duration-200 w-10 rounded-md overflow-hidden flex items-center justify-center shrink-0">
 				<img :src="user.getAvatarUrl() ?? `https://api.dicebear.com/6.x/initials/svg?seed=${user.getDisplayName()}&fontWeight=900`" class="w-full h-full object-cover" />
 			</div>
 			<div :key="String(isLoading)" class="flex flex-col gap-1 text-sm grow overflow-hidden break-words">
@@ -78,12 +82,7 @@ const timeAgo = useTimeAgo(event.value.event.getDate() ?? Date.now())
 				<span v-if="showHeader">{{ timeAgo }}</span>
 			</div>
 		</div>
-		<div v-if="event.isMemberEvent()" class="flex flex-row gap-2 font-italic text-gray-200 justify-center mx-auto text-sm">
-			<div class="h-5 w-5 rounded-md overflow-hidden flex items-center justify-center shrink-0">
-				<img :src="event.getSenderAvatarUrl()" class="w-full h-full object-cover" />
-			</div>
-			{{ event.getSenderDisplayName() }} changed their profile
-		</div>
+		<MessagesFvMemberEvent v-if="event.event.getType() !== 'm.room.message'" :event="(event as MatrixMessage)" />
 	</div>
 	</Transition>
 </template>

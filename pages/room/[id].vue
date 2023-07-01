@@ -125,7 +125,7 @@ const members = room.value.room.getMembers().map(m => store.client?.getUser(m.us
 </script>
 
 <template>
-	<div class="flex overflow-x-hidden flex-row">
+	<div class="flex overflow-x-hidden flex-row grow">
 		<div class="grow min-w-0 max-h-full flex flex-col justify-between">
 			<div @scroll="recalculateScrollBottom"
 				class="grow max-w-full px-6 pt-6 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col"

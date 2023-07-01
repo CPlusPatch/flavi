@@ -64,13 +64,16 @@ export class MatrixUser {
 		}
 	}
 
-	public getAvatarUrl(size: number = 96): string | null {
-		return this.client.mxcUrlToHttp(
-			this.getMxcAvatarUrl() ?? "",
-			size,
-			size,
-			"scale",
-			false
-		) || null;
+	public getAvatarUrl(size: number = 96) {
+		return (
+			this.client.mxcUrlToHttp(
+				this.getMxcAvatarUrl() ?? "",
+				size,
+				size,
+				"scale",
+				false
+			) ||
+			`https://api.dicebear.com/6.x/initials/svg?seed=${this.getDisplayName()}&fontWeight=900&chars=1`
+		);
 	}
 }
