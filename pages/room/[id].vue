@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { time } from "console";
-import { Direction, EventTimeline, IRoomTimelineData, MatrixClient, MatrixEvent, Room, RoomEvent } from "matrix-js-sdk";
+import { MatrixClient, MatrixEvent } from "matrix-js-sdk";
 import { MatrixRoom } from "~/classes/Room";
 import RoomTimeline from "~/classes/RoomTimeline";
 import { MatrixUser } from "~/classes/User";
@@ -18,6 +17,7 @@ const sentFromMe: string[] = [];
 const scrollBottom = ref(0);
 const messageContainer = ref<HTMLDivElement | null>(null);
 const timeline = ref<MatrixEvent[]>([]);
+const sortedTimeline = computed(() => timeline.value.toSorted((a, b) => (a.getDate()?.getTime() ?? 0) - (b.getDate()?.getTime() ?? 0)))
 
 const roomTimeline = new RoomTimeline(id, store.client as MatrixClient, () => {});
 
@@ -51,9 +51,7 @@ onBeforeRouteLeave(removeListeners)
 onUnmounted(removeListeners)
 
 const newEvent = (event: MatrixEvent) => {
-	timeline.value = [
-		...roomTimeline.timeline
-	]
+	timeline.value = roomTimeline.timeline;
 };
 
 const ready = () => {
@@ -120,8 +118,9 @@ await roomTimeline.loadLiveTimeline();
 				<div v-is-visible="loadMoreEvents" v-if="roomTimeline.canPaginateBackward()">
 					<MessagesFvMessageSkeleton />
 				</div>
-				<FvMessage v-for="(message, index) of timeline.toSorted((a, b) => (a.getDate()?.getTime() ?? 0) - (b.getDate()?.getTime() ?? 0))" :key="message.event.event_id ?? ''"
-					:message="(message as MatrixEvent)" :previousEvents="(timeline.slice(0, index) as MatrixEvent[])" />
+				<FvMessage v-for="(message, index) of sortedTimeline" :key="message.event.event_id ?? ''"
+					:message="(message as MatrixEvent)" :previousEvent="(sortedTimeline[index - 1] as MatrixEvent)" />
+				<MessagesFvMessageSkeleton v-if="roomTimeline.canPaginateForward()" />
 			</div>
 			<div class="w-full">
 				<InputFvMessageSender :room="(room as MatrixRoom)" @send="(event_id) => {}" />

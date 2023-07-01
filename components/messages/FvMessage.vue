@@ -8,7 +8,7 @@ const store = useStore();
 
 const props = defineProps<{
 	message: MatrixEvent;
-	previousEvents?: MatrixEvent[];
+	previousEvent?: MatrixEvent;
 }>();
 
 const isLoading = ref(props.message.isBeingDecrypted());
@@ -27,8 +27,8 @@ const user = new MatrixUser(props.message.event.sender ?? '', store.client as Ma
 const event = ref(new MatrixMessage(props.message, store.client as MatrixClient));
 
 // Show header if messages are separated by more than 5 hours
-const previousEvent = computed(() => props.previousEvents?.toReversed().find(e => e.getType() === "m.room.message" && e.sender?.userId === user.id));
-const showHeader = computed(() => previousEvent.value && ((event.value.event.getDate()?.getTime() ?? 0) - (previousEvent.value.getDate()?.getTime() ?? 0)) > 1000 * 60 * 60 * 5);
+const isPreviousEventMessage = props.previousEvent?.getType() === "m.room.message";
+const showHeader = !isPreviousEventMessage || props.previousEvent.sender?.userId !== props.message.sender?.userId || ((event.value.event.getDate()?.getTime() ?? 0) - (props.previousEvent?.getDate()?.getTime() ?? 0)) > 1000 * 60 * 60 * 5;
 
 const color = await user.getUserColor();
 const media_url = ref("");
@@ -53,7 +53,7 @@ const log = () => console.error(event.value.getContent())
 
 			</div>
 			<div @click="log" v-if="showHeader" class="h-10 hover:-translate-y-1 duration-200 w-10 rounded-md overflow-hidden flex items-center justify-center shrink-0">
-				<img :src="user.getAvatarUrl() ?? `https://api.dicebear.com/6.x/initials/svg?seed=${user.getDisplayName()}&fontWeight=900`" class="w-full h-full object-cover" />
+				<img :src="user.getAvatarUrl()" class="w-full h-full object-cover" />
 			</div>
 			<div :key="String(isLoading)" class="flex flex-col gap-1 text-sm grow overflow-hidden break-words">
 				<div v-if="showHeader" :class="['font-semibold', color]">
