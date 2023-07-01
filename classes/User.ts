@@ -8,7 +8,7 @@ export class MatrixUser {
 	constructor(userId: string, client: MatrixClient) {
 		const user = client.getUser(userId);
 
-		if (!user) throw Error("Invalid Room");
+		if (!user) throw Error("Invalid user");
 
 		this.user = user;
 		this.client = client;
@@ -21,6 +21,10 @@ export class MatrixUser {
 
 	public getMxcAvatarUrl(): string | null {
 		return this.user.avatarUrl ?? null;
+	}
+
+	public getPresenceStatus() {
+		return this.user.presence;
 	}
 
 	/**

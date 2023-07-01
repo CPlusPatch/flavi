@@ -6,6 +6,7 @@ import {
 	MatrixEvent,
 	Room,
 } from "matrix-js-sdk";
+import { MatrixMessage } from "./Event";
 export class MatrixRoom {
 	room: Room;
 	private client: MatrixClient;
@@ -39,7 +40,18 @@ export class MatrixRoom {
 		this.timeline = this.timelineSet.getLiveTimeline();
 	}
 
-	public getLastTextMessage(): MatrixEvent | null {
+	/**
+	 * Find out whether the room is a DM or not
+	 * @returns The other member of the DM, or null if not a DM
+	 */
+	public isDirectMessage() {
+		return this.room.getMembers().length <= 2 &&
+			this.room
+				.getMembers()
+				.find(m => m.userId !== this.client?.getUserId()) || null;
+	}
+
+	public getLastTextMessage() {
 		let events = [
 			...this.timeline.getEvents().toReversed(),
 			...(
@@ -48,7 +60,10 @@ export class MatrixRoom {
 					?.getEvents() ?? []
 			).toReversed(),
 		];
-		return events.find(e => e.getContent().msgtype === "m.text") ?? null;
+
+		const event =
+			events.find(e => e.getContent().msgtype === "m.text") ?? null;
+		return event && new MatrixMessage(event, this.client) || null;
 	}
 
 	public getName(): string {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Direction, EventTimeline, IRoomTimelineData, MatrixClient, MatrixEvent, Room, RoomEvent } from "matrix-js-sdk";
 import { MatrixRoom } from "~/classes/Room";
+import { MatrixUser } from "~/classes/User";
 import FvMessage from "~/components/messages/FvMessage.vue";
 
 const id = useRoute().params.id as string;
@@ -35,8 +36,8 @@ const updateTimeline = async (event: MatrixEvent, room2?: Room, _toStartOfTimeli
 		events.value = [...room.value.timeline.getEvents()].filter(e => !e.isRedaction()); // We do this to avoid proxies and trigger an update
 		await nextTick();
 	}
-	
-	
+
+
 	if (scrollBottom.value === 0) {
 		setScrollBottom(0);
 	} else {
@@ -64,7 +65,7 @@ const loadMoreEvents = async () => {
 
 	let timeline: EventTimeline | null = room.value.timelineSet.getLiveTimeline();
 	pagination++;
-	
+
 	for (let i = 0; i < pagination; i++) {
 		try {
 			await store.client?.paginateEventTimeline(timeline!, {
@@ -103,7 +104,7 @@ const loadMoreEvents = async () => {
 /**
  * Calculate scrollBottom based on the scrollHeight
  */
-const recalculateScrollBottom =  () => {
+const recalculateScrollBottom = () => {
 	if (!messageContainer.value) return false;
 
 	scrollBottom.value = messageContainer.value.scrollHeight - messageContainer.value.scrollTop - messageContainer.value.clientHeight;
@@ -119,17 +120,33 @@ const setScrollBottom = (bottom: number) => {
 	messageScroll.y.value = messageContainer.value.scrollHeight - messageContainer.value.clientHeight - bottom;
 }
 
+const members = room.value.room.getMembers().map(m => store.client?.getUser(m.userId) && new MatrixUser(m.userId, store.client as MatrixClient) || null).filter(m => m);
+
 </script>
 
 <template>
-	<div class="w-full max-h-full flex flex-col justify-between">
-		<div @scroll="recalculateScrollBottom" class="grow max-w-full px-6 pt-6 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col" ref="messageContainer">
-			<MessagesFvMessageSkeleton v-if="!hasReachedEndOfTimeline"/>
-			<div v-is-visible="loadMoreEvents" v-if="!hasReachedEndOfTimeline" ><MessagesFvMessageSkeleton /></div>
-			<FvMessage v-for="(message, index) of events" :key="message.event.event_id ?? ''" :message="(message as MatrixEvent)" :previousEvents="(events.slice(0, index) as MatrixEvent[])"/>
+	<div class="flex overflow-x-hidden flex-row">
+		<div class="grow min-w-0 max-h-full flex flex-col justify-between">
+			<div @scroll="recalculateScrollBottom"
+				class="grow max-w-full px-6 pt-6 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col"
+				ref="messageContainer">
+				<MessagesFvMessageSkeleton v-if="!hasReachedEndOfTimeline" />
+				<div v-is-visible="loadMoreEvents" v-if="!hasReachedEndOfTimeline">
+					<MessagesFvMessageSkeleton />
+				</div>
+				<FvMessage v-for="(message, index) of events" :key="message.event.event_id ?? ''"
+					:message="(message as MatrixEvent)" :previousEvents="(events.slice(0, index) as MatrixEvent[])" />
+			</div>
+			<div class="w-full">
+				<InputFvMessageSender :room="(room as MatrixRoom)" @send="(event_id) => sentFromMe.push(event_id)" />
+			</div>
 		</div>
-		<div class="w-full">
-			<InputFvMessageSender :room="(room as MatrixRoom)" @send="(event_id) => sentFromMe.push(event_id)"/>
+		<div class="bg-dark-900 w-70 h-full p-3 shrink-0 flex flex-col gap-2 overflow-hidden">
+			<h3 class="text-gray-100 text-lg font-semibold">Members</h3>
+			<SeparatorsFvSeparator class="w-full" />
+			<div class="flex-col flex gap-4 overflow-y-scroll no-scrollbar">
+				<UsersFvUser v-for="member of members" :key="member!.id" :user="member!"/>
+			</div>
 		</div>
 	</div>
 </template>

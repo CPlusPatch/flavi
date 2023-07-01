@@ -36,7 +36,6 @@ const loadMedia = async () => {
 	loading.value = true;
 
 	video_url.value = await getMediaUrl(store.client?.mxcUrlToHttp(props.file.url ?? "") ?? "", props.info.mimetype, props.file);
-	console.error(video_url.value);
 
 	loading.value = false;
 }

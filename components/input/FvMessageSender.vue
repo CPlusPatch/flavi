@@ -53,19 +53,19 @@ const uploadFile = async (file: File | Blob, progressHandler: (progress: UploadP
 	}
 }
 
-const send = async (e: Event) => {
+const send = async () => {
 	const body = messageBody.value;
 
 	sending.value = true;
 
 	messageBody.value = "";
-	
+
 	if (files.value.length > 0) {
 		const isEncryptedRoom = store.client?.isRoomEncrypted(props.room.id);
-		
+
 		files.value.forEach(async (file) => {
 			let content: any = {};
-	
+
 			content.info = {
 				mimetype: file.type,
 				size: file.size
@@ -100,7 +100,7 @@ const send = async (e: Event) => {
 					content.info["xyz.amorgan.blurhash"] = encodeBlurhash(video);
 
 					const thumbnailData = await getVideoThumbnail(video, video.videoWidth, video.videoHeight, "image/webp");
-					const thumbnailUploadData = await uploadFile(thumbnailData.thumbnail!, () => {});
+					const thumbnailUploadData = await uploadFile(thumbnailData.thumbnail!, () => { });
 
 					content.info.thumbnail_info = thumbnailData.info;
 
@@ -156,38 +156,63 @@ const send = async (e: Event) => {
 }
 
 const fileToURL = (f: File) => URL.createObjectURL(f);
+
+const preventOpeningFileDialog = (e: KeyboardEvent) => {
+	if (e.key === "Enter") {
+		e.preventDefault();
+		send();
+	}
+}
 </script>
 
 <template>
-	<form @submit.prevent="send" class="w-full bg-dark-900 flex flex-col px-2 gap-4 justify-between pb-7 pt-3">
-		<div v-if="files.length > 0" class="flex justify-start gap-2 overflow-x-scroll no-scrollbar p-0.5">
-			<TransitionGroup enter-active-class="duration-200 ease-in-out" enter-from-class="translate-y-10 opacity-0" enter-to-class="translate-y-0 opacity -100" leave-active-class="duration-200 ease-in-out" leave-from-class="scale-100 opacity-100" leave-to-class="scale-95 opacity-0">
-				<div v-for="(file, index) of files" :key="file.name" :class="['h-30 overflow-hidden rounded relative ring-1 shrink-0 ring-dark-700',
-					!file.type.includes('image') && 'w-30 flex items-center justify-center']">
-					<ButtonFvButton @click="files = files.filter(f => f.name !== file.name)" theme="gray" class="!absolute !bg-dark-800 top-1 right-1 !p-1 !rounded-full">
-						<Icon name="ic:round-close" />
-					</ButtonFvButton>
-					<img v-if="file.type.includes('image')" :src="fileToURL(file)" class="h-full" />
-					<Icon v-else name="ic:round-insert-drive-file" class="text-white h-5 w-5" />
-					<div v-if="index === 0 && currentlyUploadingFileProgress !== 0" class="bottom-1 absolute right-1 left-1 rounded bg-dark-700 h-2">
-						<div class="h-full bg-orange-500 rounded" :style="{
-							width: `${currentlyUploadingFileProgress * 100}%`
-						}"></div>
+	<form @submit.prevent="send" class="w-full px-3 pb-7">
+
+		<input multiple type="file" ref="fileInput" class="w-0 h-0"
+			@change="files = Array.from(($event.target as HTMLInputElement).files as any)" />
+
+		<div
+			class="!bg-dark-700 rounded gap-6 flex flex-col focus:ring-1 duration-200 grow py-2 px-3 text-sm ring-dark-600 text-gray-100">
+			<div v-if="files.length > 0" class="flex justify-start gap-2 overflow-x-scroll no-scrollbar p-0.5">
+				<TransitionGroup
+					enter-active-class="duration-200 ease-in-out"
+					enter-from-class="translate-y-10 opacity-0"
+					enter-to-class="translate-y-0 opacity -100"
+					leave-active-class="duration-200 ease-in-out"
+					leave-from-class="scale-100 opacity-100"
+					leave-to-class="scale-95 opacity-0">
+					<div v-for="(file, index) of files" :key="file.name" :class="['overflow-hidden rounded relative shrink-0 bg-dark-800 p-2']">
+						<ButtonFvButton @click="files = files.filter(f => f.name !== file.name)" theme="gray"
+							class="!absolute !bg-dark-800 top-1 right-1 !p-1 !rounded-full">
+							<Icon name="ic:round-close" />
+						</ButtonFvButton>
+						<div :class="['bg-dark-700 h-30', !file.type.includes('image') && 'w-30 flex items-center justify-center']">
+							<img v-if="file.type.includes('image')" :src="fileToURL(file)" class="h-full" />
+							<Icon v-else name="ic:round-insert-drive-file" class="text-white h-5 w-5" />
+							<div v-if="index === 0 && currentlyUploadingFileProgress !== 0"
+								class="bottom-1 absolute right-1 left-1 rounded bg-dark-700 h-2">
+								<div class="h-full bg-orange-500 rounded" :style="{
+									width: `${currentlyUploadingFileProgress * 100}%`
+								}"></div>
+							</div>
+						</div>
+						<div class="pt-3 text-xs">
+							{{ file.name }}
+						</div>
 					</div>
-				</div>
-			</TransitionGroup>
+				</TransitionGroup>
+			</div>
+			<div class="flex flex-row gap-2">
+				<button class="duration-100 ring-dark-600 hover:ring-1 rounded hover:shadow-xl hover:bg-dark-800"
+					@click.prevent="fileInput?.click()">
+					<Icon name="ic:round-file-upload" class="h-6 w-6 text-white" />
+				</button>
+				<input @keydown="preventOpeningFileDialog" v-model="messageBody" name="message" class="bg-transparent w-full outline-none focus:outline-none"
+					:placeholder="`Message in ${room.getName()}`" />
 		</div>
-		<div class="w-full flex items-center gap-2">
-			<button class="p-1.5 duration-100 ring-dark-600 hover:ring-1 rounded hover:shadow-xl hover:bg-dark-800" @click.prevent="fileInput?.click()">
-				<Icon name="ic:round-file-upload" class="h-6 w-6 text-white"/>
-			</button>
-
-			<input multiple type="file" ref="fileInput" class="w-0 h-0" @change="files = Array.from(($event.target as HTMLInputElement).files as any)" />
-
-			<input v-model="messageBody" name="message" class="!bg-dark-800 rounded focus:ring-1 duration-200 grow py-2 px-3 text-sm ring-dark-600 outline-none focus:outline-none text-gray-100" :placeholder="`Message in ${room.getName()}`"/>
-			<button :disabled="sending" type="submit" class="p-1.5 duration-100 ring-dark-600 hover:ring-1 rounded hover:shadow-xl hover:bg-dark-800">
-				<Icon name="ic:round-send" class="h-6 w-6 text-white"/>
-			</button>
-		</div>
-	</form>
-</template>
+	</div>
+	<button :disabled="sending" type="submit"
+		class="lg:hidden p-1.5 duration-100 ring-dark-600 hover:ring-1 rounded hover:shadow-xl hover:bg-dark-800">
+		<Icon name="tabler:send" class="h-6 w-6 text-white" />
+	</button>
+</form></template>
