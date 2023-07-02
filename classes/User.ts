@@ -15,6 +15,10 @@ export class MatrixUser {
 		this.id = user.userId;
 	}
 
+	public getStatus() {
+		return this.user.presenceStatusMsg;
+	}
+
 	public getDisplayName(): string | null {
 		return this.user.displayName ?? null;
 	}

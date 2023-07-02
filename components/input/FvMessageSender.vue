@@ -183,36 +183,26 @@ const preventOpeningFileDialog = (e: KeyboardEvent) => {
 		} else {
 			send();
 		}
-	} else if (e.key === "ArrowDown") {
+	} if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+		if (emojisSuggesterEmojis.value.length > 0) {
+			e.preventDefault();
+		}
 		if (emojisSuggesterEmojis.value.length === 1) {
 			return (emojiPicker.value?.children[0] as HTMLDivElement).classList.add("bg-dark-800");
 		}
-		if (emojiFocusIndex.value === emojisSuggesterEmojis.value.length - 1) {
-			(emojiPicker.value?.children[emojisSuggesterEmojis.value.length - 1] as HTMLDivElement).classList.remove("bg-dark-800");
-			emojiFocusIndex.value = 0;
-		} else {
-			emojiFocusIndex.value++;
+		if (e.key === "ArrowDown") {
+			emojiFocusIndex.value = (emojiFocusIndex.value + 1) % emojisSuggesterEmojis.value.length;
+		} else if (e.key === "ArrowUp") {
+			emojiFocusIndex.value = (emojiFocusIndex.value - 1) % emojisSuggesterEmojis.value.length;
 		}
-
-		if (emojiFocusIndex.value > 0) {
-			(emojiPicker.value?.children[emojiFocusIndex.value - 1] as HTMLDivElement).classList.remove("bg-dark-800");
+		for (let i = 0; i < emojisSuggesterEmojis.value.length; i++) {
+			const emojiElement = emojiPicker.value?.children[i] as HTMLDivElement;
+			if (i === emojiFocusIndex.value) {
+				emojiElement.classList.add("bg-dark-800");
+			} else {
+				emojiElement.classList.remove("bg-dark-800");
+			}
 		}
-		(emojiPicker.value?.children[emojiFocusIndex.value] as HTMLDivElement).classList.add("bg-dark-800");
-	} else if (e.key === "ArrowUp") {
-		if (emojisSuggesterEmojis.value.length === 1) {
-			return (emojiPicker.value?.children[0] as HTMLDivElement).classList.add("bg-dark-800");
-		}
-		if (emojiFocusIndex.value === 0) {
-			(emojiPicker.value?.children[0] as HTMLDivElement).classList.remove("bg-dark-800");
-			emojiFocusIndex.value = emojisSuggesterEmojis.value.length - 1;
-		} else {
-			emojiFocusIndex.value--;
-		}
-
-		if (emojiFocusIndex.value < emojisSuggesterEmojis.value.length - 1) {
-			(emojiPicker.value?.children[emojiFocusIndex.value + 1] as HTMLDivElement).classList.remove("bg-dark-800");
-		}
-		(emojiPicker.value?.children[emojiFocusIndex.value] as HTMLDivElement).classList.add("bg-dark-800");
 	}
 }
 
@@ -243,7 +233,7 @@ const onInput = (e: Event) => {
 			@change="files = Array.from(($event.target as HTMLInputElement).files as any)" />
 
 		<div
-			class="!bg-dark-700 rounded gap-6 flex flex-col focus:ring-1 relative duration-200 grow py-2 text-sm ring-dark-600 text-gray-100">
+			class="!bg-dark-700 rounded-md gap-6 flex flex-col ring-1 relative duration-200 grow py-2 text-sm ring-dark-600 text-gray-100">
 			<div v-if="files.length > 0" class="flex justify-start gap-2 overflow-x-scroll no-scrollbar p-0.5">
 				<TransitionGroup
 					enter-active-class="duration-200 ease-in-out"
@@ -295,10 +285,12 @@ const onInput = (e: Event) => {
 				</button>
 				<input @input="onInput" @paste="pasteFile" @keydown="preventOpeningFileDialog" v-model="messageBody" name="message" class="bg-transparent w-full outline-none focus:outline-none"
 					:placeholder="`Message in ${room.getName()}`" />
+				
+				<button :disabled="sending" type="submit"
+					class="duration-100 ring-orange-800 !bg-orange-700 py-1 px-2 flex flex-row items-center gap-1 font-semibold rounded-md ring-1 rounded">
+					<Icon name="tabler:send" class="h-[1em] w-[1em] text-white" />
+					Send
+				</button>
 			</div>
 	</div>
-	<button :disabled="sending" type="submit"
-		class="lg:hidden p-1.5 duration-100 ring-dark-600 hover:ring-1 rounded hover:shadow-xl hover:bg-dark-800">
-		<Icon name="tabler:send" class="h-6 w-6 text-white" />
-	</button>
 </form></template>

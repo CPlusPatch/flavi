@@ -57,7 +57,7 @@ body.innerHTML = ((props.message.getContent().formatted_body ?? props.message.ge
 <template>
 	<Transition enter-active-class="duration-100" enter-from-class="opacity-0 translate-y-5" enter-to-class="opacity-100 translate-x-0" >
 	<div v-if="message" :class="['mb-3', showHeader && 'mt-3']">
-		<div class="flex flex-row gap-2 w-full max-w-full" v-if="event.shouldShowMessage() && !event.isMemberEvent()">
+		<div class="flex flex-row gap-4 w-full max-w-full" v-if="event.shouldShowMessage() && !event.isMemberEvent()">
 			<div class="w-10 shrink-0" v-if="!showHeader">
 
 			</div>
@@ -66,13 +66,13 @@ body.innerHTML = ((props.message.getContent().formatted_body ?? props.message.ge
 			</div>
 			<div :key="String(isLoading)" class="flex flex-col gap-1 text-sm grow overflow-hidden break-words">
 				<div v-if="showHeader" class="flex flex-row items-center gap-3">
-					<div :class="['font-semibold', color]">{{ user.getDisplayName() }}</div>
+					<div :class="['font-semibold text-[#f2f3f5]']">{{ user.getDisplayName() }}</div>
 					<div v-if="showHeader" class="text-gray-400 text-xs shrink-0 text-right mt-0.5">
 						{{ timeAgo }}
 					</div>
 				</div>
 				<TwemojiParse>
-					<div class="text-gray-200 flex flex-col gap-2 break-word message-body" v-html="body.innerHTML" v-if="event.isText()"></div>
+					<div class="text-[#dbdee1] flex flex-col gap-2 break-word message-body" v-html="body.innerHTML" v-if="event.isText()"></div>
 				</TwemojiParse>
 				<div v-if="isLoading" class="text-gray-400 flex flex-row gap-x-2 items-center">
 					<Spinner theme="orangeDark" /> Decrypting...

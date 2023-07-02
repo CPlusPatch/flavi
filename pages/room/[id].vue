@@ -99,7 +99,7 @@ const setScrollBottom = (bottom: number) => {
 	messageScroll.y.value = messageContainer.value.scrollHeight - messageContainer.value.clientHeight - bottom;
 }
 
-const members = room.value.room.getMembers().map(m => store.client?.getUser(m.userId) && new MatrixUser(m.userId, store.client as MatrixClient) || null).filter(m => m);
+const members: MatrixUser[] = room.value.room.getMembers().map(m => store.client?.getUser(m.userId) && new MatrixUser(m.userId, store.client as MatrixClient) || null).filter(m => m) as any;
 await roomTimeline.loadLiveTimeline();
 
 const log = console.error;
@@ -107,6 +107,9 @@ const log = console.error;
 <template>
 	<div class="flex overflow-x-hidden flex-row grow">
 		<div class="grow min-w-0 max-h-full flex flex-col justify-between">
+			<div class="w-full bg-dark-800 flex flex-row gap-2 p-3 shadow border-b-1 border-dark-900 text-xl text-white items-center">
+				<Icon name="tabler:hash" /><span>{{ room.getName() }}</span>
+			</div>
 			<div @scroll="recalculateScrollBottom"
 				class="grow max-w-full px-6 pt-6 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col"
 				ref="messageContainer">
@@ -129,7 +132,7 @@ const log = console.error;
 		<div class="bg-dark-900 w-70 h-full p-3 shrink-0 flex flex-col gap-2 overflow-hidden">
 			<h3 class="text-gray-100 text-lg font-semibold">Members</h3>
 			<SeparatorsFvSeparator class="w-full" />
-			<div class="flex-col flex gap-4 overflow-y-scroll no-scrollbar">
+			<div class="flex-col flex gap-1 overflow-y-scroll no-scrollbar">
 				<UsersFvUser v-for="member of members" :key="member!.id" :user="member!"/>
 			</div>
 		</div>
