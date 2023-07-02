@@ -164,6 +164,13 @@ const pasteFile = (e: ClipboardEvent) => {
 
 const fileToURL = (f: File) => URL.createObjectURL(f);
 
+const replaceEmoji = (emoji: string) => {
+	messageBody.value = messageBody.value.replace(messageBody.value.match(/:[a-zA-Z0-9_]*((?<!:):$|$)/g)![0], emoji);
+
+	emojisSuggesterEmojis.value = [];
+	emojiFocusIndex.value = -1;
+}
+
 const preventOpeningFileDialog = (e: KeyboardEvent) => {
 	if (e.key === "Enter") {
 		e.preventDefault();
@@ -172,9 +179,7 @@ const preventOpeningFileDialog = (e: KeyboardEvent) => {
 
 			const target = e.target as HTMLInputElement;
 
-			messageBody.value = messageBody.value.replace(messageBody.value.match(/:[a-zA-Z0-9_]*((?<!:):$|$)/g)![0], emojisSuggesterEmojis.value[emojiFocusIndex.value].char);
-			emojisSuggesterEmojis.value = [];
-			emojiFocusIndex.value = -1;
+			replaceEmoji(emojisSuggesterEmojis.value[emojiFocusIndex.value].char);
 		} else {
 			send();
 		}
@@ -277,7 +282,7 @@ const onInput = (e: Event) => {
 				leave-from-class="translate-y-0 opacity-100"
 				leave-to-class="translate-y-5 opacity-0">
 				<div v-if="emojisSuggesterEmojis.length > 0" ref="emojiPicker" class="absolute w-full bottom-12/10 flex flex-col gap-1 p-2 bg-dark-900 rounded-md ring-1 shadow ring-dark-700">
-					<div v-for="(emoji, index) in emojisSuggesterEmojis" :key="emoji.char" class="flex items-center gap-2 rounded px-2 py-1.5 duration-200 hover:bg-dark-800">
+					<div @click="replaceEmoji(emoji.char)" v-for="(emoji, index) in emojisSuggesterEmojis" :key="emoji.char" class="flex items-center gap-2 rounded px-2 py-1.5 duration-200 hover:bg-dark-800">
 						<Twemoji :emoji="emoji.char" /><span>:{{ emoji.name.replaceAll(" ", "_") }}:</span>
 					</div>
 				</div>

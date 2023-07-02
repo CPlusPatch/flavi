@@ -97,12 +97,16 @@ body.innerHTML = ((props.message.getContent().formatted_body ?? props.message.ge
 </template>
 
 <style>
-.message-body img {
+.message-body img[data-mx-emoticon] {
 	height: 32px !important;
 	display: inline;
 }
 
 img.twemojiParse {
 	vertical-align: middle !important;
+	height: 1.4em;
+	width: 1.4em;
+	display: inline;
+	margin-top: -0.3rem;
 }
 </style>
