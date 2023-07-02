@@ -41,7 +41,16 @@ if (event.value.isImage()) {
 
 const timeAgo = useTimeAgo(event.value.event.getDate() ?? Date.now())
 
-const log = () => console.error(event.value.getContent())
+const log = () => console.error(event.value.getContent());
+
+const body = document.createElement("div");
+
+body.innerHTML = ((props.message.getContent().formatted_body ?? props.message.getContent().body ?? "") as string)
+	.split('\n').map(p => `<p>${p}</p>`).join('');
+
+[...body.getElementsByTagName("img")].forEach(img => {
+	img.src = store.client?.mxcUrlToHttp(img.src) ?? "";
+});
 
 </script>
 
@@ -56,10 +65,13 @@ const log = () => console.error(event.value.getContent())
 				<img :src="user.getAvatarUrl()" class="w-full h-full object-cover" />
 			</div>
 			<div :key="String(isLoading)" class="flex flex-col gap-1 text-sm grow overflow-hidden break-words">
-				<div v-if="showHeader" :class="['font-semibold', color]">
-					{{ user.getDisplayName() }}
+				<div v-if="showHeader" class="flex flex-row items-center gap-3">
+					<div :class="['font-semibold', color]">{{ user.getDisplayName() }}</div>
+					<div v-if="showHeader" class="text-gray-400 text-xs shrink-0 text-right mt-0.5">
+						{{ timeAgo }}
+					</div>
 				</div>
-				<div class="text-gray-200 flex flex-col gap-2 break-word" v-html="(((event.getContent().formatted_body) ?? event.getContent().body) as string).split('\n').map(p => `<p>${p}</p>`).join('')"  v-if="event.isText()"></div>
+				<div class="text-gray-200 flex flex-col gap-2 break-word message-body" v-html="body.innerHTML" v-if="event.isText()"></div>
 				<div v-if="isLoading" class="text-gray-400 flex flex-row gap-x-2 items-center">
 					<Spinner theme="orangeDark" /> Decrypting...
 				</div>
@@ -76,11 +88,15 @@ const log = () => console.error(event.value.getContent())
 					<Icon name="ic:round-do-not-disturb-alt" class="align-baseline mb-0.5 mr-1" />Redacted Event
 				</div>
 			</div>
-			<div class="text-gray-400 text-xs w-20 shrink-0 text-right">
-				<span v-if="showHeader">{{ timeAgo }}</span>
-			</div>
 		</div>
 		<MessagesFvStateEvent v-if="event.event.getType() !== 'm.room.message'" :event="(event as MatrixMessage)" />
 	</div>
 	</Transition>
 </template>
+
+<style>
+.message-body img {
+	height: 32px !important;
+	display: inline;
+}
+</style>

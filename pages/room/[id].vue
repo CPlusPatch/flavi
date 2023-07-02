@@ -16,13 +16,14 @@ const room = ref(new MatrixRoom(id, store.client as MatrixClient));
 const sentFromMe: string[] = [];
 const scrollBottom = ref(0);
 const messageContainer = ref<HTMLDivElement | null>(null);
+const messages = ref<HTMLDivElement | null>(null);
 const timeline = ref<MatrixEvent[]>([]);
-const sortedTimeline = computed(() => timeline.value.toSorted((a, b) => (a.getDate()?.getTime() ?? 0) - (b.getDate()?.getTime() ?? 0)))
+const sortedTimeline = computed(() => timeline.value/*.toSorted((a, b) => (a.getDate()?.getTime() ?? 0) - (b.getDate()?.getTime() ?? 0))*/)
 
-const roomTimeline = new RoomTimeline(id, store.client as MatrixClient, () => {});
+const roomTimeline = new RoomTimeline(id, store.client as MatrixClient);
 
 const messageScroll = useScroll(messageContainer);
-useMutationObserver(messageContainer, (mutation) => {
+useMutationObserver(messages, (mutation) => {
 	mutation.forEach(m => {
 		if (m.type === "childList") setScrollBottom(scrollBottom.value);
 	})
@@ -30,41 +31,35 @@ useMutationObserver(messageContainer, (mutation) => {
 	childList: true,
 })
 
-/* const updateTimeline = async (event: MatrixEvent, room2?: Room, _toStartOfTimeline?: boolean, _removed?: boolean, data?: IRoomTimelineData) => {
-	if (room2?.roomId === room.value.id && !sentFromMe.includes(event.getId() ?? "")) {
-		timeline.addToTimeline(event);
-		await nextTick();
-	}
 
+onBeforeRouteLeave(removeListeners)
+onUnmounted(removeListeners)
+
+const newEvent = async (event: MatrixEvent) => {
+	timeline.value = [...roomTimeline.timeline];
+
+	await nextTick();
 
 	if (scrollBottom.value === 0) {
 		setScrollBottom(0);
 	} else {
 		recalculateScrollBottom();
 	}
-}
-
-store.client.on(RoomEvent.Timeline, updateTimeline); */
-
-
-onBeforeRouteLeave(removeListeners)
-onUnmounted(removeListeners)
-
-const newEvent = (event: MatrixEvent) => {
-	timeline.value = roomTimeline.timeline;
 };
 
 const ready = () => {
 	timeline.value = roomTimeline.timeline;
 }
 
-roomTimeline.on(events.events.timeline.EVENT, newEvent)
-roomTimeline.on(events.events.timeline.READY, ready)
+roomTimeline
+	.on(events.events.timeline.EVENT, newEvent)
+	.on(events.events.timeline.READY, ready);
 
 function removeListeners() {
-	roomTimeline.removeAllListeners();
-	roomTimeline.off(events.events.timeline.EVENT, newEvent);
-	roomTimeline.off(events.events.timeline.READY, ready)
+	roomTimeline.removeInternalListeners();
+	roomTimeline
+		.off(events.events.timeline.EVENT, newEvent)
+		.off(events.events.timeline.READY, ready);
 }
 
 onMounted(() => {
@@ -106,8 +101,9 @@ const setScrollBottom = (bottom: number) => {
 
 const members = room.value.room.getMembers().map(m => store.client?.getUser(m.userId) && new MatrixUser(m.userId, store.client as MatrixClient) || null).filter(m => m);
 await roomTimeline.loadLiveTimeline();
-</script>
 
+const log = console.error;
+</script>
 <template>
 	<div class="flex overflow-x-hidden flex-row grow">
 		<div class="grow min-w-0 max-h-full flex flex-col justify-between">
@@ -118,8 +114,12 @@ await roomTimeline.loadLiveTimeline();
 				<div v-is-visible="loadMoreEvents" v-if="roomTimeline.canPaginateBackward()">
 					<MessagesFvMessageSkeleton />
 				</div>
-				<FvMessage v-for="(message, index) of sortedTimeline" :key="message.event.event_id ?? ''"
-					:message="(message as MatrixEvent)" :previousEvent="(sortedTimeline[index - 1] as MatrixEvent)" />
+				<div class="flex flex-col" ref="messages">
+					<div v-for="(message, index) in timeline" :key="message.getId()">
+						<FvMessage
+							:message="(message as MatrixEvent)" :previousEvent="(timeline[index - 1] as MatrixEvent)" />
+					</div>
+				</div>
 				<MessagesFvMessageSkeleton v-if="roomTimeline.canPaginateForward()" />
 			</div>
 			<div class="w-full">

@@ -12,8 +12,10 @@ const spaces = ref<MatrixRoom[]>([]);
 if (!client) throw createError("Client not working!");
 
 const timelineChange = async () => {
-	roomList.value = (((await store.client?.getJoinedRooms())?.joined_rooms.map(roomId => client.getRoom(roomId) && new MatrixRoom(roomId, client as MatrixClient)).filter(a => a) as MatrixRoom[]) ?? []).toSorted((a, b) => b.getLastMessageDate().getTime() - a.getLastMessageDate().getTime());
-	spaces.value = (roomList.value.filter(r => r.isSpace()) ?? []).toSorted((a, b) => b.getLastMessageDate().getTime() - a.getLastMessageDate().getTime());
+	// Get rooms based on last event date
+	const rooms = (((await store.client?.getJoinedRooms())?.joined_rooms.map(roomId => client.getRoom(roomId) && new MatrixRoom(roomId, client as MatrixClient)).filter(a => a) as MatrixRoom[]) ?? []).toSorted((a, b) => b.getLastMessageDate().getTime() - a.getLastMessageDate().getTime())
+	roomList.value = rooms.filter(r => !r.isSpace());
+	spaces.value = rooms.filter(r => r.isSpace())
 }
 
 store.client?.on(RoomEvent.Timeline, timelineChange);

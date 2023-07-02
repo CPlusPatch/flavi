@@ -85,7 +85,6 @@ export class RoomTimeline extends EventEmitter {
 	liveTimeline: EventTimeline;
 	activeTimeline?: Optional<EventTimeline>;
 	typingMembers: Set<string>;
-	timelineUpdateCallback: (timeline: MatrixEvent[]) => void;
 
 	isOngoingPagination: boolean;
 	ongoingDecryptionCount: number;
@@ -93,8 +92,7 @@ export class RoomTimeline extends EventEmitter {
 
 	constructor(
 		roomId: string,
-		client: MatrixClient,
-		timelineUpdateCallback: (timeline: MatrixEvent[]) => void
+		client: MatrixClient
 	) {
 		super();
 		// These are local timelines
@@ -108,7 +106,6 @@ export class RoomTimeline extends EventEmitter {
 
 		this.liveTimeline = this.room.room.getLiveTimeline();
 		this.activeTimeline = this.liveTimeline;
-		this.timelineUpdateCallback = timelineUpdateCallback;
 
 		this.isOngoingPagination = false;
 		this.ongoingDecryptionCount = 0;
@@ -152,8 +149,8 @@ export class RoomTimeline extends EventEmitter {
 			addToMap(this.editedTimeline, event);
 			return;
 		}
+
 		this.timeline.push(event);
-		this.timelineUpdateCallback(this.timeline);
 	}
 
 	_populateAllLinkedEvents(timeline: EventTimeline) {
@@ -371,14 +368,14 @@ export class RoomTimeline extends EventEmitter {
 		) => {
 			if (room?.roomId !== this.room.id) return;
 			if (this.isOngoingPagination) return;
-
+			
 			// User is currently viewing the old events probably
 			// no need to add new event and emit changes.
 			// only add reactions and edited messages
 			if (this.isServingLiveTimeline() === false) {
 				if (!isReaction(event) && !isEdited(event)) return;
 			}
-
+			
 			// We only process live events here
 			if (!data.liveEvent) return;
 
@@ -408,7 +405,11 @@ export class RoomTimeline extends EventEmitter {
 			if (this.ongoingDecryptionCount > 0) {
 				this.ongoingDecryptionCount -= 1;
 			}
+
+
+			console.error(event.getContent());
 			this.addToTimeline(event);
+			this.emit(events.events.timeline.EVENT, event);
 		};
 
 		this._listenRedaction = (event: MatrixEvent, room: Room) => {
