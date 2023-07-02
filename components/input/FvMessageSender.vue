@@ -7,7 +7,7 @@ import { getBlobSafeMimeType } from "~/utils/mime";
 import { encodeBlurhash } from "~/utils/blurhash";
 import { getVideoThumbnail, loadVideo } from "~/utils/video";
 import { UploadProgress } from "matrix-js-sdk";
-
+import emojis from "emoji.json";
 
 const props = defineProps<{
 	room: MatrixRoom;
@@ -25,6 +25,9 @@ const sending = ref(false);
 
 const files = ref<File[]>([]);
 const currentlyUploadingFileProgress = ref(0);
+const emojisSuggesterEmojis = ref<typeof emojis>([]);
+const emojiPicker = ref<HTMLDivElement | null>(null);
+const emojiFocusIndex = ref(-1);
 
 const uploadFile = async (file: File | Blob, progressHandler: (progress: UploadProgress) => void) => {
 	let encryptInfo: any = {};
@@ -164,8 +167,67 @@ const fileToURL = (f: File) => URL.createObjectURL(f);
 const preventOpeningFileDialog = (e: KeyboardEvent) => {
 	if (e.key === "Enter") {
 		e.preventDefault();
-		send();
+		if (emojiFocusIndex.value >= 0) {
+			// Replace the half typed emoji with the actual emoji
+
+			const target = e.target as HTMLInputElement;
+
+			messageBody.value = messageBody.value.replace(messageBody.value.match(/:[a-zA-Z0-9_]*((?<!:):$|$)/g)![0], emojisSuggesterEmojis.value[emojiFocusIndex.value].char);
+			emojisSuggesterEmojis.value = [];
+			emojiFocusIndex.value = -1;
+		} else {
+			send();
+		}
+	} else if (e.key === "ArrowDown") {
+		if (emojisSuggesterEmojis.value.length === 1) {
+			return (emojiPicker.value?.children[0] as HTMLDivElement).classList.add("bg-dark-800");
+		}
+		if (emojiFocusIndex.value === emojisSuggesterEmojis.value.length - 1) {
+			(emojiPicker.value?.children[emojisSuggesterEmojis.value.length - 1] as HTMLDivElement).classList.remove("bg-dark-800");
+			emojiFocusIndex.value = 0;
+		} else {
+			emojiFocusIndex.value++;
+		}
+
+		if (emojiFocusIndex.value > 0) {
+			(emojiPicker.value?.children[emojiFocusIndex.value - 1] as HTMLDivElement).classList.remove("bg-dark-800");
+		}
+		(emojiPicker.value?.children[emojiFocusIndex.value] as HTMLDivElement).classList.add("bg-dark-800");
+	} else if (e.key === "ArrowUp") {
+		if (emojisSuggesterEmojis.value.length === 1) {
+			return (emojiPicker.value?.children[0] as HTMLDivElement).classList.add("bg-dark-800");
+		}
+		if (emojiFocusIndex.value === 0) {
+			(emojiPicker.value?.children[0] as HTMLDivElement).classList.remove("bg-dark-800");
+			emojiFocusIndex.value = emojisSuggesterEmojis.value.length - 1;
+		} else {
+			emojiFocusIndex.value--;
+		}
+
+		if (emojiFocusIndex.value < emojisSuggesterEmojis.value.length - 1) {
+			(emojiPicker.value?.children[emojiFocusIndex.value + 1] as HTMLDivElement).classList.remove("bg-dark-800");
+		}
+		(emojiPicker.value?.children[emojiFocusIndex.value] as HTMLDivElement).classList.add("bg-dark-800");
 	}
+}
+
+const onInput = (e: Event) => {
+	const target = e.target as HTMLInputElement;
+
+	// Match emoji characters that are half typed, such as ":plead" or ":face_with_r"
+	const matched = target.value.match(/:[a-zA-Z0-9_]*((?<!:):$|$)/g);
+	if (matched && matched.length > 0) {
+		console.error(matched[0]);
+		// Remove first ":" which is found when the regex is execited
+		const emojiToSearchFor = matched[0].replace(":", "");
+
+		emojisSuggesterEmojis.value = emojis
+			.filter(e => e.name.replaceAll(" ", "_").includes(emojiToSearchFor))
+			.slice(0, 10);
+	} else {
+		emojisSuggesterEmojis.value = [];
+		emojiFocusIndex.value = -1;
+	};
 }
 </script>
 
@@ -176,7 +238,7 @@ const preventOpeningFileDialog = (e: KeyboardEvent) => {
 			@change="files = Array.from(($event.target as HTMLInputElement).files as any)" />
 
 		<div
-			class="!bg-dark-700 rounded gap-6 flex flex-col focus:ring-1 duration-200 grow py-2 px-3 text-sm ring-dark-600 text-gray-100">
+			class="!bg-dark-700 rounded gap-6 flex flex-col focus:ring-1 relative duration-200 grow py-2 text-sm ring-dark-600 text-gray-100">
 			<div v-if="files.length > 0" class="flex justify-start gap-2 overflow-x-scroll no-scrollbar p-0.5">
 				<TransitionGroup
 					enter-active-class="duration-200 ease-in-out"
@@ -206,14 +268,29 @@ const preventOpeningFileDialog = (e: KeyboardEvent) => {
 					</div>
 				</TransitionGroup>
 			</div>
-			<div class="flex flex-row gap-2">
+
+			<Transition
+				enter-active-class="duration-200 ease-in-out"
+				enter-from-class="translate-y-5 opacity-0"
+				enter-to-class="translate-y-0 opacity-100"
+				leave-active-class="duration-200 ease-in-out"
+				leave-from-class="translate-y-0 opacity-100"
+				leave-to-class="translate-y-5 opacity-0">
+				<div v-if="emojisSuggesterEmojis.length > 0" ref="emojiPicker" class="absolute w-full bottom-12/10 flex flex-col gap-1 p-2 bg-dark-900 rounded-md ring-1 shadow ring-dark-700">
+					<div v-for="(emoji, index) in emojisSuggesterEmojis" :key="emoji.char" class="flex items-center gap-2 rounded px-2 py-1.5 duration-200 hover:bg-dark-800">
+						<Twemoji :emoji="emoji.char" /><span>:{{ emoji.name.replaceAll(" ", "_") }}:</span>
+					</div>
+				</div>
+			</Transition>
+
+			<div class="flex flex-row gap-2 mx-2">
 				<button class="duration-100 ring-dark-600 hover:ring-1 rounded hover:shadow-xl hover:bg-dark-800"
 					@click.prevent="fileInput?.click()">
 					<Icon name="ic:round-file-upload" class="h-6 w-6 text-white" />
 				</button>
-				<input @paste="pasteFile" @keydown="preventOpeningFileDialog" v-model="messageBody" name="message" class="bg-transparent w-full outline-none focus:outline-none"
+				<input @input="onInput" @paste="pasteFile" @keydown="preventOpeningFileDialog" v-model="messageBody" name="message" class="bg-transparent w-full outline-none focus:outline-none"
 					:placeholder="`Message in ${room.getName()}`" />
-		</div>
+			</div>
 	</div>
 	<button :disabled="sending" type="submit"
 		class="lg:hidden p-1.5 duration-100 ring-dark-600 hover:ring-1 rounded hover:shadow-xl hover:bg-dark-800">

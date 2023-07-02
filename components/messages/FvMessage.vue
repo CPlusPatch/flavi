@@ -71,7 +71,9 @@ body.innerHTML = ((props.message.getContent().formatted_body ?? props.message.ge
 						{{ timeAgo }}
 					</div>
 				</div>
-				<div class="text-gray-200 flex flex-col gap-2 break-word message-body" v-html="body.innerHTML" v-if="event.isText()"></div>
+				<TwemojiParse>
+					<div class="text-gray-200 flex flex-col gap-2 break-word message-body" v-html="body.innerHTML" v-if="event.isText()"></div>
+				</TwemojiParse>
 				<div v-if="isLoading" class="text-gray-400 flex flex-row gap-x-2 items-center">
 					<Spinner theme="orangeDark" /> Decrypting...
 				</div>
@@ -98,5 +100,9 @@ body.innerHTML = ((props.message.getContent().formatted_body ?? props.message.ge
 .message-body img {
 	height: 32px !important;
 	display: inline;
+}
+
+img.twemojiParse {
+	vertical-align: middle !important;
 }
 </style>

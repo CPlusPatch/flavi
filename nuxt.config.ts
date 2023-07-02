@@ -10,6 +10,7 @@ export default defineNuxtConfig({
 		"nuxt-icon",
 		"@vueuse/nuxt",
 		"@pinia/nuxt",
+		"nuxt-twemoji",
 	],
 	ssr: false,
 	vite: {
@@ -43,6 +44,6 @@ export default defineNuxtConfig({
 		pageTransition: {
 			mode: "out-in",
 			name: "page",
-		}
+		},
 	},
 });
