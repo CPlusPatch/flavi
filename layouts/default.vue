@@ -31,7 +31,7 @@ const avatar = store.client?.getUserId() && new MatrixUser(store.client?.getUser
 
 <template>
 	<div class="max-w-full w-full h-screen bg-dark-800 flex flex-row divide-gray-400 p-0 overflow-hidden font-inter">
-		<div class="w-16 bg-dark-950 shrink-0 flex flex-col items-center py-2 gap-3">
+		<div class="w-16 bg-dark-950 shrink-0 md:flex flex-col items-center py-2 gap-3 hidden">
 			<div class="h-10 w-10 rounded-md flex items-center ring-dark-600 hover:ring-1 bg-dark-800 duration-200 rounded hover:shadow-xl justify-center shrink-0 text-orange-100">
 				<Icon name="tabler:message" class="w-6 h-6" />
 			</div>
@@ -42,7 +42,7 @@ const avatar = store.client?.getUserId() && new MatrixUser(store.client?.getUser
 				</div>
 			</TransitionGroup>
 		</div>
-		<div class="bg-dark-900 p-1 flex flex-col gap-1 overflow-x-hidden no-scrollbar overflow-y-scroll relative w-60 shrink-0">
+		<div class="bg-dark-900 p-1 md:flex flex-col gap-1 overflow-x-hidden no-scrollbar overflow-y-scroll relative w-60 shrink-0 hidden">
 			<TransitionGroup move-class="duration-200 transition-all">
 				<PreviewsFvRoomPreview v-for="room of roomList" :key="room.id" :room="(room as any)" />
 			</TransitionGroup>

@@ -129,7 +129,7 @@ const log = console.error;
 				<InputFvMessageSender :room="(room as MatrixRoom)" @send="(event_id) => {}" />
 			</div>
 		</div>
-		<div class="bg-dark-900 w-70 h-full p-3 shrink-0 flex flex-col gap-2 overflow-hidden">
+		<div class="bg-dark-900 w-70 h-full p-3 shrink-0 flex-col gap-2 overflow-hidden hidden md:flex">
 			<h3 class="text-gray-100 text-lg font-semibold">Members</h3>
 			<SeparatorsFvSeparator class="w-full" />
 			<div class="flex-col flex gap-1 overflow-y-scroll no-scrollbar">
