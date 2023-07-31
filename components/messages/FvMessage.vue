@@ -3,6 +3,7 @@ import { MatrixClient, MatrixEvent, MatrixEventEvent } from 'matrix-js-sdk';
 import { MatrixUser } from '~/classes/User';
 import { MatrixMessage } from "~/classes/Event";
 import { useStore } from "~/utils/store";
+import { MatrixRoom } from '~/classes/Room';
 
 const store = useStore();
 
@@ -38,25 +39,75 @@ if (event.value.isImage()) {
 	media_url.value = await event.value.decryptAttachment() ?? ""
 }
 
+function parseReply(rawBody: string) {
+	if (rawBody?.indexOf('>') !== 0) return null;
+	let body = rawBody.slice(rawBody.indexOf('<') + 1);
+	const user = body.slice(0, body.indexOf('>'));
 
-const timeAgo = useTimeAgo(event.value.event.getDate() ?? Date.now())
+	body = body.slice(body.indexOf('>') + 2);
+	const replyBody = body.slice(0, body.indexOf('\n\n'));
+	body = body.slice(body.indexOf('\n\n') + 2);
 
-const log = () => console.error(event.value.getContent());
+	if (user === '') return null;
+
+	const isUserId = user.match(/^@.+:.+/);
+
+	return {
+		userId: isUserId ? new MatrixUser(user, store.client as MatrixClient) : null,
+		replyBody,
+		body,
+	};
+}
+
+
+const timeAgo = useTimeAgo(event.value.event.getDate() ?? Date.now());
+
+const room = new MatrixRoom(props.message.event.room_id ?? "", store.client as MatrixClient);
+
+const reply = room.room.findEventById(event.value.event.replyEventId ?? "");
+
+const log = async () => {
+	console.error();
+};
 
 const body = document.createElement("div");
+const replyBody = document.createElement("div");
 
 body.innerHTML = ((props.message.getContent().formatted_body ?? props.message.getContent().body ?? "") as string)
-	.split('\n').map(p => `<p>${p}</p>`).join('');
+	.replace(/<mx-reply.*>.*?<\/mx-reply>/ig, "")
+	.split('\n').map(p => `<p>${p}</p>`).join("");
+
 
 [...body.getElementsByTagName("img")].forEach(img => {
 	img.src = store.client?.mxcUrlToHttp(img.src) ?? "";
 });
 
+if (reply) {
+	replyBody.innerHTML = ((reply.getContent().formatted_body ?? reply.getContent().body ?? "") as string)
+		.replace(/<mx-reply.*>.*?<\/mx-reply>/ig, "");
+
+	[...replyBody.getElementsByTagName("img")].forEach(img => {
+		img.src = store.client?.mxcUrlToHttp(img.src) ?? "";
+	});
+}
+
 </script>
 
 <template>
 	<Transition enter-active-class="duration-100" enter-from-class="opacity-0 translate-y-5" enter-to-class="opacity-100 translate-x-0" >
-	<div v-if="message" :class="['mb-3', showHeader && 'mt-3']">
+	<div v-if="message" :class="['mb-3 flex flex-col gap-1', showHeader && 'mt-3']">
+		<div class="flex flex-row gap-4">
+			<div class="w-10 shrink-0">
+
+			</div>
+			<TwemojiParse v-if="reply">
+				<div class="flex flex-row gap-1 items-center text-xs">
+					<Icon name="material-symbols:reply-rounded" class="text-white" />
+					<span class="text-white">hazel</span>
+					<div class="text-dark-400 flex flex-col gap-2 break-word line-clamp-1 text-ellipsis" v-html="replyBody.innerHTML" v-if="event.isText()"></div>
+				</div>
+			</TwemojiParse>
+		</div>
 		<div class="flex flex-row gap-4 w-full max-w-full" v-if="event.shouldShowMessage() && !event.isMemberEvent()">
 			<div class="w-10 shrink-0" v-if="!showHeader">
 

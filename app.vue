@@ -3,22 +3,21 @@ window.global ||= window;
 
 import { ClientEvent, CryptoEvent, IndexedDBCryptoStore, IndexedDBStore, createClient } from "matrix-js-sdk";
 import { useStore } from "~/utils/store";
-// import Olm from "@matrix-org/olm";
 import "~/styles/index.css";
 import "@unocss/reset/tailwind.css";
 import { VerifierEvent } from "matrix-js-sdk/lib/crypto-api";
 import { verificationMethods } from "matrix-js-sdk/lib/crypto";
 
-/* if (process.client) {
-	(global as any)["Olm"] = Olm;
-}
- */
+
 const indexedDBStore = new IndexedDBStore({
 	indexedDB: indexedDB,
 	localStorage: localStorage,
 	dbName: 'web-sync-store',
 });
+const cryptoStore = new IndexedDBCryptoStore(indexedDB, 'crypto-store');
 await indexedDBStore.startup();
+
+checkLocalStorage()
 
 const matrixClient = createClient({
 	baseUrl: "https://matrix.cpluspatch.dev/",
@@ -26,7 +25,7 @@ const matrixClient = createClient({
 	userId: localStorage.getItem("user_id") ?? "@jesse:cpluspatch.dev",
 	store: indexedDBStore,
 	deviceId: localStorage.getItem("device_id") ?? "YXJHRPITMU",
-	cryptoStore: new IndexedDBCryptoStore(indexedDB, 'crypto-store'),
+	cryptoStore,
 	verificationMethods: [
 		verificationMethods.SAS,
 	],
