@@ -20,7 +20,7 @@ await indexedDBStore.startup();
 checkLocalStorage()
 
 const matrixClient = createClient({
-	baseUrl: "https://matrix.cpluspatch.dev/",
+	baseUrl: localStorage.getItem("homeserver") ?? "https://matrix.cpluspatch.dev/",
 	accessToken: localStorage.getItem("token") ?? "",
 	userId: localStorage.getItem("user_id") ?? "@jesse:cpluspatch.dev",
 	store: indexedDBStore,
