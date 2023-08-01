@@ -125,7 +125,7 @@ await roomTimeline.loadLiveTimeline();
 			</div>
 			<div
 				ref="messageContainer"
-				class="grow max-w-full px-6 pt-6 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col"
+				class="grow max-w-full pt-6 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col"
 				@scroll="updateIsScrolledToBottom">
 				<MessagesFvMessageSkeleton
 					v-if="roomTimeline.canPaginateBackward()" />
