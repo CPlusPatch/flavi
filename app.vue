@@ -1,23 +1,28 @@
 <script setup lang="ts">
-window.global ||= window;
-
-import { ClientEvent, CryptoEvent, IndexedDBCryptoStore, IndexedDBStore, createClient } from "matrix-js-sdk";
-import { useStore } from "~/utils/store";
+import {
+	ClientEvent,
+	CryptoEvent,
+	IndexedDBCryptoStore,
+	IndexedDBStore,
+	createClient,
+} from "matrix-js-sdk";
 import "~/styles/index.css";
 import "@unocss/reset/tailwind.css";
 import { VerifierEvent } from "matrix-js-sdk/lib/crypto-api";
 import { verificationMethods } from "matrix-js-sdk/lib/crypto";
+import { useStore } from "~/utils/store";
 
+window.global ||= window;
 
 const indexedDBStore = new IndexedDBStore({
-	indexedDB: indexedDB,
-	localStorage: localStorage,
-	dbName: 'web-sync-store',
+	indexedDB,
+	localStorage,
+	dbName: "web-sync-store",
 });
-const cryptoStore = new IndexedDBCryptoStore(indexedDB, 'crypto-store');
+const cryptoStore = new IndexedDBCryptoStore(indexedDB, "crypto-store");
 await indexedDBStore.startup();
 
-checkLocalStorage()
+checkLocalStorage();
 
 const matrixClient = createClient({
 	baseUrl: "https://matrix.cpluspatch.dev/",
@@ -26,9 +31,7 @@ const matrixClient = createClient({
 	store: indexedDBStore,
 	deviceId: localStorage.getItem("device_id") ?? "YXJHRPITMU",
 	cryptoStore,
-	verificationMethods: [
-		verificationMethods.SAS,
-	],
+	verificationMethods: [verificationMethods.SAS],
 	timelineSupport: true,
 });
 
@@ -45,12 +48,12 @@ await new Promise<void>(resolve => {
 	});
 });
 
-matrixClient.on(CryptoEvent.VerificationRequest, async (request) => {
+matrixClient.on(CryptoEvent.VerificationRequest, async request => {
 	await request.accept();
 
 	const verifier = request.beginKeyVerification(verificationMethods.SAS);
 
-	verifier.on(VerifierEvent.ShowSas, async (sasData) => {
+	verifier.on(VerifierEvent.ShowSas, async sasData => {
 		await sasData.confirm();
 	});
 

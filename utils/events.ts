@@ -9,6 +9,6 @@ const TimelineEvents = {
 
 export default {
 	events: {
-		timeline: TimelineEvents
-	}
-}
+		timeline: TimelineEvents,
+	},
+};

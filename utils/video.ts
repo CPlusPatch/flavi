@@ -9,7 +9,7 @@ export function loadVideo(videoFile: File): Promise<HTMLVideoElement> {
 
 		reader.onload = ev => {
 			// Wait until we have enough data to thumbnail the first frame.
-			video.onloadeddata = async () => {
+			video.onloadeddata = () => {
 				resolve(video);
 				video.pause();
 			};
@@ -34,15 +34,20 @@ export function loadVideo(videoFile: File): Promise<HTMLVideoElement> {
 		}
 	});
 }
-export function getVideoThumbnail(video: HTMLVideoElement, width: number, height: number, mimeType: string): Promise<{
-		thumbnail: Blob | null,
-		info: {
-			w: number,
-			h: number,
-			mimetype?: string,
-			size?: number,
-		},
-	}> {
+export function getVideoThumbnail(
+	video: HTMLVideoElement,
+	width: number,
+	height: number,
+	mimeType: string
+): Promise<{
+	thumbnail: Blob | null;
+	info: {
+		w: number;
+		h: number;
+		mimetype?: string;
+		size?: number;
+	};
+}> {
 	return new Promise(resolve => {
 		const MAX_WIDTH = 800;
 		const MAX_HEIGHT = 600;

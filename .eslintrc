@@ -10,6 +10,7 @@
 		"no-console": "off",
 		"vue/no-v-html": "off",
 		"vue/no-template-shadow": "off",
-		"vue/no-use-v-if-with-v-for": "off"
+		"vue/no-use-v-if-with-v-for": "off",
+		"vue/no-setup-props-destructure": "off"
 	}
 }
