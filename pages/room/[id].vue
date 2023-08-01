@@ -22,17 +22,23 @@ const roomTimeline = new RoomTimeline(id, store.client as MatrixClient);
 onBeforeRouteLeave(removeListeners);
 onUnmounted(removeListeners);
 
-const scrollToBottom = (skipScrolledToBottomCheck = false) => {
-	if (!messages.value || !messageContainer.value) return;
+const isScrolledToBottom = ref(true);
 
-	if (
-		!skipScrolledToBottomCheck &&
+function updateIsScrolledToBottom() {
+	if (!messageContainer.value) return;
+	isScrolledToBottom.value =
 		Math.abs(
 			messageContainer.value.scrollHeight -
 				messageContainer.value.scrollTop -
 				messageContainer.value.clientHeight
-		) > 1
-	) {
+		) < 1;
+	return isScrolledToBottom.value;
+}
+
+const scrollToBottom = (skipScrolledToBottomCheck = false) => {
+	if (!messages.value || !messageContainer.value) return;
+
+	if (!skipScrolledToBottomCheck && !updateIsScrolledToBottom()) {
 		console.error("not scrolled to bottom");
 		// not scrolled to bottom, don't auto-scroll
 		return;
@@ -119,7 +125,8 @@ await roomTimeline.loadLiveTimeline();
 			</div>
 			<div
 				ref="messageContainer"
-				class="grow max-w-full px-6 pt-6 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col">
+				class="grow max-w-full px-6 pt-6 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col"
+				@scroll="updateIsScrolledToBottom">
 				<MessagesFvMessageSkeleton
 					v-if="roomTimeline.canPaginateBackward()" />
 				<div
@@ -139,7 +146,20 @@ await roomTimeline.loadLiveTimeline();
 				<MessagesFvMessageSkeleton
 					v-if="roomTimeline.canPaginateForward()" />
 			</div>
-			<div class="w-full">
+			<div class="w-full relative">
+				<Transition
+					enter-active-class="duration-100"
+					leave-active-class="duration-100"
+					enter-from-class="opacity-0 translate-y-5"
+					enter-to-class="opacity-100 translate-x-0"
+					leave-to-class="opacity-0 translate-y-5">
+					<button
+						v-if="!isScrolledToBottom"
+						class="absolute -top-4 right-3 p-1 bg-dark-900 text-dark-50 rounded-md"
+						@click="() => scrollToBottom(true)">
+						Scroll to bottom
+					</button>
+				</Transition>
 				<InputFvMessageSender
 					:room="(room as MatrixRoom)"
 					@send="event_id => {}" />
