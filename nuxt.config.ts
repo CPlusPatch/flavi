@@ -3,7 +3,6 @@ import wasm from "vite-plugin-wasm";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-	devtools: { enabled: true },
 	modules: [
 		"@unocss/nuxt",
 		"nuxt-headlessui",
@@ -12,6 +11,7 @@ export default defineNuxtConfig({
 		"@pinia/nuxt",
 		"nuxt-twemoji",
 	],
+	spaLoadingTemplate: false,
 	ssr: false,
 	vite: {
 		plugins: [
