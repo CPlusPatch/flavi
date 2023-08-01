@@ -23,22 +23,27 @@ onBeforeRouteLeave(removeListeners);
 onUnmounted(removeListeners);
 
 const scrollToBottom = (skipScrolledToBottomCheck = false) => {
-	if (!messages.value || !messageContainer.value) return
+	if (!messages.value || !messageContainer.value) return;
 
 	if (
 		!skipScrolledToBottomCheck &&
-		Math.abs(messageContainer.value.scrollHeight - messageContainer.value.scrollTop - messageContainer.value.clientHeight) > 1
+		Math.abs(
+			messageContainer.value.scrollHeight -
+				messageContainer.value.scrollTop -
+				messageContainer.value.clientHeight
+		) > 1
 	) {
 		// not scrolled to bottom, don't auto-scroll
 		return;
 	}
 
-	const lastMessage = messages.value.children[messages.value.children.length - 1];
+	const lastMessage =
+		messages.value.children[messages.value.children.length - 1];
 	// FIXME: shouldn't need to use setTimeout, this is jank
 	setTimeout(() => {
 		lastMessage.scrollIntoView();
-	}, 0)
-}
+	}, 0);
+};
 
 const newEvent = async () => {
 	timeline.value = [...roomTimeline.timeline];
