@@ -25,7 +25,8 @@ await indexedDBStore.startup();
 checkLocalStorage();
 
 const matrixClient = createClient({
-	baseUrl: localStorage.getItem("homeserver") ?? "https://matrix.cpluspatch.dev/",
+	baseUrl:
+		localStorage.getItem("homeserver") ?? "https://matrix.cpluspatch.dev/",
 	accessToken: localStorage.getItem("token") ?? "",
 	userId: localStorage.getItem("user_id") ?? "@jesse:cpluspatch.dev",
 	store: indexedDBStore,
@@ -59,12 +60,6 @@ matrixClient.on(CryptoEvent.VerificationRequest, async request => {
 
 	await verifier.verify();
 });
-
-/* const keys = await decryptMegolmKeyFile(await (await fetch("/dakey.txt")).arrayBuffer(), "test");
-
-store.client?.importRoomKeys(JSON.parse(keys)).then(() => {
-	alert("done");
-}); */
 </script>
 
 <template>

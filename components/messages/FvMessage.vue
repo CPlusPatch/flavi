@@ -96,7 +96,10 @@ if (reply) {
 		enter-to-class="opacity-100 translate-x-0">
 		<div
 			v-if="message"
-			:class="['mb-3 flex flex-col gap-1', showHeader && 'mt-3']">
+			:class="[
+				'flex flex-col px-6 py-1 gap-1 hover:bg-dark-700 relative group duration-200',
+				showHeader && 'mt-2',
+			]">
 			<div class="flex flex-row gap-4">
 				<div class="w-10 shrink-0"></div>
 				<TwemojiParse v-if="reply?.sender">
@@ -190,6 +193,23 @@ if (reply) {
 					</div>
 				</div>
 			</div>
+
+			<!-- Floating action buttons for reply, more settings -->
+			<div
+				v-if="event.shouldShowMessage()"
+				class="absolute right-10 -top-7 rounded children:p-2 bg-dark-900 hidden group-hover:flex flex-row overflow-hidden ring-1 ring-dark-700">
+				<div class="flex items-center justify-center duration-200">
+					<Icon
+						name="tabler:message-circle"
+						class="text-gray-400 w-5 h-5 hover:text-gray-200 duration-200" />
+				</div>
+				<div class="flex items-center justify-center duration-200">
+					<Icon
+						name="tabler:pencil"
+						class="text-gray-400 w-5 h-5 hover:text-gray-200 duration-200" />
+				</div>
+			</div>
+
 			<MessagesFvStateEvent
 				v-if="event.event.getType() !== 'm.room.message'"
 				:event="(event as MatrixMessage)" />
@@ -212,7 +232,7 @@ img.twemojiParse {
 	margin-top: -0.3rem;
 }
 
-.message-body > p:only-child > img:only-child {
+.message-body > p:empty:only-child > img:only-child {
 	height: 40px !important;
 	width: auto !important;
 	display: inline;
