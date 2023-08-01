@@ -99,12 +99,12 @@ if (reply) {
 			:class="['mb-3 flex flex-col gap-1', showHeader && 'mt-3']">
 			<div class="flex flex-row gap-4">
 				<div class="w-10 shrink-0"></div>
-				<TwemojiParse v-if="reply">
+				<TwemojiParse v-if="reply?.sender">
 					<div class="flex flex-row gap-1 items-center text-xs">
 						<Icon
 							name="material-symbols:reply-rounded"
 							class="text-white" />
-						<span class="text-white">hazel</span>
+						<span class="text-white">{{ reply.sender.name }}</span>
 						<div
 							v-if="event.isText()"
 							class="text-dark-400 flex flex-col gap-2 break-word line-clamp-1 text-ellipsis"
