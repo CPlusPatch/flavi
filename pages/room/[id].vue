@@ -13,39 +13,51 @@ const store = useStore();
 if (!store.client) throw createError("Client not working");
 
 const room = ref(new MatrixRoom(id, store.client as MatrixClient));
-const scrollBottom = ref(0);
 const messageContainer = ref<HTMLDivElement | null>(null);
 const messages = ref<HTMLDivElement | null>(null);
 const timeline = ref<MatrixEvent[]>([]);
 
 const roomTimeline = new RoomTimeline(id, store.client as MatrixClient);
 
-const messageScroll = useScroll(messageContainer);
-useMutationObserver(
-	messages,
-	mutation => {
-		mutation.forEach(m => {
-			if (m.type === "childList") setScrollBottom(scrollBottom.value);
-		});
-	},
-	{
-		childList: true,
-	}
-);
-
 onBeforeRouteLeave(removeListeners);
 onUnmounted(removeListeners);
+
+const isScrolledToBottom = ref(true);
+
+function updateIsScrolledToBottom() {
+	if (!messageContainer.value) return;
+	isScrolledToBottom.value =
+		Math.abs(
+			messageContainer.value.scrollHeight -
+				messageContainer.value.scrollTop -
+				messageContainer.value.clientHeight
+		) < 1;
+	return isScrolledToBottom.value;
+}
+
+const scrollToBottom = (skipScrolledToBottomCheck = false) => {
+	if (!messages.value || !messageContainer.value) return;
+
+	if (!skipScrolledToBottomCheck && !updateIsScrolledToBottom()) {
+		console.error("not scrolled to bottom");
+		// not scrolled to bottom, don't auto-scroll
+		return;
+	}
+
+	const lastMessage =
+		messages.value.children[messages.value.children.length - 1];
+	// FIXME: shouldn't need to use setTimeout, this is jank
+	setTimeout(() => {
+		lastMessage.scrollIntoView();
+	}, 0);
+};
 
 const newEvent = async () => {
 	timeline.value = [...roomTimeline.timeline];
 
 	await nextTick();
 
-	if (scrollBottom.value === 0) {
-		setScrollBottom(0);
-	} else {
-		recalculateScrollBottom();
-	}
+	scrollToBottom();
 };
 
 const ready = () => {
@@ -64,8 +76,12 @@ function removeListeners() {
 }
 
 onMounted(() => {
-	setScrollBottom(0);
+	if (!messages.value) return;
+
+	scrollToBottom(true);
 });
+
+let isBackwards = false;
 
 const loadMoreEvents = async () => {
 	if (roomTimeline.isOngoingPagination) return false;
@@ -76,34 +92,17 @@ const loadMoreEvents = async () => {
 
 	timeline.value = roomTimeline.timeline;
 
-	// FIXME: Why does this sometimes work?
-	setTimeout(() => {
-		setScrollBottom(scrollBottom.value);
-	}, 0);
-};
+	await nextTick();
 
-/**
- * Calculate scrollBottom based on the scrollHeight
- */
-const recalculateScrollBottom = () => {
-	if (!messageContainer.value) return false;
+	// the first loadMoreEvents call should always scroll to bottom.
+	// subsequent loadMoreEvents calls happen when scrolling upwards,
+	// so auto-scrolling downwards isn't wanted.
 
-	scrollBottom.value =
-		messageContainer.value.scrollHeight -
-		messageContainer.value.scrollTop -
-		messageContainer.value.clientHeight;
-};
+	if (!isBackwards) {
+		scrollToBottom(true);
+	}
 
-/**
- * Set the container's scrollBottom property, which doesnt exist in the DOM but
- * we can calculate it and set it using scrollTop and scrollHeight
- */
-const setScrollBottom = (bottom: number) => {
-	if (!messageContainer.value) return false;
-	messageScroll.y.value =
-		messageContainer.value.scrollHeight -
-		messageContainer.value.clientHeight -
-		bottom;
+	isBackwards = true;
 };
 
 const members: MatrixUser[] = room.value.room
@@ -126,8 +125,8 @@ await roomTimeline.loadLiveTimeline();
 			</div>
 			<div
 				ref="messageContainer"
-				class="grow max-w-full pt-6 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col"
-				@scroll="recalculateScrollBottom">
+				class="grow max-w-full px-6 pt-6 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col"
+				@scroll="updateIsScrolledToBottom">
 				<MessagesFvMessageSkeleton
 					v-if="roomTimeline.canPaginateBackward()" />
 				<div
@@ -147,7 +146,20 @@ await roomTimeline.loadLiveTimeline();
 				<MessagesFvMessageSkeleton
 					v-if="roomTimeline.canPaginateForward()" />
 			</div>
-			<div class="w-full">
+			<div class="w-full relative">
+				<Transition
+					enter-active-class="duration-100"
+					leave-active-class="duration-100"
+					enter-from-class="opacity-0 translate-y-5"
+					enter-to-class="opacity-100 translate-x-0"
+					leave-to-class="opacity-0 translate-y-5">
+					<button
+						v-if="!isScrolledToBottom"
+						class="absolute -top-4 right-3 p-1 bg-dark-900 text-dark-50 rounded-md"
+						@click="() => scrollToBottom(true)">
+						Scroll to bottom
+					</button>
+				</Transition>
 				<InputFvMessageSender
 					:room="(room as MatrixRoom)"
 					@send="event_id => {}" />
