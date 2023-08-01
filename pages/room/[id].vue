@@ -155,9 +155,10 @@ await roomTimeline.loadLiveTimeline();
 					leave-to-class="opacity-0 translate-y-5">
 					<button
 						v-if="!isScrolledToBottom"
-						class="absolute -top-4 right-3 p-1 bg-dark-900 text-dark-50 rounded-md"
+						class="absolute -top-4 right-3 py-1 px-3 bg-dark-900 text-dark-50 rounded-xl text-xs flex items-center gap-2"
 						@click="() => scrollToBottom(true)">
-						Scroll to bottom
+						<Icon name="tabler:message-2-down" />
+						Jump to latest
 					</button>
 				</Transition>
 				<InputFvMessageSender
