@@ -279,7 +279,7 @@ const onInput = (e: Event) => {
 			class="!bg-dark-700 rounded-md gap-6 flex flex-col ring-1 relative duration-200 grow py-2 text-sm ring-dark-600 text-gray-100">
 			<div
 				v-if="files.length > 0"
-				class="flex justify-start gap-2 overflow-x-scroll no-scrollbar p-0.5">
+				class="flex justify-start gap-2 overflow-x-scroll no-scrollbar p-2">
 				<TransitionGroup
 					enter-active-class="duration-200 ease-in-out"
 					enter-from-class="translate-y-10 opacity-0"
@@ -295,7 +295,7 @@ const onInput = (e: Event) => {
 						]">
 						<ButtonFvButton
 							theme="gray"
-							class="!absolute !bg-dark-800 top-1 right-1 !p-1 !rounded-full"
+							class="!absolute !bg-dark-800 top-1 right-1 !p-1 !rounded"
 							@click="
 								files = files.filter(f => f.name !== file.name)
 							">
@@ -320,9 +320,9 @@ const onInput = (e: Event) => {
 									index === 0 &&
 									currentlyUploadingFileProgress !== 0
 								"
-								class="bottom-1 absolute right-1 left-1 rounded bg-dark-700 h-2">
+								class="absolute bottom-0 inset-x-0 h-2">
 								<div
-									class="h-full bg-orange-500 rounded"
+									class="h-full bg-orange-500"
 									:style="{
 										width: `${
 											currentlyUploadingFileProgress * 100
