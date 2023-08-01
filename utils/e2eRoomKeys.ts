@@ -102,7 +102,6 @@ async function deriveKeys(salt, iterations, password) {
 			);
 		});
 
-	// eslint-disable-next-line no-return-await
 	return await Promise.all([aesProm, hmacProm]);
 }
 

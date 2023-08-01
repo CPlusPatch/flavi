@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { MatrixClient } from 'matrix-js-sdk';
-import { MatrixMessage } from '~/classes/Event';
-import { MatrixUser } from '~/classes/User';
-import { useStore } from '~/utils/store';
+import { MatrixClient } from "matrix-js-sdk";
+import { MatrixMessage } from "~/classes/Event";
+import { MatrixUser } from "~/classes/User";
+import { useStore } from "~/utils/store";
 
 const store = useStore();
 
@@ -10,14 +10,30 @@ const props = defineProps<{
 	event: MatrixMessage;
 }>();
 
-const user = new MatrixUser(props.event.event.sender?.userId ?? "", store.client as MatrixClient);
+const user = new MatrixUser(
+	props.event.event.sender?.userId ?? "",
+	store.client as MatrixClient
+);
 const log = () => console.error(props.event.event.getSender());
-let action: "" | "nameChange" | "nameSet" | "nameRemove" |
-	"join" | "leave" | "avatarChange" | "avatarSet" | "avatarRemove" |
-	"avatarChange" | "setPowerLevels" | "setHistoryVisibility" |
-	"setHistoryVisibility" | "setGuestAccess" | "setEncryption" |
-	"setJoinRules" | "setRoomName" | "setSpaceParent" = "";
-
+let action:
+	| ""
+	| "nameChange"
+	| "nameSet"
+	| "nameRemove"
+	| "join"
+	| "leave"
+	| "avatarChange"
+	| "avatarSet"
+	| "avatarRemove"
+	| "avatarChange"
+	| "setPowerLevels"
+	| "setHistoryVisibility"
+	| "setHistoryVisibility"
+	| "setGuestAccess"
+	| "setEncryption"
+	| "setJoinRules"
+	| "setRoomName"
+	| "setSpaceParent" = "";
 
 switch (props.event.event.getType()) {
 	case "m.room.member": {
@@ -25,14 +41,36 @@ switch (props.event.event.getType()) {
 			// TODO: add invite, ban, leave too
 			case "join": {
 				if (props.event.prevContent.membership === "join") {
-					if (props.event.content.displayname !== props.event.prevContent.displayname) {
-						if (typeof props.event.content.displayname === "undefined") action = "nameRemove";
-						else if (typeof props.event.prevContent.displayname === "undefined") action = "nameSet";
+					if (
+						props.event.content.displayname !==
+						props.event.prevContent.displayname
+					) {
+						if (
+							typeof props.event.content.displayname ===
+							"undefined"
+						)
+							action = "nameRemove";
+						else if (
+							typeof props.event.prevContent.displayname ===
+							"undefined"
+						)
+							action = "nameSet";
 						else action = "nameChange";
 					}
-					if (props.event.content.avatar_url !== props.event.prevContent.avatar_url) {
-						if (typeof props.event.content.avatar_url === "undefined") action = "avatarRemove";
-						else if (typeof props.event.prevContent.avatar_url === "undefined") action = "avatarSet";
+					if (
+						props.event.content.avatar_url !==
+						props.event.prevContent.avatar_url
+					) {
+						if (
+							typeof props.event.content.avatar_url ===
+							"undefined"
+						)
+							action = "avatarRemove";
+						else if (
+							typeof props.event.prevContent.avatar_url ===
+							"undefined"
+						)
+							action = "avatarSet";
 						else action = "avatarChange";
 					}
 				} else action = "join";
@@ -71,53 +109,53 @@ switch (props.event.event.getType()) {
 	}
 }
 
-let ui: {
+const ui: {
 	[name: string]: {
 		icon: string;
 		text: string;
-		value?: () => string
-	}
+		value?: () => string;
+	};
 } = {
 	join: {
 		icon: "ic:round-subdirectory-arrow-right",
-		text: "joined the room"
+		text: "joined the room",
 	},
 	leave: {
 		icon: "ic:round-subdirectory-arrow-left",
-		text: "left the room"
+		text: "left the room",
 	},
 	nameChange: {
 		icon: "ic:round-subdirectory-arrow-right",
-		text: "changed their display name"
+		text: "changed their display name",
 	},
 	nameSet: {
 		icon: "ic:round-subdirectory-arrow-right",
-		text: "set their displayname"
+		text: "set their displayname",
 	},
 	nameRemove: {
 		icon: "ic:round-subdirectory-arrow-right",
-		text: "removed their display name"
+		text: "removed their display name",
 	},
 	avatarChange: {
 		icon: "ic:round-image",
-		text: "changed their avatar"
+		text: "changed their avatar",
 	},
 	avatarSet: {
 		icon: "ic:round-image",
-		text: "set their avatar"
+		text: "set their avatar",
 	},
 	avatarRemove: {
 		icon: "ic:round-image-not-supported",
-		text: "removed their avatar"
+		text: "removed their avatar",
 	},
 	setPowerLevels: {
 		icon: "ic:round-rule",
-		text: "set permission rules"
+		text: "set permission rules",
 	},
 	setHistoryVisibility: {
 		icon: "ic:round-timeline",
 		text: "set history visibility to",
-		value: () => props.event.content.history_visibility
+		value: () => props.event.content.history_visibility,
 	},
 	setGuestAccess: {
 		icon: "ic:round-supervised-user-circle",
@@ -127,12 +165,12 @@ let ui: {
 	setEncryption: {
 		icon: "ic:round-lock",
 		text: "turned encryption",
-		value: () => "ON"
+		value: () => "ON",
 	},
 	setJoinRules: {
 		icon: "ic:round-insert-invitation",
 		text: "set the join rules for this room to",
-		value: () => props.event.content.guest_access
+		value: () => props.event.content.guest_access,
 	},
 	setRoomName: {
 		icon: "ic:round-drive-file-rename-outline",
@@ -142,17 +180,32 @@ let ui: {
 	setSpaceParent: {
 		icon: "ic:round-account-tree",
 		text: "set the parent space",
-	}
-}
+	},
+};
 </script>
 
 <template>
-	<div v-if="action !== ''" class="flex flex-row gap-2 text-gray-100 justify-start items-center mx-auto text-sm">
+	<div
+		v-if="action !== ''"
+		class="flex flex-row gap-2 text-gray-100 justify-start items-center mx-auto text-sm">
 		<Icon :name="ui[action].icon" class="w-5 h-5 text-gray-200 ml-5" />
-		<div @click="log" class="h-5 w-5 rounded-md overflow-hidden flex items-center justify-center shrink-0">
-			<img :src="event.content.membership === 'join' ? event.getSenderAvatarUrl() : user.getAvatarUrl()" class="w-full h-full object-cover" />
+		<div
+			class="h-5 w-5 rounded-md overflow-hidden flex items-center justify-center shrink-0"
+			@click="log">
+			<img
+				:src="
+					event.content.membership === 'join'
+						? event.getSenderAvatarUrl()
+						: user.getAvatarUrl()
+				"
+				class="w-full h-full object-cover" />
 		</div>
-		<b class="font-semibold">{{ event.getSenderDisplayName() ?? user.getDisplayName() }}</b>{{ ui[action].text }}<b class="font-semibold" v-if="ui[action].value">{{ ui[action].value!() }}</b>
+		<b class="font-semibold">{{
+			event.getSenderDisplayName() ?? user.getDisplayName()
+		}}</b
+		>{{ ui[action].text
+		}}<b v-if="ui[action].value" class="font-semibold">{{
+			ui[action].value!()
+		}}</b>
 	</div>
-	
 </template>

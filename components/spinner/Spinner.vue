@@ -4,7 +4,7 @@ const themes = {
 	orange: "text-orange-400 fill-white",
 	orangeLight:
 		"text-orange-700 dark:text-orange-200 bg-orange-100 dark:bg-orange-800 hover:bg-orange-200 border-transparent",
-	orangeDark: "text-dark-600 fill-orange-600"
+	orangeDark: "text-dark-600 fill-orange-600",
 };
 
 defineProps<{

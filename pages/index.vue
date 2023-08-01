@@ -1,3 +1,1 @@
-<template>
-	
-</template>
+<template>No content</template>
