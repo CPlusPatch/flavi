@@ -33,6 +33,7 @@ const scrollToBottom = (skipScrolledToBottomCheck = false) => {
 				messageContainer.value.clientHeight
 		) > 1
 	) {
+		console.error("not scrolled to bottom");
 		// not scrolled to bottom, don't auto-scroll
 		return;
 	}
@@ -74,6 +75,8 @@ onMounted(() => {
 	scrollToBottom(true);
 });
 
+let isBackwards = false;
+
 const loadMoreEvents = async () => {
 	if (roomTimeline.isOngoingPagination) return false;
 
@@ -82,6 +85,18 @@ const loadMoreEvents = async () => {
 	}
 
 	timeline.value = roomTimeline.timeline;
+
+	await nextTick();
+
+	// the first loadMoreEvents call should always scroll to bottom.
+	// subsequent loadMoreEvents calls happen when scrolling upwards,
+	// so auto-scrolling downwards isn't wanted.
+
+	if (!isBackwards) {
+		scrollToBottom(true);
+	}
+
+	isBackwards = true;
 };
 
 const members: MatrixUser[] = room.value.room
