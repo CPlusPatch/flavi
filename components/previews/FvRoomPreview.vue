@@ -1,39 +1,15 @@
 <script setup lang="ts">
-import { MatrixClient, MatrixEvent } from "matrix-js-sdk";
+import { MatrixClient } from "matrix-js-sdk";
+import { MatrixMessage } from "classes/Event";
 import { MatrixRoom } from "~/classes/Room";
-import { RoomTimeline } from "~/classes/RoomTimeline";
 import { MatrixUser } from "~/classes/User";
 
 const props = defineProps<{
 	room: MatrixRoom;
+	lastMessage: MatrixMessage | null;
 }>();
 
 const client = useStore().client;
-
-const lastMessage: Ref<MatrixEvent | null> = ref(null);
-
-const roomTimeline = new RoomTimeline(props.room.id, client as MatrixClient);
-
-function newEvent() {
-	const timeline = [...roomTimeline.timeline];
-	timeline.reverse();
-	lastMessage.value =
-		timeline.find(event => event.getType() === "m.room.message") ?? null;
-}
-
-function removeListeners() {
-	roomTimeline.removeInternalListeners();
-	roomTimeline
-		.off(events.events.timeline.EVENT, newEvent)
-		.off(events.events.timeline.READY, newEvent);
-}
-
-roomTimeline
-	.on(events.events.timeline.EVENT, newEvent)
-	.on(events.events.timeline.READY, newEvent);
-
-onBeforeRouteLeave(removeListeners);
-onUnmounted(removeListeners);
 
 const dmUserId = props.room.isDirectMessage();
 
@@ -49,8 +25,6 @@ try {
 const presence = dmUser && dmUser.getPresenceStatus();
 
 const unreadCount = props.room.room.getUnreadNotificationCount();
-
-await roomTimeline.loadLiveTimeline();
 </script>
 
 <template>
@@ -85,7 +59,7 @@ await roomTimeline.loadLiveTimeline();
 				v-if="lastMessage"
 				class="text-gray-300 line-clamp-1 text-xs"
 				:title="lastMessage.getContent().body"
-				>{{ lastMessage.sender?.rawDisplayName }}:
+				>{{ lastMessage.event.sender?.rawDisplayName }}:
 				{{ lastMessage.getContent().body }}</span
 			>
 		</div>
