@@ -4,9 +4,21 @@
  * Thanks, Cinny <3
  */
 
-import { Direction, EventTimeline, EventTimelineSet, IRoomTimelineData, MatrixClient, MatrixEvent, MatrixEventEvent, Room, RoomEvent, RoomMember, RoomMemberEvent } from "matrix-js-sdk";
-import { MatrixRoom } from "./Room";
 import EventEmitter from "events";
+import {
+	Direction,
+	EventTimeline,
+	EventTimelineSet,
+	IRoomTimelineData,
+	MatrixClient,
+	MatrixEvent,
+	MatrixEventEvent,
+	Room,
+	RoomEvent,
+	RoomMember,
+	RoomMemberEvent,
+} from "matrix-js-sdk";
+import { MatrixRoom } from "./Room";
 import events from "~/utils/events";
 
 type Optional<T> = T | null | undefined;
@@ -19,10 +31,10 @@ function isReaction(event: MatrixEvent) {
 	return event.getType() === "m.reaction";
 }
 
-function hideMemberEvents(event: MatrixEvent) {
-	const content = event.getContent();
-	const prevContent = event.getPrevContent();
-	const { membership } = content;
+function hideMemberEvents(_event: MatrixEvent) {
+	// const content = event.getContent();
+	// const prevContent = event.getPrevContent();
+	// const { membership } = content;
 	return false;
 }
 
@@ -44,7 +56,7 @@ function addToMap(myMap: Map<string, MatrixEvent[]>, event: MatrixEvent) {
 }
 
 function getFirstLinkedTimeline(timeline: Optional<EventTimeline>) {
-	let tm= timeline;
+	let tm = timeline;
 	while (tm?.getNeighbouringTimeline(Direction.Backward)) {
 		tm = tm.getNeighbouringTimeline(Direction.Backward);
 	}
@@ -58,7 +70,11 @@ function getLastLinkedTimeline(timeline: Optional<EventTimeline>) {
 	return tm;
 }
 
-function iterateLinkedTimelines(timeline: Optional<EventTimeline>, backwards: boolean, callback: (tm: EventTimeline) => void) {
+function iterateLinkedTimelines(
+	timeline: Optional<EventTimeline>,
+	backwards: boolean,
+	callback: (tm: EventTimeline) => void
+) {
 	let tm = timeline;
 	while (tm) {
 		callback(tm);
@@ -67,7 +83,10 @@ function iterateLinkedTimelines(timeline: Optional<EventTimeline>, backwards: bo
 	}
 }
 
-function isTimelineLinked(tm1: Optional<EventTimeline>, tm2: Optional<EventTimeline>) {
+function isTimelineLinked(
+	tm1: Optional<EventTimeline>,
+	tm2: Optional<EventTimeline>
+) {
 	let tm = getFirstLinkedTimeline(tm1);
 	while (tm) {
 		if (tm === tm2) return true;
@@ -90,10 +109,7 @@ export class RoomTimeline extends EventEmitter {
 	ongoingDecryptionCount: number;
 	initialized: boolean;
 
-	constructor(
-		roomId: string,
-		client: MatrixClient
-	) {
+	constructor(roomId: string, client: MatrixClient) {
 		super();
 		// These are local timelines
 		this.timeline = [];
@@ -199,7 +215,7 @@ export class RoomTimeline extends EventEmitter {
 		}
 	}
 
-	async paginateTimeline(backwards: boolean = false, limit: number = 30) {
+	async paginateTimeline(backwards = false, limit = 30) {
 		if (this.initialized === false) return false;
 		if (this.isOngoingPagination) return false;
 
@@ -295,7 +311,6 @@ export class RoomTimeline extends EventEmitter {
 					mEvent.getType() === "m.room.member" &&
 					hideMemberEvents(mEvent)
 				) {
-					// eslint-disable-next-line no-continue
 					continue;
 				}
 				if (
@@ -362,20 +377,20 @@ export class RoomTimeline extends EventEmitter {
 		this._listenRoomTimeline = (
 			event: MatrixEvent,
 			room: Room | undefined,
-			toStartOfTimeline: boolean | undefined,
-			removed: boolean,
+			_toStartOfTimeline: boolean | undefined,
+			_removed: boolean,
 			data: IRoomTimelineData
 		) => {
 			if (room?.roomId !== this.room.id) return;
 			if (this.isOngoingPagination) return;
-			
+
 			// User is currently viewing the old events probably
 			// no need to add new event and emit changes.
 			// only add reactions and edited messages
 			if (this.isServingLiveTimeline() === false) {
 				if (!isReaction(event) && !isEdited(event)) return;
 			}
-			
+
 			// We only process live events here
 			if (!data.liveEvent) return;
 
@@ -406,7 +421,6 @@ export class RoomTimeline extends EventEmitter {
 				this.ongoingDecryptionCount -= 1;
 			}
 
-
 			console.error(event.getContent());
 			this.addToTimeline(event);
 			this.emit(events.events.timeline.EVENT, event);
@@ -414,13 +428,13 @@ export class RoomTimeline extends EventEmitter {
 
 		this._listenRedaction = (event: MatrixEvent, room: Room) => {
 			if (room.roomId !== this.room.id) return;
-			const rEvent = this.deleteFromTimeline(event.event.redacts ?? "");
+			// const rEvent = this.deleteFromTimeline(event.event.redacts ?? "");
 			this.editedTimeline.delete(event.event.redacts ?? "");
 			this.reactionTimeline.delete(event.event.redacts ?? "");
 			this.emit(events.events.timeline.EVENT_REDACTED, event);
 		};
 
-		this._listenTypingEvent = (event: MatrixEvent, member: RoomMember) => {
+		this._listenTypingEvent = (_event: MatrixEvent, member: RoomMember) => {
 			if (member.roomId !== this.room.id) return;
 
 			const isTyping = member.typing;

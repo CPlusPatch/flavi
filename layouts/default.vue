@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import { MatrixClient, RoomEvent } from "matrix-js-sdk";
-import { useStore } from "~/utils/store";
+import { useStore, useRoomPreviewStore } from "~/utils/store";
 import { MatrixRoom } from "~/classes/Room";
+import { MatrixMessage } from "classes/Event";
 const store = useStore();
+const roomPreviewStore = useRoomPreviewStore();
 
 const client = store.client;
-const roomList = ref<MatrixRoom[]>([]);
+const roomList = ref<
+	{
+		room: MatrixRoom;
+		lastMessage: MatrixMessage | null;
+	}[]
+>([]);
 const spaces = ref<MatrixRoom[]>([]);
 
 if (!client) throw createError("Client not working!");
@@ -24,8 +31,15 @@ const timelineChange = async () => {
 		(a, b) =>
 			b.getLastMessageDate().getTime() - a.getLastMessageDate().getTime()
 	);
-	roomList.value = rooms.filter(r => !r.isSpace());
+	roomList.value = rooms
+		.filter(r => !r.isSpace())
+		.map(room => ({
+			room: room as MatrixRoom,
+			lastMessage: room.getLastTextMessage(),
+		}));
 	spaces.value = rooms.filter(r => r.isSpace());
+
+	roomPreviewStore.rooms = roomList.value;
 };
 
 store.client?.on(RoomEvent.Timeline, timelineChange);
@@ -35,6 +49,11 @@ onUnmounted(() => {
 });
 
 await timelineChange();
+
+onMounted(() => {
+	store.state.loaded = true;
+	console.info("Loaded app");
+});
 </script>
 
 <template>
@@ -65,9 +84,10 @@ await timelineChange();
 			class="bg-dark-900 p-1 md:flex flex-col gap-1 overflow-x-hidden no-scrollbar overflow-y-scroll relative w-60 shrink-0 hidden">
 			<TransitionGroup move-class="duration-200 transition-all">
 				<PreviewsFvRoomPreview
-					v-for="room of roomList"
+					v-for="{ room, lastMessage } of roomList"
 					:key="room.id"
-					:room="(room as any)" />
+					:room="(room as any)"
+					:last-message="(lastMessage as any)" />
 			</TransitionGroup>
 		</div>
 		<slot />

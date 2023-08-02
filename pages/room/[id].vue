@@ -7,23 +7,23 @@ import FvMessage from "~/components/messages/FvMessage.vue";
 import events from "~/utils/events";
 
 const id = useRoute().params.id as string;
-
 const store = useStore();
 
 if (!store.client) throw createError("Client not working");
 
+// Initialize room and timeline
 const room = ref(new MatrixRoom(id, store.client as MatrixClient));
-const messageContainer = ref<HTMLDivElement | null>(null);
-const messages = ref<HTMLDivElement | null>(null);
 const timeline = ref<MatrixEvent[]>([]);
-
 const roomTimeline = new RoomTimeline(id, store.client as MatrixClient);
 
-onBeforeRouteLeave(removeListeners);
-onUnmounted(removeListeners);
+// Initialize message container and messages
+const messageContainer = ref<HTMLDivElement | null>(null);
+const messages = ref<HTMLDivElement | null>(null);
 
+// Initialize scroll state
 const isScrolledToBottom = ref(true);
 
+// Update scroll state
 function updateIsScrolledToBottom() {
 	if (!messageContainer.value) return;
 	isScrolledToBottom.value =
@@ -35,54 +35,58 @@ function updateIsScrolledToBottom() {
 	return isScrolledToBottom.value;
 }
 
+// Scroll to bottom of message container
 const scrollToBottom = (skipScrolledToBottomCheck = false) => {
 	if (!messages.value || !messageContainer.value) return;
 
 	if (!skipScrolledToBottomCheck && !updateIsScrolledToBottom()) {
 		console.error("not scrolled to bottom");
-		// not scrolled to bottom, don't auto-scroll
 		return;
 	}
 
 	const lastMessage =
 		messages.value.children[messages.value.children.length - 1];
-	// FIXME: shouldn't need to use setTimeout, this is jank
 	setTimeout(() => {
 		lastMessage.scrollIntoView();
 	}, 0);
 };
 
+// Update timeline on new event
 const newEvent = async () => {
 	timeline.value = [...roomTimeline.timeline];
-
 	await nextTick();
-
 	scrollToBottom();
 };
 
+// Update timeline when ready
 const ready = () => {
 	timeline.value = roomTimeline.timeline;
 };
 
+// Add event listeners for timeline updates
 roomTimeline
 	.on(events.events.timeline.EVENT, newEvent)
 	.on(events.events.timeline.READY, ready);
 
+// Remove event listeners on route leave or unmount
 function removeListeners() {
 	roomTimeline.removeInternalListeners();
 	roomTimeline
 		.off(events.events.timeline.EVENT, newEvent)
 		.off(events.events.timeline.READY, ready);
 }
+onBeforeRouteLeave(removeListeners);
+onUnmounted(removeListeners);
 
+// Scroll to bottom on mount
 onMounted(() => {
 	if (!messages.value) return;
-
 	scrollToBottom(true);
 });
 
 let isBackwards = false;
 
+// Load more events when scrolling upwards
 const loadMoreEvents = async () => {
 	if (roomTimeline.isOngoingPagination) return false;
 
@@ -91,12 +95,7 @@ const loadMoreEvents = async () => {
 	}
 
 	timeline.value = roomTimeline.timeline;
-
 	await nextTick();
-
-	// the first loadMoreEvents call should always scroll to bottom.
-	// subsequent loadMoreEvents calls happen when scrolling upwards,
-	// so auto-scrolling downwards isn't wanted.
 
 	if (!isBackwards) {
 		scrollToBottom(true);
@@ -105,6 +104,7 @@ const loadMoreEvents = async () => {
 	isBackwards = true;
 };
 
+// Get members of the room
 const members: MatrixUser[] = room.value.room
 	.getMembers()
 	.map(
@@ -114,6 +114,8 @@ const members: MatrixUser[] = room.value.room
 			null
 	)
 	.filter(m => m) as any;
+
+// Load live timeline
 await roomTimeline.loadLiveTimeline();
 </script>
 <template>
