@@ -171,10 +171,25 @@ const send = async () => {
 	}
 
 	if (body !== "") {
-		const response = await store.client?.sendTextMessage(
-			props.room.id,
-			body
-		);
+		let response;
+		// If is a reply, send as a reply instead
+		if (store.replies[props.room.id]) {
+			const reply = store.replies[props.room.id];
+			const content = {
+				msgtype: "m.text",
+				body,
+				"m.relates_to": {
+					"m.in_reply_to": {
+						event_id: reply.eventId,
+					},
+				},
+			};
+
+			response = await store.client?.sendMessage(props.room.id, content);
+			delete store.replies[props.room.id];
+		} else {
+			response = await store.client?.sendTextMessage(props.room.id, body);
+		}
 		emit("send", response?.event_id ?? "");
 	}
 
