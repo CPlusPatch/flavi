@@ -134,7 +134,7 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 					<div class="flex flex-row gap-1 items-center text-xs">
 						<Icon
 							name="material-symbols:reply-rounded"
-							class="text-white" />
+							class="text-white flex-shrink-0" />
 						<span class="text-white">{{ reply.sender.name }}</span>
 						<div
 							v-if="event.isText()"
