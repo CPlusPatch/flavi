@@ -386,7 +386,8 @@ watch(eventReplyingTo, () => {
 									}"></div>
 							</div>
 						</div>
-						<div class="pt-3 text-xs">
+						<div
+							class="pt-3 text-xs max-w-40 whitespace-nowrap text-ellipsis overflow-hidden">
 							{{ file.name }}
 						</div>
 					</div>
