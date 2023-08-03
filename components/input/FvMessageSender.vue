@@ -237,7 +237,7 @@ const preventOpeningFileDialog = (e: KeyboardEvent) => {
 			send();
 		}
 	}
-	if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+	if (e.key === "ArrowRight" || e.key === "ArrowLeft" || e.key === "Tab") {
 		if (emojisSuggesterEmojis.value.length > 0) {
 			e.preventDefault();
 		}
@@ -246,11 +246,11 @@ const preventOpeningFileDialog = (e: KeyboardEvent) => {
 				emojiPicker.value?.children[0] as HTMLDivElement
 			).classList.add("bg-dark-800");
 		}
-		if (e.key === "ArrowDown") {
+		if (e.key === "ArrowRight" || e.key === "Tab") {
 			emojiFocusIndex.value =
 				(emojiFocusIndex.value + 1) %
 				emojisSuggesterEmojis.value.length;
-		} else if (e.key === "ArrowUp") {
+		} else if (e.key === "ArrowLeft") {
 			emojiFocusIndex.value =
 				(emojiFocusIndex.value - 1) %
 				emojisSuggesterEmojis.value.length;
@@ -279,7 +279,7 @@ const onInput = (e: Event) => {
 
 		emojisSuggesterEmojis.value = emojis
 			.filter(e => e.name.replaceAll(" ", "_").includes(emojiToSearchFor))
-			.slice(0, 10);
+			.slice(0, 30);
 	} else {
 		emojisSuggesterEmojis.value = [];
 		emojiFocusIndex.value = -1;
@@ -408,16 +408,15 @@ watch(files, () => {
 				<div
 					v-if="emojisSuggesterEmojis.length > 0"
 					ref="emojiPicker"
-					class="absolute w-full bottom-12/10 flex flex-col gap-1 p-2 bg-dark-900 rounded-md ring-1 shadow ring-dark-700">
-					<div
+					class="absolute w-full overflow-x-scroll no-scrollbar bottom-12/10 flex flex-row gap-1 p-2 bg-dark-900 rounded-md ring-1 shadow ring-dark-700">
+					<button
 						v-for="emoji in emojisSuggesterEmojis"
 						:key="emoji.char"
 						class="flex items-center gap-2 rounded px-2 py-1.5 duration-200 hover:bg-dark-800"
+						:title="emoji.name"
 						@click="replaceEmoji(emoji.char)">
-						<Twemoji :emoji="emoji.char" /><span
-							>:{{ emoji.name.replaceAll(" ", "_") }}:</span
-						>
-					</div>
+						<Twemoji :emoji="emoji.char" size="25" />
+					</button>
 				</div>
 			</Transition>
 
