@@ -138,7 +138,7 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 						<span class="text-white">{{ reply.sender.name }}</span>
 						<div
 							v-if="event.isText()"
-							class="text-dark-400 flex flex-col gap-2 break-word line-clamp-1 text-ellipsis"
+							class="text-dark-400 gap-2 break-word line-clamp-1 text-ellipsis"
 							v-html="replyBody.innerHTML"></div>
 					</div>
 				</TwemojiParse>
