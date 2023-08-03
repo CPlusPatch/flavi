@@ -171,10 +171,25 @@ const send = async () => {
 	}
 
 	if (body !== "") {
-		const response = await store.client?.sendTextMessage(
-			props.room.id,
-			body
-		);
+		let response;
+		// If is a reply, send as a reply instead
+		if (store.replies[props.room.id]) {
+			const reply = store.replies[props.room.id];
+			const content = {
+				msgtype: "m.text",
+				body,
+				"m.relates_to": {
+					"m.in_reply_to": {
+						event_id: reply.eventId,
+					},
+				},
+			};
+
+			response = await store.client?.sendMessage(props.room.id, content);
+			delete store.replies[props.room.id];
+		} else {
+			response = await store.client?.sendTextMessage(props.room.id, body);
+		}
 		emit("send", response?.event_id ?? "");
 	}
 
@@ -260,6 +275,12 @@ const onInput = (e: Event) => {
 		emojiFocusIndex.value = -1;
 	}
 };
+
+const eventReplyingTo = computed(
+	() =>
+		store.replies[props.room.id] &&
+		props.room.room.findEventById(store.replies[props.room.id].eventId)
+);
 </script>
 
 <template>
@@ -268,12 +289,34 @@ const onInput = (e: Event) => {
 			ref="fileInput"
 			multiple
 			type="file"
-			class="w-0 h-0"
+			class="w-0 h-0 hidden"
 			@change="
 				files = Array.from(
 					($event.target as HTMLInputElement).files as any
 				)
 			" />
+
+		<div
+			v-if="eventReplyingTo"
+			class="w-full bg-dark-900 rounded-md text-sm text-white p-2">
+			<div class="flex flex-row gap-1 items-center text-xs">
+				<Icon
+					name="material-symbols:reply-rounded"
+					class="text-white" />
+				<span class="text-white">{{
+					eventReplyingTo.sender?.rawDisplayName
+				}}</span>
+				<div
+					class="text-dark-400 flex flex-col gap-2 break-word line-clamp-1 text-ellipsis">
+					{{ eventReplyingTo.getContent().body }}
+				</div>
+				<button
+					class="ml-auto flex items-center justify-center hover:bg-dark-800"
+					@click="delete store.replies[room.id]">
+					<Icon name="tabler:x" class="text-white" />
+				</button>
+			</div>
+		</div>
 
 		<div
 			class="!bg-dark-700 rounded-md gap-6 flex flex-col ring-1 relative duration-200 grow py-2 text-sm ring-dark-600 text-gray-100">
