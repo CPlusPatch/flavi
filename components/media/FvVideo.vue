@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { decryptAttachment } from "browser-encrypt-attachment";
+import { decryptAttachment } from "matrix-encrypt-attachment";
 import { getBlobSafeMimeType } from "~/utils/mime";
 import { useStore } from "~/utils/store";
 

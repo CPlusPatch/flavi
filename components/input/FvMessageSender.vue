@@ -1,8 +1,9 @@
 <script setup lang="ts">
 // Thanks https://github.com/cinnyapp/cinny/blob/f14d70ea3508a8467c0a27b9d61c8ab6661054ab/src/client/state/RoomsInput.js for some code
-import { encryptAttachment } from "browser-encrypt-attachment";
+import { encryptAttachment } from "matrix-encrypt-attachment";
 import { UploadProgress } from "matrix-js-sdk";
 import emojis from "emoji.json";
+import parse from "snarkdown";
 import { MatrixRoom } from "~/classes/Room";
 import { useStore } from "~/utils/store";
 import { getBlobSafeMimeType } from "~/utils/mime";
@@ -171,25 +172,31 @@ const send = async () => {
 	}
 
 	if (body !== "") {
-		let response;
+		const content: any = {
+			msgtype: "m.text",
+			body,
+		};
+
 		// If is a reply, send as a reply instead
 		if (store.replies[props.room.id]) {
 			const reply = store.replies[props.room.id];
-			const content = {
-				msgtype: "m.text",
-				body,
-				"m.relates_to": {
-					"m.in_reply_to": {
-						event_id: reply.eventId,
-					},
+			content["m.relates_to"] = {
+				"m.in_reply_to": {
+					event_id: reply.eventId,
 				},
 			};
-
-			response = await store.client?.sendMessage(props.room.id, content);
 			delete store.replies[props.room.id];
-		} else {
-			response = await store.client?.sendTextMessage(props.room.id, body);
 		}
+
+		if (parse(body) !== body) {
+			content.format = "org.matrix.custom.html";
+			content.formatted_body = parse(body);
+		}
+
+		const response = await store.client?.sendMessage(
+			props.room.id,
+			content
+		);
 		emit("send", response?.event_id ?? "");
 	}
 

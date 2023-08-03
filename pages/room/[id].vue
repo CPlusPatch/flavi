@@ -116,6 +116,10 @@ const members: MatrixUser[] = room.value.room
 
 // Load live timeline
 await roomTimeline.loadLiveTimeline();
+
+useHead({
+	title: `${room.value.getName()} · Flavi`,
+});
 </script>
 <template>
 	<div class="flex overflow-x-hidden flex-row grow">
