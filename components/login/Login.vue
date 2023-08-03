@@ -22,12 +22,17 @@ const submit = async (e: Event) => {
 
 	if (flowStage.value === FlowStage.Homeserver) {
 		// If flow stage is homeserver, validate URL and get homeserver info
-		const homeserver: string = (e.target as any).homeserver.value;
+		let homeserver: string = (e.target as any).homeserver.value;
 
 		if (!homeserver) {
 			error.value = "Please enter a homeserver URL";
 			loading.value = false;
 			return;
+		}
+
+		// Add https:// if it isnt present
+		if (!homeserver.startsWith("https://")) {
+			homeserver = `https://${homeserver}`;
 		}
 
 		// Validate URL
