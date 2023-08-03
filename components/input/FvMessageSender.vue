@@ -22,6 +22,7 @@ const emit = defineEmits<{
 
 const store = useStore();
 
+const mainInput = ref<null | HTMLInputElement>(null);
 const messageBody = ref("");
 const fileInput = ref<HTMLInputElement | null>(null);
 const sending = ref(false);
@@ -290,6 +291,10 @@ const eventReplyingTo = computed(
 		store.replies[props.room.id] &&
 		props.room.room.findEventById(store.replies[props.room.id].eventId)
 );
+
+watch(eventReplyingTo, () => {
+	mainInput.value?.focus();
+});
 </script>
 
 <template>
@@ -421,6 +426,7 @@ const eventReplyingTo = computed(
 						class="h-6 w-6 text-white" />
 				</button>
 				<input
+					ref="mainInput"
 					v-model="messageBody"
 					name="message"
 					class="bg-transparent w-full outline-none focus:outline-none"
