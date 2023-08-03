@@ -26,8 +26,6 @@ await indexedDBStore.startup();
 
 const isLoggedIn = ref(isUserLoggedIn());
 
-console.error(isLoggedIn.value);
-
 const store = useStore();
 store.state.loaded = false;
 

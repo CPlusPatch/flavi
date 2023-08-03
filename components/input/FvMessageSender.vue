@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Thanks https://github.com/cinnyapp/cinny/blob/f14d70ea3508a8467c0a27b9d61c8ab6661054ab/src/client/state/RoomsInput.js for some code
 import { encryptAttachment } from "matrix-encrypt-attachment";
-import { UploadProgress } from "matrix-js-sdk";
+import { MatrixClient, UploadProgress } from "matrix-js-sdk";
 import emojis from "emoji.json";
 import parse from "snarkdown";
 import { MatrixRoom } from "~/classes/Room";
@@ -9,9 +9,11 @@ import { useStore } from "~/utils/store";
 import { getBlobSafeMimeType } from "~/utils/mime";
 import { encodeBlurhash } from "~/utils/blurhash";
 import { getVideoThumbnail, loadVideo } from "~/utils/video";
+import { MatrixUser } from "~/classes/User";
 
 const props = defineProps<{
 	room: MatrixRoom;
+	typing: Set<string>;
 }>();
 
 const emit = defineEmits<{
@@ -291,7 +293,7 @@ const eventReplyingTo = computed(
 </script>
 
 <template>
-	<form class="w-full px-3 pb-7" @submit.prevent="send">
+	<form class="w-full px-3" @submit.prevent="send">
 		<input
 			ref="fileInput"
 			multiple
@@ -360,7 +362,7 @@ const eventReplyingTo = computed(
 							<img
 								v-if="file.type.includes('image')"
 								:src="fileToURL(file)"
-								class="h-full" />
+								class="h-full w-full object-cover" />
 							<Icon
 								v-else
 								name="ic:round-insert-drive-file"
@@ -434,6 +436,23 @@ const eventReplyingTo = computed(
 					<Icon name="tabler:send" class="h-5 h-5 text-white" />
 				</button>
 			</div>
+		</div>
+
+		<div
+			class="h-7 text-xs flex flex-row gap-1 text-gray-300 p-1 items-center">
+			<span v-if="[...typing].length > 0">
+				<strong>{{
+					[...typing]
+						.map(t =>
+							new MatrixUser(
+								t,
+								store.client as MatrixClient
+							).getDisplayName()
+						)
+						.join(", ")
+				}}</strong>
+				{{ [...typing].length === 1 ? "is" : "are" }} typing...
+			</span>
 		</div>
 	</form>
 </template>

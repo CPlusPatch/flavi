@@ -43,9 +43,11 @@ const timelineChange = async () => {
 };
 
 store.client?.on(RoomEvent.Timeline, timelineChange);
+store.client?.on(RoomEvent.Receipt, timelineChange);
 
 onUnmounted(() => {
 	store.client?.off(RoomEvent.Timeline, timelineChange);
+	store.client?.off(RoomEvent.Receipt, timelineChange);
 });
 
 await timelineChange();
@@ -58,7 +60,7 @@ onMounted(() => {
 
 <template>
 	<div
-		class="max-w-full w-full h-screen bg-dark-800 flex flex-row divide-gray-400 p-0 overflow-hidden font-inter">
+		class="max-w-full w-full h-screen bg-dark-800 flex flex-row divide-gray-400 p-0 overflow-hidden font-['Inter']">
 		<div
 			class="w-16 bg-dark-950 shrink-0 md:flex flex-col items-center py-2 gap-3 hidden">
 			<div
@@ -81,14 +83,20 @@ onMounted(() => {
 			</TransitionGroup>
 		</div>
 		<div
-			class="bg-dark-900 p-1 md:flex flex-col gap-1 overflow-x-hidden no-scrollbar overflow-y-scroll relative w-60 shrink-0 hidden">
-			<TransitionGroup move-class="duration-200 transition-all">
-				<PreviewsFvRoomPreview
-					v-for="{ room, lastMessage } of roomList"
-					:key="room.id"
-					:room="(room as any)"
-					:last-message="(lastMessage as any)" />
-			</TransitionGroup>
+			class="bg-dark-900 md:flex flex-col gap-1 overflow-hidden relative w-70 shrink-0 hidden">
+			<div class="w-full py-3 px-3 border-b border-dark-800">
+				<h1 class="font-semibold text-lg text-white">Conversations</h1>
+			</div>
+			<div
+				class="p-1 flex-col gap-1 flex no-scrollbar overflow-y-scroll overflow-x-hidden">
+				<TransitionGroup move-class="duration-200 transition-all">
+					<PreviewsFvRoomPreview
+						v-for="{ room, lastMessage } of roomList"
+						:key="room.id"
+						:room="(room as any)"
+						:last-message="(lastMessage as any)" />
+				</TransitionGroup>
+			</div>
 		</div>
 		<slot />
 	</div>

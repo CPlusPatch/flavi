@@ -59,7 +59,7 @@ const reply = room.room.findEventById(event.value.event.replyEventId ?? "");
 
 const log = console.error;
 
-const body: string = props.message.getContent().body;
+const body: string = props.message.getContent().body ?? "";
 
 const bodyHtml = document.createElement("div");
 const replyBody = document.createElement("div");
@@ -108,6 +108,21 @@ const setReply = () => {
 		text: "",
 	};
 };
+
+// Mark as read on visible
+const messageRef = ref(null);
+useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
+	if (isIntersecting) {
+		if (
+			!room.room.hasUserReadEvent(
+				store.client?.getUserId() ?? "",
+				event.value.event.getId() ?? ""
+			)
+		) {
+			store.client?.sendReadReceipt(event.value.event as MatrixEvent);
+		}
+	}
+});
 </script>
 
 <template>
@@ -117,6 +132,7 @@ const setReply = () => {
 		enter-to-class="opacity-100 translate-x-0">
 		<div
 			v-if="message"
+			ref="messageRef"
 			:class="[
 				'flex flex-col px-6 py-1 gap-1 hover:bg-dark-700 relative group duration-200',
 				showHeader && 'mt-2',

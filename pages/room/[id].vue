@@ -62,17 +62,28 @@ const ready = () => {
 	timeline.value = roomTimeline.timeline;
 };
 
+const typingMembers = ref<Set<string>>(new Set());
+
+const updateTypingMembers = (members: Set<string>) => {
+	typingMembers.value = members;
+};
+
 // Add event listeners for timeline updates
 roomTimeline
 	.on(events.events.timeline.EVENT, newEvent)
-	.on(events.events.timeline.READY, ready);
+	.on(events.events.timeline.READY, ready)
+	.on(events.events.timeline.TYPING_MEMBERS_UPDATED, updateTypingMembers);
 
 // Remove event listeners on route leave or unmount
 function removeListeners() {
 	roomTimeline.removeInternalListeners();
 	roomTimeline
 		.off(events.events.timeline.EVENT, newEvent)
-		.off(events.events.timeline.READY, ready);
+		.off(events.events.timeline.READY, ready)
+		.off(
+			events.events.timeline.TYPING_MEMBERS_UPDATED,
+			updateTypingMembers
+		);
 }
 onBeforeRouteLeave(removeListeners);
 onUnmounted(removeListeners);
@@ -167,6 +178,7 @@ useHead({
 					</button>
 				</Transition>
 				<InputFvMessageSender
+					:typing="typingMembers"
 					:room="(room as MatrixRoom)"
 					@send="event_id => {}" />
 			</div>

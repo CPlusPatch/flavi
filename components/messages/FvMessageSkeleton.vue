@@ -6,7 +6,7 @@ const amountOfSubMessages = Math.ceil(Math.random() * 3);
 	<div
 		v-for="index in amountOfSubMessages"
 		:key="index"
-		:class="['mb-3', index === 1 && 'mt-3']">
+		:class="['mb-3 px-6', index === 1 && 'mt-3']">
 		<div class="flex flex-row gap-2 w-full max-w-full">
 			<div v-if="index > 1" class="w-10 shrink-0"></div>
 			<div
