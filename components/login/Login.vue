@@ -66,6 +66,7 @@ const submit = async (e: Event) => {
 		};
 
 		flowStage.value = FlowStage.Login;
+		error.value = null;
 		loading.value = false;
 	} else if (flowStage.value === FlowStage.Login) {
 		if (!homeserverData.value) return;
