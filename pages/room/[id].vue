@@ -40,7 +40,6 @@ const scrollToBottom = (skipScrolledToBottomCheck = false) => {
 	if (!messages.value || !messageContainer.value) return;
 
 	if (!skipScrolledToBottomCheck && !updateIsScrolledToBottom()) {
-		console.error("not scrolled to bottom");
 		return;
 	}
 

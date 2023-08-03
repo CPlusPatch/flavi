@@ -421,7 +421,6 @@ export class RoomTimeline extends EventEmitter {
 				this.ongoingDecryptionCount -= 1;
 			}
 
-			console.error(event.getContent());
 			this.addToTimeline(event);
 			this.emit(events.events.timeline.EVENT, event);
 		};
