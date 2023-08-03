@@ -59,18 +59,34 @@ const reply = room.room.findEventById(event.value.event.replyEventId ?? "");
 
 const log = console.error;
 
-const body = document.createElement("div");
+const body: string = props.message.getContent().body;
+
+const bodyHtml = document.createElement("div");
 const replyBody = document.createElement("div");
 
-const isHtml = !!props.message.getContent().formatted_body;
+// Escape characters of body for usage in HTML
+const escapedBody = body
+	.replace(/&/g, "&amp;")
+	.replace(/</g, "&lt;")
+	.replace(/>/g, "&gt;");
 
-body.innerHTML = (
-	(props.message.getContent().formatted_body ??
-		props.message.getContent().body ??
-		"") as string
+bodyHtml.innerHTML = (
+	(props.message.getContent().formatted_body ?? escapedBody ?? "") as string
 ).replace(/<mx-reply.*>.*?<\/mx-reply>/gi, "");
 
-[...body.getElementsByTagName("img")].forEach(img => {
+bodyHtml.innerHTML
+	.match(
+		// Regex from https://urlregex.com/
+		/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+$,\w]+@)?[A-Za-z0-9.-]+|(?:www\.|[-;:&=+$,\w]+@)[A-Za-z0-9.-]+)((?:\/[+~%/.\w\-_]*)?\??(?:[-+=&;%@.\w_]*)#?(?:[.!/\\\w]*))?)/g
+	)
+	?.forEach(url => {
+		bodyHtml.innerHTML = bodyHtml.innerHTML.replace(
+			url,
+			`<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
+		);
+	});
+
+[...bodyHtml.getElementsByTagName("img")].forEach(img => {
 	img.src = store.client?.mxcUrlToHttp(img.src) ?? "";
 });
 
@@ -149,14 +165,8 @@ const setReply = () => {
 					</div>
 					<TwemojiParse v-if="event.isText()">
 						<div
-							v-if="isHtml"
 							class="text-[#dbdee1] gap-2 break-word message-body whitespace-pre-wrap"
-							v-html="body.innerHTML"></div>
-						<div
-							v-else
-							class="text-[#dbdee1] gap-2 break-word message-body whitespace-pre-wrap">
-							{{ message.getContent().body }}
-						</div>
+							v-html="bodyHtml.innerHTML"></div>
 					</TwemojiParse>
 					<div
 						v-if="isLoading"
@@ -241,6 +251,14 @@ const setReply = () => {
 	padding: 0.2rem 0.4rem;
 	border-radius: 0.2rem;
 	display: inline;
+}
+
+.message-body a {
+	color: hsl(213deg 94% 73%);
+}
+
+.message-body a:hover {
+	text-decoration: underline;
 }
 
 img.twemojiParse {
