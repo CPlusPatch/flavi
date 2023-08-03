@@ -295,6 +295,10 @@ const eventReplyingTo = computed(
 watch(eventReplyingTo, () => {
 	mainInput.value?.focus();
 });
+
+watch(files, () => {
+	mainInput.value?.focus();
+});
 </script>
 
 <template>
