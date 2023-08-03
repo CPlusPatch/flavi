@@ -127,7 +127,7 @@ await roomTimeline.loadLiveTimeline();
 			</div>
 			<div
 				ref="messageContainer"
-				class="grow max-w-full pt-6 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col"
+				class="grow max-w-full pt-6 pb-4 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col"
 				@scroll="updateIsScrolledToBottom">
 				<MessagesFvMessageSkeleton
 					v-if="roomTimeline.canPaginateBackward()" />
@@ -157,7 +157,7 @@ await roomTimeline.loadLiveTimeline();
 					leave-to-class="opacity-0 translate-y-5">
 					<button
 						v-if="!isScrolledToBottom"
-						class="absolute -top-4 right-3 py-1 px-3 bg-dark-900 text-dark-50 rounded-xl text-xs flex items-center gap-2"
+						class="absolute -top-8 right-3 py-1 px-3 bg-dark-900 text-dark-50 rounded-xl text-xs flex items-center gap-2"
 						@click="() => scrollToBottom(true)">
 						<Icon name="tabler:message-2-down" />
 						Jump to latest

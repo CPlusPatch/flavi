@@ -14,6 +14,13 @@ export const useStore = defineStore("store", {
 			state: {
 				loaded: false,
 			},
+			replies: {} as {
+				// Key is Room ID
+				[key: string]: {
+					eventId: string;
+					text: string;
+				};
+			},
 		};
 	},
 	persist: {

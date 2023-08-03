@@ -87,6 +87,13 @@ if (reply) {
 		img.src = store.client?.mxcUrlToHttp(img.src) ?? "";
 	});
 }
+
+const setReply = () => {
+	store.replies[room.id] = {
+		eventId: event.value.event.getId()!,
+		text: "",
+	};
+};
 </script>
 
 <template>
@@ -198,16 +205,18 @@ if (reply) {
 			<div
 				v-if="event.shouldShowMessage()"
 				class="absolute right-10 -top-7 rounded children:p-2 bg-dark-900 hidden group-hover:flex flex-row overflow-hidden ring-1 ring-dark-700">
-				<div class="flex items-center justify-center duration-200">
+				<button
+					class="flex items-center justify-center duration-200"
+					@click="setReply">
 					<Icon
 						name="tabler:message-circle"
 						class="text-gray-400 w-5 h-5 hover:text-gray-200 duration-200" />
-				</div>
-				<div class="flex items-center justify-center duration-200">
+				</button>
+				<button class="flex items-center justify-center duration-200">
 					<Icon
 						name="tabler:pencil"
 						class="text-gray-400 w-5 h-5 hover:text-gray-200 duration-200" />
-				</div>
+				</button>
 			</div>
 
 			<MessagesFvStateEvent
