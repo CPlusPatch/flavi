@@ -62,6 +62,8 @@ const log = console.error;
 const body = document.createElement("div");
 const replyBody = document.createElement("div");
 
+const isHtml = !!props.message.getContent().formatted_body;
+
 body.innerHTML = (
 	(props.message.getContent().formatted_body ??
 		props.message.getContent().body ??
@@ -145,11 +147,16 @@ const setReply = () => {
 							{{ timeAgo }}
 						</div>
 					</div>
-					<TwemojiParse>
+					<TwemojiParse v-if="event.isText()">
 						<div
-							v-if="event.isText()"
+							v-if="isHtml"
 							class="text-[#dbdee1] gap-2 break-word message-body whitespace-pre-wrap"
 							v-html="body.innerHTML"></div>
+						<div
+							v-else
+							class="text-[#dbdee1] gap-2 break-word message-body whitespace-pre-wrap">
+							{{ message.getContent().body }}
+						</div>
 					</TwemojiParse>
 					<div
 						v-if="isLoading"
