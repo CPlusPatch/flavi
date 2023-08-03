@@ -66,11 +66,7 @@ body.innerHTML = (
 	(props.message.getContent().formatted_body ??
 		props.message.getContent().body ??
 		"") as string
-)
-	.replace(/<mx-reply.*>.*?<\/mx-reply>/gi, "")
-	.split("\n")
-	.map(p => `<p>${p}</p>`)
-	.join("");
+).replace(/<mx-reply.*>.*?<\/mx-reply>/gi, "");
 
 [...body.getElementsByTagName("img")].forEach(img => {
 	img.src = store.client?.mxcUrlToHttp(img.src) ?? "";
@@ -152,7 +148,7 @@ const setReply = () => {
 					<TwemojiParse>
 						<div
 							v-if="event.isText()"
-							class="text-[#dbdee1] flex flex-col gap-2 break-word message-body"
+							class="text-[#dbdee1] gap-2 break-word message-body whitespace-pre-wrap"
 							v-html="body.innerHTML"></div>
 					</TwemojiParse>
 					<div
@@ -233,6 +229,13 @@ const setReply = () => {
 	display: inline;
 }
 
+.message-body code {
+	background-color: #2d2d2d;
+	padding: 0.2rem 0.4rem;
+	border-radius: 0.2rem;
+	display: inline;
+}
+
 img.twemojiParse {
 	vertical-align: middle !important;
 	height: 1.4em;
@@ -241,7 +244,7 @@ img.twemojiParse {
 	margin-top: -0.3rem;
 }
 
-.message-body > p:empty:only-child > img:only-child {
+.message-body:empty > img:only-child {
 	height: 40px !important;
 	width: auto !important;
 	display: inline;

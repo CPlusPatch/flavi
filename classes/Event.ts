@@ -1,5 +1,5 @@
 import { MatrixClient, MatrixEvent } from "matrix-js-sdk";
-import encrypt from "browser-encrypt-attachment";
+import { decryptAttachment } from "matrix-encrypt-attachment";
 
 export class MatrixMessage {
 	event: MatrixEvent;
@@ -63,10 +63,7 @@ export class MatrixMessage {
 
 		if (isEncrypted) {
 			const media = await (await fetch(link)).arrayBuffer();
-			const decrypted = await encrypt.decryptAttachment(
-				media,
-				content.file
-			);
+			const decrypted = await decryptAttachment(media, content.file);
 			const blob = new Blob([decrypted], { type: content.file.mimetype });
 			return URL.createObjectURL(blob);
 		}
@@ -79,8 +76,17 @@ export class MatrixMessage {
 	};
 
 	isRoomEvent = () => {
-		return ["m.room.create", "m.room.power_levels", "m.room.history_visibility", "m.room.guest_access", "m.room.encryption", "m.space.parent", "m.room.join_rules", "m.room.name"].includes(this.event.getType());
-	}
+		return [
+			"m.room.create",
+			"m.room.power_levels",
+			"m.room.history_visibility",
+			"m.room.guest_access",
+			"m.room.encryption",
+			"m.space.parent",
+			"m.room.join_rules",
+			"m.room.name",
+		].includes(this.event.getType());
+	};
 
 	getSenderAvatarUrl = () => {
 		return (
