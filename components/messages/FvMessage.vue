@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { MatrixClient, MatrixEvent, MatrixEventEvent } from "matrix-js-sdk";
+import linkifyHtml from "linkify-html";
 import { MatrixUser } from "~/classes/User";
 import { MatrixMessage } from "~/classes/Event";
 import { useStore } from "~/utils/store";
@@ -74,17 +75,7 @@ bodyHtml.innerHTML = (
 	(props.message.getContent().formatted_body ?? escapedBody ?? "") as string
 ).replace(/<mx-reply.*>.*?<\/mx-reply>/gi, "");
 
-bodyHtml.innerHTML
-	.match(
-		// Regex from https://urlregex.com/
-		/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+$,\w]+@)?[A-Za-z0-9.-]+|(?:www\.|[-;:&=+$,\w]+@)[A-Za-z0-9.-]+)((?:\/[+~%/.\w\-_]*)?\??(?:[-+=&;%@.\w_]*)#?(?:[.!/\\\w]*))?)/g
-	)
-	?.forEach(url => {
-		bodyHtml.innerHTML = bodyHtml.innerHTML.replace(
-			url,
-			`<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
-		);
-	});
+bodyHtml.innerHTML = linkifyHtml(bodyHtml.innerHTML);
 
 [...bodyHtml.getElementsByTagName("img")].forEach(img => {
 	img.src = store.client?.mxcUrlToHttp(img.src) ?? "";
