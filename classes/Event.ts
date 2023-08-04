@@ -32,7 +32,9 @@ export class MatrixMessage {
 	}
 
 	getInitialsAvatarUrl = () => {
-		return `https://api.dicebear.com/6.x/initials/svg?seed=${this.getSenderDisplayName()}&fontWeight=900&chars=1`;
+		return `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(
+			this.getSenderDisplayName() ?? ""
+		)}&fontWeight=900&chars=1`;
 	};
 
 	isRedacted = () => {
@@ -40,7 +42,7 @@ export class MatrixMessage {
 	};
 
 	isText = () => {
-		return this.getType() === "m.text";
+		return ["m.text", "m.notice"].includes(this.getType() ?? "");
 	};
 
 	isImage = () => {
