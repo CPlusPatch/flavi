@@ -462,7 +462,7 @@ watch(files, () => {
 					class="absolute w-full overflow-x-scroll no-scrollbar bottom-12/10 flex flex-row gap-1 p-2 bg-dark-900 rounded-md ring-1 shadow ring-dark-700">
 					<button
 						v-for="emoji in emojisSuggesterEmojis"
-						:key="emoji.name"
+						:key="(emoji as any).char || emoji.name"
 						class="flex items-center gap-2 rounded px-2 py-1.5 duration-200 hover:bg-dark-800"
 						:title="emoji.name"
 						type="button"
