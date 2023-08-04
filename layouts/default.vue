@@ -93,13 +93,22 @@ const navigateRooms = () => {
 		</div>
 		<div
 			class="bg-dark-900 md:flex flex-col gap-1 overflow-hidden relative w-70 shrink-0 hidden">
-			<SidebarDirectMessageView
-				v-if="currentTab === ViewTab.DirectMessages" />
-			<SidebarRoomsView v-else-if="currentTab === ViewTab.Rooms" />
-			<SidebarSpaceView
-				v-else-if="currentTab === ViewTab.Space && currentSpace"
-				:key="(currentSpace as any)"
-				:space="(currentSpace as MatrixRoom)" />
+			<Transition
+				enter-from-class="-translate-x-full"
+				enter-to-class="translate-x-0"
+				enter-active-class="duration-100"
+				leave-active-class="duration-100"
+				leave-from-class="translate-x-0"
+				leave-to-class="translate-x-full"
+				mode="out-in">
+				<SidebarDirectMessageView
+					v-if="currentTab === ViewTab.DirectMessages" />
+				<SidebarRoomsView v-else-if="currentTab === ViewTab.Rooms" />
+				<SidebarSpaceView
+					v-else-if="currentTab === ViewTab.Space"
+					:key="(currentSpace as any)"
+					:space="(currentSpace as MatrixRoom)" />
+			</Transition>
 		</div>
 		<slot />
 	</div>

@@ -54,20 +54,24 @@ timelineChange();
 </script>
 
 <template>
-	<div class="w-full py-3 px-3 border-b border-dark-800">
-		<h1 class="font-semibold text-lg text-white">{{ space.getName() }}</h1>
-	</div>
-	<div
-		class="p-1 flex-col gap-1 flex no-scrollbar overflow-y-scroll overflow-x-hidden">
-		<TransitionGroup
-			v-if="roomList.length > 0"
-			move-class="duration-200 transition-all">
-			<PreviewsFvRoomPreview
-				v-for="{ room, lastMessage } of roomList"
-				:key="room.id"
-				:room="(room as any)"
-				:last-message="(lastMessage as any)" />
-		</TransitionGroup>
-		<PreviewsFvRoomPreviewSkeleton v-for="i of 15" v-else :key="i" />
+	<div>
+		<div class="w-full py-3 px-3 border-b border-dark-800">
+			<h1 class="font-semibold text-lg text-white">
+				{{ space.getName() }}
+			</h1>
+		</div>
+		<div
+			class="p-2 flex-col gap-1 flex no-scrollbar overflow-y-scroll overflow-x-hidden">
+			<TransitionGroup
+				v-if="roomList.length > 0"
+				move-class="duration-200 transition-all">
+				<PreviewsFvRoomPreview
+					v-for="{ room, lastMessage } of roomList"
+					:key="room.id"
+					:room="(room as any)"
+					:last-message="(lastMessage as any)" />
+			</TransitionGroup>
+			<PreviewsFvRoomPreviewSkeleton v-for="i of 15" v-else :key="i" />
+		</div>
 	</div>
 </template>

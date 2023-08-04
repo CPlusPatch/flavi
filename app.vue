@@ -97,6 +97,5 @@ await nextTick();
 .page-enter-from,
 .page-leave-to {
 	opacity: 0;
-	transform: translateY(10px);
 }
 </style>
