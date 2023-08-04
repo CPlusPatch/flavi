@@ -49,12 +49,12 @@ timelineChange();
 </script>
 
 <template>
-	<div>
+	<div class="h-full overflow-hidden">
 		<div class="w-full py-3 px-3 border-b border-dark-800">
 			<h1 class="font-semibold text-lg text-white">Rooms</h1>
 		</div>
 		<div
-			class="p-2 flex-col gap-1 flex no-scrollbar overflow-y-scroll overflow-x-hidden">
+			class="p-2 flex-col gap-1 h-full flex no-scrollbar overflow-y-scroll overflow-x-hidden">
 			<TransitionGroup
 				v-if="roomList.length > 0"
 				move-class="duration-200 transition-all">

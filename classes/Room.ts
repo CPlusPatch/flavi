@@ -105,7 +105,7 @@ export class MatrixRoom {
 		return new Date(this.room.getLastActiveTimestamp());
 	}
 
-	public getAvatarUrl(size = 96): string | null {
+	public getAvatarUrl(size = 96) {
 		const url =
 			this.room?.getAvatarUrl(
 				this.client?.baseUrl ?? "",
@@ -123,7 +123,12 @@ export class MatrixRoom {
 					true,
 					true
 				);
-		return url ?? null;
+		return (
+			url ??
+			`https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(
+				this.getName()
+			)}&chars=1`
+		);
 	}
 
 	public getTopic() {

@@ -1,4 +1,4 @@
-import { MatrixClient, MatrixEvent, User } from "matrix-js-sdk";
+import { MatrixClient, User } from "matrix-js-sdk";
 
 export class MatrixUser {
 	private user: User;
@@ -8,7 +8,7 @@ export class MatrixUser {
 	constructor(userId: string, client: MatrixClient) {
 		const user = client.getUser(userId);
 
-		if (!user) throw Error("Invalid user");
+		if (!user) throw new Error("Invalid user");
 
 		this.user = user;
 		this.client = client;
@@ -68,7 +68,7 @@ export class MatrixUser {
 		}
 	}
 
-	public getAvatarUrl(size: number = 96) {
+	public getAvatarUrl(size = 96) {
 		return (
 			this.client.mxcUrlToHttp(
 				this.getMxcAvatarUrl() ?? "",
@@ -77,7 +77,9 @@ export class MatrixUser {
 				"scale",
 				false
 			) ||
-			`https://api.dicebear.com/6.x/initials/svg?seed=${this.getDisplayName()}&fontWeight=900&chars=1`
+			`https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(
+				this.getDisplayName() ?? ""
+			)}&fontWeight=900&chars=1`
 		);
 	}
 }

@@ -135,133 +135,125 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 </script>
 
 <template>
-	<Transition
-		enter-active-class="duration-100"
-		enter-from-class="opacity-0 translate-y-5"
-		enter-to-class="opacity-100 translate-x-0">
+	<div
+		v-if="message"
+		ref="messageRef"
+		:class="[
+			'flex flex-col py-1 px-6 py-0 gap-1 hover:bg-dark-700 relative group duration-200',
+			showHeader && 'mt-2',
+		]">
+		<div class="flex flex-row gap-4">
+			<div class="w-10 shrink-0"></div>
+			<TwemojiParse v-if="reply?.sender">
+				<div class="flex flex-row gap-1 items-center text-xs">
+					<Icon
+						name="material-symbols:reply-rounded"
+						class="text-white flex-shrink-0" />
+					<span class="text-white">{{ reply.sender.name }}</span>
+					<div
+						v-if="event.isText()"
+						class="text-dark-400 gap-2 break-word line-clamp-1 text-ellipsis"
+						v-html="replyBody.innerHTML"></div>
+				</div>
+			</TwemojiParse>
+		</div>
 		<div
-			v-if="message"
-			ref="messageRef"
-			:class="[
-				'flex flex-col py-1 px-6 py-0 gap-1 hover:bg-dark-700 relative group duration-200',
-				showHeader && 'mt-2',
-			]">
-			<div class="flex flex-row gap-4">
-				<div class="w-10 shrink-0"></div>
-				<TwemojiParse v-if="reply?.sender">
-					<div class="flex flex-row gap-1 items-center text-xs">
-						<Icon
-							name="material-symbols:reply-rounded"
-							class="text-white flex-shrink-0" />
-						<span class="text-white">{{ reply.sender.name }}</span>
-						<div
-							v-if="event.isText()"
-							class="text-dark-400 gap-2 break-word line-clamp-1 text-ellipsis"
-							v-html="replyBody.innerHTML"></div>
-					</div>
-				</TwemojiParse>
+			v-if="
+				event.shouldShowMessage() &&
+				!event.isMemberEvent() &&
+				event.event.getType() == 'm.room.message'
+			"
+			class="flex flex-row gap-4 w-full max-w-full">
+			<div v-if="!showHeader" class="w-10 shrink-0"></div>
+			<div
+				v-if="showHeader"
+				class="h-10 hover:-translate-y-1 duration-200 w-10 rounded-md overflow-hidden flex items-center justify-center shrink-0"
+				@click="log">
+				<img
+					:src="user.getAvatarUrl()"
+					class="w-full h-full object-cover" />
 			</div>
 			<div
-				v-if="event.shouldShowMessage() && !event.isMemberEvent()"
-				class="flex flex-row gap-4 w-full max-w-full">
-				<div v-if="!showHeader" class="w-10 shrink-0"></div>
-				<div
-					v-if="showHeader"
-					class="h-10 hover:-translate-y-1 duration-200 w-10 rounded-md overflow-hidden flex items-center justify-center shrink-0"
-					@click="log">
-					<img
-						:src="user.getAvatarUrl()"
-						class="w-full h-full object-cover" />
-				</div>
-				<div
-					:key="String(isLoading)"
-					class="flex flex-col gap-1 text-sm grow break-words">
+				:key="String(isLoading)"
+				class="flex flex-col gap-1 text-sm grow break-words">
+				<div v-if="showHeader" class="flex flex-row items-center gap-3">
+					<div :class="['font-semibold text-[#f2f3f5]']">
+						{{ user.getDisplayName() }}
+					</div>
 					<div
 						v-if="showHeader"
-						class="flex flex-row items-center gap-3">
-						<div :class="['font-semibold text-[#f2f3f5]']">
-							{{ user.getDisplayName() }}
-						</div>
-						<div
-							v-if="showHeader"
-							class="text-gray-400 text-xs shrink-0 text-right mt-0.5">
-							{{ timeAgo }}
-						</div>
-					</div>
-					<TwemojiParse v-if="event.isText()">
-						<div
-							class="text-[#dbdee1] gap-2 break-all message-body whitespace-pre-wrap"
-							v-html="body"></div>
-					</TwemojiParse>
-					<div
-						v-if="isLoading"
-						class="text-gray-400 flex flex-row gap-x-2 items-center">
-						<Spinner theme="orangeDark" /> Decrypting...
-					</div>
-					<div
-						v-if="event.isImage()"
-						class="max-w-sm rounded shadow overflow-hidden">
-						<img :src="mediaUrl" />
-					</div>
-					<div
-						v-if="event.isVideo()"
-						class="max-w-sm rounded shadow overflow-hidden">
-						<MediaFvVideo
-							:body="event.getContent().body"
-							:file="event.getContent().file"
-							:is-encrypted="event.event.isEncrypted()"
-							:thumbnail-file="
-								event.getContent().info.thumbnail_file
-							"
-							:thumbnail-info="
-								event.getContent().info.thumbnail_info
-							"
-							:info="event.getContent().info" />
-					</div>
-					<div
-						v-if="
-							event.getType() === 'm.bad.encrypted' ||
-							event.getContent().cyphertext
-						"
-						class="text-gray-200 font-italic">
-						<Icon
-							name="ic:round-lock"
-							class="align-baseline mb-0.5 mr-1" />Encrypted
-						message
-					</div>
-					<div
-						v-if="event.isRedacted()"
-						class="text-red-200 font-semibold">
-						<Icon
-							name="ic:round-do-not-disturb-alt"
-							class="align-baseline mb-0.5 mr-1" />Redacted Event
+						class="text-gray-400 text-xs shrink-0 text-right mt-0.5">
+						{{ timeAgo }}
 					</div>
 				</div>
-			</div>
-
-			<!-- Floating action buttons for reply, more settings -->
-			<div
-				v-if="event.shouldShowMessage()"
-				class="absolute right-10 -top-7 rounded children:p-2 bg-dark-900 hidden group-hover:flex flex-row overflow-hidden ring-1 ring-dark-700">
-				<button
-					class="flex items-center justify-center duration-200"
-					@click="setReply">
+				<TwemojiParse v-if="event.isText()">
+					<div
+						class="text-[#dbdee1] gap-2 break-all message-body whitespace-pre-wrap"
+						v-html="body"></div>
+				</TwemojiParse>
+				<div
+					v-if="isLoading"
+					class="text-gray-400 flex flex-row gap-x-2 items-center">
+					<Spinner theme="orangeDark" /> Decrypting...
+				</div>
+				<div
+					v-if="event.isImage()"
+					class="max-w-sm rounded shadow overflow-hidden">
+					<img :src="mediaUrl" />
+				</div>
+				<div
+					v-if="event.isVideo()"
+					class="max-w-sm rounded shadow overflow-hidden">
+					<MediaFvVideo
+						:body="event.getContent().body"
+						:file="event.getContent().file"
+						:is-encrypted="event.event.isEncrypted()"
+						:thumbnail-file="event.getContent().info.thumbnail_file"
+						:thumbnail-info="event.getContent().info.thumbnail_info"
+						:info="event.getContent().info" />
+				</div>
+				<div
+					v-if="
+						event.getType() === 'm.bad.encrypted' ||
+						event.getContent().cyphertext
+					"
+					class="text-gray-200 font-italic">
 					<Icon
-						name="tabler:message-circle"
-						class="text-gray-400 w-5 h-5 hover:text-gray-200 duration-200" />
-				</button>
-				<button class="flex items-center justify-center duration-200">
+						name="ic:round-lock"
+						class="align-baseline mb-0.5 mr-1" />Encrypted message
+				</div>
+				<div
+					v-if="event.isRedacted()"
+					class="text-red-200 font-semibold">
 					<Icon
-						name="tabler:pencil"
-						class="text-gray-400 w-5 h-5 hover:text-gray-200 duration-200" />
-				</button>
+						name="ic:round-do-not-disturb-alt"
+						class="align-baseline mb-0.5 mr-1" />Redacted Event
+				</div>
 			</div>
-
-			<MessagesFvStateEvent
-				v-if="event.event.getType() !== 'm.room.message'"
-				:event="(event as MatrixMessage)" />
 		</div>
-	</Transition>
+
+		<!-- Floating action buttons for reply, more settings -->
+		<div
+			v-if="event.shouldShowMessage()"
+			class="absolute right-10 -top-7 rounded children:p-2 bg-dark-900 hidden group-hover:flex flex-row overflow-hidden ring-1 ring-dark-700">
+			<button
+				class="flex items-center justify-center duration-200"
+				@click="setReply">
+				<Icon
+					name="tabler:message-circle"
+					class="text-gray-400 w-5 h-5 hover:text-gray-200 duration-200" />
+			</button>
+			<button class="flex items-center justify-center duration-200">
+				<Icon
+					name="tabler:pencil"
+					class="text-gray-400 w-5 h-5 hover:text-gray-200 duration-200" />
+			</button>
+		</div>
+
+		<MessagesFvStateEvent
+			v-if="event.event.getType() !== 'm.room.message'"
+			:event="(event as MatrixMessage)" />
+	</div>
 </template>
 
 <style>
@@ -276,6 +268,10 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 	padding: 0.2rem 0.4rem;
 	border-radius: 0.2rem;
 	display: inline;
+}
+
+.message-body ol {
+	list-style-type: decimal;
 }
 
 .message-body a {

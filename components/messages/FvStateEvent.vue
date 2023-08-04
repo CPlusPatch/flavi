@@ -187,8 +187,8 @@ const ui: {
 <template>
 	<div
 		v-if="action !== ''"
-		class="flex flex-row gap-2 text-gray-100 justify-start items-center mx-auto text-sm">
-		<Icon :name="ui[action].icon" class="w-5 h-5 text-gray-200 ml-5" />
+		class="flex flex-row flex-wrap gap-2 text-gray-100 justify-start items-center text-sm pl-5">
+		<Icon :name="ui[action].icon" class="w-5 h-5 text-gray-200" />
 		<div
 			class="h-5 w-5 rounded-md overflow-hidden flex items-center justify-center shrink-0"
 			@click="log">

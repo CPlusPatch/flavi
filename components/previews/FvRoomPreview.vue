@@ -34,10 +34,7 @@ const unreadCount = props.room.room.getRoomUnreadNotificationCount();
 		<div
 			class="h-8 w-8 relative rounded-full shrink-0 flex items-center justify-center shrink-0 shadow">
 			<img
-				:src="
-					room.getAvatarUrl(96) ??
-					`https://api.dicebear.com/6.x/initials/svg?seed=${room.getName()}&chars=1`
-				"
+				:src="room.getAvatarUrl(96)"
 				class="w-full h-full object-cover rounded-full" />
 			<div
 				v-if="dmUserId"
