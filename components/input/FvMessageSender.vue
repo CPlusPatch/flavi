@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Thanks https://github.com/cinnyapp/cinny/blob/f14d70ea3508a8467c0a27b9d61c8ab6661054ab/src/client/state/RoomsInput.js for some code
 import { encryptAttachment } from "matrix-encrypt-attachment";
-import { MatrixClient, UploadProgress } from "matrix-js-sdk";
+import { UploadProgress } from "matrix-js-sdk";
 import uneditedEmojis from "emoji.json";
 import parse from "snarkdown";
 import { matchSorter } from "match-sorter";
@@ -10,7 +10,6 @@ import { useStore } from "~/utils/store";
 import { getBlobSafeMimeType } from "~/utils/mime";
 import { encodeBlurhash } from "~/utils/blurhash";
 import { getVideoThumbnail, loadVideo } from "~/utils/video";
-import { MatrixUser } from "~/classes/User";
 
 const props = defineProps<{
 	room: MatrixRoom;
@@ -516,12 +515,7 @@ onMounted(() => {
 			<span v-if="[...typing].length > 0">
 				<strong>{{
 					[...typing]
-						.map(t =>
-							new MatrixUser(
-								t,
-								store.client as MatrixClient
-							).getDisplayName()
-						)
+						.map(t => store.client?.getUser(t)?.displayName)
 						.join(", ")
 				}}</strong>
 				{{ [...typing].length === 1 ? "is" : "are" }} typing...
