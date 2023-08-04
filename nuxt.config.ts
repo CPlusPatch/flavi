@@ -10,7 +10,6 @@ export default defineNuxtConfig({
 		"@vueuse/nuxt",
 		"@pinia/nuxt",
 		"nuxt-twemoji",
-		"@nuxtjs/google-fonts",
 	],
 	spaLoadingTemplate: false,
 	ssr: false,
@@ -26,13 +25,6 @@ export default defineNuxtConfig({
 			}),
 			wasm(),
 		],
-	},
-	googleFonts: {
-		families: {
-			Inter: true,
-		},
-		subsets: "latin",
-		download: true,
 	},
 	runtimeConfig: {
 		public: {
