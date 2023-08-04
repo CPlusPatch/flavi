@@ -143,8 +143,8 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 			v-if="message"
 			ref="messageRef"
 			:class="[
-				'flex flex-col px-6 py-0 gap-1 hover:bg-dark-700 relative group duration-200',
-				showHeader && 'mt-2 pt-1',
+				'flex flex-col py-1 px-6 py-0 gap-1 hover:bg-dark-700 relative group duration-200',
+				showHeader && 'mt-2',
 			]">
 			<div class="flex flex-row gap-4">
 				<div class="w-10 shrink-0"></div>
@@ -190,7 +190,7 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 					</div>
 					<TwemojiParse v-if="event.isText()">
 						<div
-							class="text-[#dbdee1] gap-2 break-all message-body whitespace-pre-wrap leading-7"
+							class="text-[#dbdee1] gap-2 break-all message-body whitespace-pre-wrap"
 							v-html="body"></div>
 					</TwemojiParse>
 					<div
