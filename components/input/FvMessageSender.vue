@@ -350,6 +350,10 @@ watch(eventReplyingTo, () => {
 watch(files, () => {
 	mainInput.value?.focus();
 });
+
+onMounted(() => {
+	mainInput.value?.focus();
+});
 </script>
 
 <template>

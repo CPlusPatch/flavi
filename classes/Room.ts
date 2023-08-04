@@ -16,11 +16,11 @@ export class MatrixRoom {
 
 	constructor(roomId: string, client: MatrixClient) {
 		const room = client.getRoom(roomId);
-		if (!room) throw Error("Invalid Room");
+		if (!room) throw new Error("Invalid Room");
 		this.room = room;
 		this.client = client;
 		this.id = room.roomId;
-		this.timelineSet = this.room.getUnfilteredTimelineSet()
+		this.timelineSet = this.room.getUnfilteredTimelineSet();
 		this.timeline = this.timelineSet.getLiveTimeline();
 	}
 
@@ -40,19 +40,46 @@ export class MatrixRoom {
 		this.timeline = this.timelineSet.getLiveTimeline();
 	}
 
+	public getSpaceChildren() {
+		// If the room is a space, get all its room children
+		if (this.room.isSpaceRoom()) {
+			const events =
+				this.room
+					.getLiveTimeline()
+					.getState(EventTimeline.FORWARDS)
+					?.getStateEvents("m.space.child") ?? [];
+			return events.map(e => e.getStateKey());
+		}
+	}
+
+	/**
+	 * Returns true if the room is not in any space
+	 */
+	public isOrphan() {
+		return (
+			this.room
+				.getLiveTimeline()
+				.getState(EventTimeline.FORWARDS)
+				?.getStateEvents("m.space.parent").length === 0
+		);
+	}
+
 	/**
 	 * Find out whether the room is a DM or not
 	 * @returns The other member of the DM, or null if not a DM
 	 */
 	public isDirectMessage() {
-		return this.room.getMembers().length <= 2 &&
-			this.room
-				.getMembers()
-				.find(m => m.userId !== this.client?.getUserId()) || null;
+		return (
+			(this.room.getMembers().length <= 2 &&
+				this.room
+					.getMembers()
+					.find(m => m.userId !== this.client?.getUserId())) ||
+			null
+		);
 	}
 
 	public getLastTextMessage() {
-		let events = [
+		const events = [
 			...this.timeline.getEvents().toReversed(),
 			...(
 				this.timeline
@@ -63,7 +90,7 @@ export class MatrixRoom {
 
 		const event =
 			events.find(e => e.getContent().msgtype === "m.text") ?? null;
-		return event && new MatrixMessage(event, this.client) || null;
+		return (event && new MatrixMessage(event, this.client)) || null;
 	}
 
 	public getName(): string {
@@ -78,7 +105,7 @@ export class MatrixRoom {
 		return new Date(this.room.getLastActiveTimestamp());
 	}
 
-	public getAvatarUrl(size: number = 96): string | null {
+	public getAvatarUrl(size = 96): string | null {
 		const url =
 			this.room?.getAvatarUrl(
 				this.client?.baseUrl ?? "",
