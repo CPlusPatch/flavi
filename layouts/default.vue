@@ -38,6 +38,7 @@ onMounted(() => {
 enum ViewTab {
 	DirectMessages,
 	Space,
+	Rooms,
 }
 
 const currentTab = ref(ViewTab.DirectMessages);
@@ -52,6 +53,11 @@ const navigateDMs = () => {
 	currentTab.value = ViewTab.DirectMessages;
 	currentSpace.value = null;
 };
+
+const navigateRooms = () => {
+	currentTab.value = ViewTab.Rooms;
+	currentSpace.value = null;
+};
 </script>
 
 <template>
@@ -62,6 +68,11 @@ const navigateDMs = () => {
 			<button
 				class="h-10 w-10 rounded-md flex items-center ring-dark-600 hover:ring-1 bg-dark-800 duration-200 rounded hover:shadow-xl justify-center shrink-0 text-orange-100"
 				@click="navigateDMs">
+				<Icon name="tabler:mail" class="w-6 h-6" />
+			</button>
+			<button
+				class="h-10 w-10 rounded-md flex items-center ring-dark-600 hover:ring-1 bg-dark-800 duration-200 rounded hover:shadow-xl justify-center shrink-0 text-orange-100"
+				@click="navigateRooms">
 				<Icon name="tabler:message" class="w-6 h-6" />
 			</button>
 			<SeparatorsFvSeparator />
@@ -84,6 +95,7 @@ const navigateDMs = () => {
 			class="bg-dark-900 md:flex flex-col gap-1 overflow-hidden relative w-70 shrink-0 hidden">
 			<SidebarDirectMessageView
 				v-if="currentTab === ViewTab.DirectMessages" />
+			<SidebarRoomsView v-else-if="currentTab === ViewTab.Rooms" />
 			<SidebarSpaceView
 				v-else-if="currentTab === ViewTab.Space && currentSpace"
 				:key="(currentSpace as any)"

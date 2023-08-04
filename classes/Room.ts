@@ -53,6 +53,18 @@ export class MatrixRoom {
 	}
 
 	/**
+	 * Returns true if the room is not in any space
+	 */
+	public isOrphan() {
+		return (
+			this.room
+				.getLiveTimeline()
+				.getState(EventTimeline.FORWARDS)
+				?.getStateEvents("m.space.parent").length === 0
+		);
+	}
+
+	/**
 	 * Find out whether the room is a DM or not
 	 * @returns The other member of the DM, or null if not a DM
 	 */
