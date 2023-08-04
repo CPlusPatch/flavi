@@ -504,8 +504,9 @@ onMounted(() => {
 				<button
 					:disabled="sending"
 					type="submit"
-					class="duration-100 ring-orange-800 !bg-orange-700 py-1 px-2 flex flex-row items-center gap-1 font-semibold rounded-md ring-1 rounded">
-					<Icon name="tabler:send" class="h-5 h-5 text-white" />
+					class="duration-100 ring-dark-800 !bg-dark-900 py-1 px-2 flex flex-row items-center gap-1 font-semibold rounded-md ring-1 rounded">
+					<!-- <Icon name="tabler:send" class="h-5 h-5 text-white" /> -->
+					Send
 				</button>
 			</div>
 		</div>
