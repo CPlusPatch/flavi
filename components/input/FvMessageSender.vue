@@ -2,8 +2,9 @@
 // Thanks https://github.com/cinnyapp/cinny/blob/f14d70ea3508a8467c0a27b9d61c8ab6661054ab/src/client/state/RoomsInput.js for some code
 import { encryptAttachment } from "matrix-encrypt-attachment";
 import { MatrixClient, UploadProgress } from "matrix-js-sdk";
-import emojis from "emoji.json";
+import uneditedEmojis from "emoji.json";
 import parse from "snarkdown";
+import { matchSorter } from "match-sorter";
 import { MatrixRoom } from "~/classes/Room";
 import { useStore } from "~/utils/store";
 import { getBlobSafeMimeType } from "~/utils/mime";
@@ -22,6 +23,25 @@ const emit = defineEmits<{
 
 const store = useStore();
 
+// Get a list of the user;s custom emojis
+const userEmojis = (
+	store.client?.getAccountData("im.ponies.user_emotes")?.getContent() as {
+		images: {
+			[key: string]: { url: string };
+		};
+		pack: {
+			avatar_url: string;
+			display_name: string;
+		};
+	}
+).images;
+
+// Map userEmojis into a value like emojis
+const userEmojisMapped = Object.entries(userEmojis).map(([key, value]) => ({
+	name: key,
+	url: value.url,
+}));
+
 const mainInput = ref<null | HTMLInputElement>(null);
 const messageBody = ref("");
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -29,7 +49,13 @@ const sending = ref(false);
 
 const files = ref<File[]>([]);
 const currentlyUploadingFileProgress = ref(0);
-const emojisSuggesterEmojis = ref<typeof emojis>([]);
+const emojis = uneditedEmojis.map(e => ({
+	...e,
+	name: e.name.replace(" ", "_"),
+}));
+const emojisSuggesterEmojis = ref<
+	Array<(typeof emojis)[0] | (typeof userEmojisMapped)[0]>
+>([]);
 const emojiPicker = ref<HTMLDivElement | null>(null);
 const emojiFocusIndex = ref(-1);
 
@@ -191,9 +217,23 @@ const send = async () => {
 			delete store.replies[props.room.id];
 		}
 
-		if (parse(body) !== body) {
+		let customEmojisFound = 0;
+		userEmojisMapped.forEach(userEmoji => {
+			if (content.body.includes(`:${userEmoji.name}:`)) {
+				customEmojisFound++;
+			}
+		});
+
+		if (parse(body) !== body || customEmojisFound > 0) {
 			content.format = "org.matrix.custom.html";
 			content.formatted_body = parse(body);
+
+			userEmojisMapped.forEach(userEmoji => {
+				content.formatted_body = content.formatted_body.replace(
+					new RegExp(`:${userEmoji.name}:`, "g"),
+					`<img data-mx-emoticon src="${userEmoji.url}" alt=":${userEmoji.name}:" title=":${userEmoji.name}:" height="32" />`
+				);
+			});
 		}
 
 		const response = await store.client?.sendMessage(
@@ -212,10 +252,18 @@ const pasteFile = (e: ClipboardEvent) => {
 
 const fileToURL = (f: File) => URL.createObjectURL(f);
 
-const replaceEmoji = (emoji: string) => {
+const replaceEmoji = (emojiName: string) => {
+	const emoji = [...emojis, ...userEmojisMapped].find(
+		e => e.name === emojiName
+	) as any;
+
+	const replaceTo: string = emoji.char
+		? `${emoji.char} `
+		: `:${emoji.name}: `;
+
 	messageBody.value = messageBody.value.replace(
 		messageBody.value.match(/:[a-zA-Z0-9_]*((?<!:):$|$)/g)![0],
-		emoji
+		replaceTo
 	);
 
 	emojisSuggesterEmojis.value = [];
@@ -230,14 +278,14 @@ const preventOpeningFileDialog = (e: KeyboardEvent) => {
 
 			// const target = e.target as HTMLInputElement;
 
-			replaceEmoji(
-				emojisSuggesterEmojis.value[emojiFocusIndex.value].char
-			);
+			const emoji = emojisSuggesterEmojis.value[emojiFocusIndex.value];
+
+			replaceEmoji(emoji.name);
 		} else {
 			send();
 		}
 	}
-	if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+	if (e.key === "ArrowRight" || e.key === "ArrowLeft" || e.key === "Tab") {
 		if (emojisSuggesterEmojis.value.length > 0) {
 			e.preventDefault();
 		}
@@ -246,11 +294,11 @@ const preventOpeningFileDialog = (e: KeyboardEvent) => {
 				emojiPicker.value?.children[0] as HTMLDivElement
 			).classList.add("bg-dark-800");
 		}
-		if (e.key === "ArrowDown") {
+		if (e.key === "ArrowRight" || e.key === "Tab") {
 			emojiFocusIndex.value =
 				(emojiFocusIndex.value + 1) %
 				emojisSuggesterEmojis.value.length;
-		} else if (e.key === "ArrowUp") {
+		} else if (e.key === "ArrowLeft") {
 			emojiFocusIndex.value =
 				(emojiFocusIndex.value - 1) %
 				emojisSuggesterEmojis.value.length;
@@ -276,10 +324,13 @@ const onInput = (e: Event) => {
 	if (matched && matched.length > 0) {
 		// Remove first ":" which is found when the regex is execited
 		const emojiToSearchFor = matched[0].replace(":", "");
-
-		emojisSuggesterEmojis.value = emojis
-			.filter(e => e.name.replaceAll(" ", "_").includes(emojiToSearchFor))
-			.slice(0, 10);
+		emojisSuggesterEmojis.value = matchSorter(
+			[...emojis, ...userEmojisMapped],
+			emojiToSearchFor,
+			{
+				keys: ["name"],
+			}
+		).slice(0, 30);
 	} else {
 		emojisSuggesterEmojis.value = [];
 		emojiFocusIndex.value = -1;
@@ -408,16 +459,23 @@ watch(files, () => {
 				<div
 					v-if="emojisSuggesterEmojis.length > 0"
 					ref="emojiPicker"
-					class="absolute w-full bottom-12/10 flex flex-col gap-1 p-2 bg-dark-900 rounded-md ring-1 shadow ring-dark-700">
-					<div
+					class="absolute w-full overflow-x-scroll no-scrollbar bottom-12/10 flex flex-row gap-1 p-2 bg-dark-900 rounded-md ring-1 shadow ring-dark-700">
+					<button
 						v-for="emoji in emojisSuggesterEmojis"
-						:key="emoji.char"
+						:key="(emoji as any).char || emoji.name"
 						class="flex items-center gap-2 rounded px-2 py-1.5 duration-200 hover:bg-dark-800"
-						@click="replaceEmoji(emoji.char)">
-						<Twemoji :emoji="emoji.char" /><span
-							>:{{ emoji.name.replaceAll(" ", "_") }}:</span
-						>
-					</div>
+						:title="emoji.name"
+						type="button"
+						@click="replaceEmoji(emoji.name)">
+						<Twemoji
+							v-if="(emoji as any).char"
+							:emoji="(emoji as any).char"
+							size="25" />
+						<img
+							v-else
+							:src="store.client?.mxcUrlToHttp((emoji as any).url) ?? ''"
+							class="w-[25px] h-[25px]" />
+					</button>
 				</div>
 			</Transition>
 
