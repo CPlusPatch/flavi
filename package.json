@@ -30,6 +30,7 @@
 		"emoji.json": "^14.0.0",
 		"linkify-html": "^4.1.1",
 		"linkifyjs": "^4.1.1",
+		"match-sorter": "^6.3.1",
 		"matrix-encrypt-attachment": "^1.0.3",
 		"matrix-js-sdk": "^26.0.1",
 		"nanoid": "^4.0.2",
