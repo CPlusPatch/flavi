@@ -14,9 +14,11 @@ const props = defineProps<{
 }>();
 
 const isLoading = ref(props.message.isBeingDecrypted());
+const message = ref(props.message);
 
 const onDecrypted = () => {
 	isLoading.value = false;
+	message.value = props.message;
 };
 
 props.message.on(MatrixEventEvent.Decrypted, onDecrypted);
@@ -26,33 +28,43 @@ onUnmounted(() => {
 });
 
 const user = new MatrixUser(
-	props.message.event.sender ?? "",
+	message.value.event.sender ?? "",
 	store.client as MatrixClient
 );
-const event = ref(
-	new MatrixMessage(props.message, store.client as MatrixClient)
+
+const event = computed(
+	() =>
+		new MatrixMessage(
+			message.value as MatrixEvent,
+			store.client as MatrixClient
+		)
 );
+
+// Function to check the time difference between two events
+const getDateDifference = (event1: MatrixEvent, event2: MatrixEvent) =>
+	(event1.getDate()?.getTime() ?? 0) - (event2.getDate()?.getTime() ?? 0);
 
 // Show header if messages are separated by more than 5 hours
 const isPreviousEventMessage =
 	props.previousEvent?.getType() === "m.room.message";
-const showHeader =
-	!isPreviousEventMessage ||
-	props.previousEvent.sender?.userId !== props.message.sender?.userId ||
-	(event.value.event.getDate()?.getTime() ?? 0) -
-		(props.previousEvent?.getDate()?.getTime() ?? 0) >
-		1000 * 60 * 60 * 5;
 
-const mediaUrl = ref("");
+const showHeader = computed(
+	() =>
+		!isPreviousEventMessage ||
+		props.previousEvent.sender?.userId !== message.value.sender?.userId ||
+		getDateDifference(event.value.event, props.previousEvent) >
+			// 5 minutes
+			1000 * 60 * 5
+);
 
-if (event.value.isImage()) {
-	mediaUrl.value = (await event.value.decryptAttachment()) ?? "";
-}
+const mediaUrl = event.value.isImage()
+	? await event.value.decryptAttachment()
+	: "";
 
 const timeAgo = useTimeAgo(event.value.event.getDate() ?? Date.now());
 
 const room = new MatrixRoom(
-	props.message.event.room_id ?? "",
+	message.value.event.room_id ?? "",
 	store.client as MatrixClient
 );
 
@@ -60,26 +72,32 @@ const reply = room.room.findEventById(event.value.event.replyEventId ?? "");
 
 const log = console.error;
 
-const body: string = props.message.getContent().body ?? "";
-
-const bodyHtml = document.createElement("div");
 const replyBody = document.createElement("div");
 
-// Escape characters of body for usage in HTML
-const escapedBody = body
-	.replace(/&/g, "&amp;")
-	.replace(/</g, "&lt;")
-	.replace(/>/g, "&gt;");
+const formattedBody = (event: MatrixEvent) => {
+	const bodyHtml = document.createElement("div");
 
-bodyHtml.innerHTML = (
-	(props.message.getContent().formatted_body ?? escapedBody ?? "") as string
-).replace(/<mx-reply.*>.*?<\/mx-reply>/gi, "");
+	// Escape characters of body for usage in HTML
+	const escapedBody = event
+		.getContent()
+		.body.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;");
 
-bodyHtml.innerHTML = linkifyHtml(bodyHtml.innerHTML);
+	bodyHtml.innerHTML = (
+		(event.getContent().formatted_body ?? escapedBody ?? "") as string
+	).replace(/<mx-reply.*>.*?<\/mx-reply>/gi, "");
 
-[...bodyHtml.getElementsByTagName("img")].forEach(img => {
-	img.src = store.client?.mxcUrlToHttp(img.src) ?? "";
-});
+	bodyHtml.innerHTML = linkifyHtml(bodyHtml.innerHTML);
+
+	[...bodyHtml.getElementsByTagName("img")].forEach(img => {
+		img.src = store.client?.mxcUrlToHttp(img.src) ?? "";
+	});
+
+	return bodyHtml.innerHTML;
+};
+
+const body = computed(() => formattedBody(event.value.event));
 
 if (reply) {
 	replyBody.innerHTML = (
@@ -173,7 +191,7 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 					<TwemojiParse v-if="event.isText()">
 						<div
 							class="text-[#dbdee1] gap-2 break-word message-body whitespace-pre-wrap"
-							v-html="bodyHtml.innerHTML"></div>
+							v-html="body"></div>
 					</TwemojiParse>
 					<div
 						v-if="isLoading"
