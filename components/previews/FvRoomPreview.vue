@@ -4,6 +4,8 @@ import { MatrixMessage } from "classes/Event";
 import { MatrixRoom } from "~/classes/Room";
 import { MatrixUser } from "~/classes/User";
 
+const store = useStore();
+
 const props = defineProps<{
 	room: MatrixRoom;
 	lastMessage: MatrixMessage | null;
@@ -30,7 +32,8 @@ const unreadCount = props.room.room.getRoomUnreadNotificationCount();
 <template>
 	<NuxtLink
 		:to="`/room/${room.id}`"
-		class="flex flex-row gap-2 duration-200 hover:bg-dark-800 p-2 rounded">
+		class="flex flex-row gap-2 duration-200 hover:bg-dark-800 p-2 rounded"
+		@click="store.state.sidebarOpen = false">
 		<div
 			class="h-8 w-8 relative rounded-full shrink-0 flex items-center justify-center shrink-0 shadow">
 			<img
