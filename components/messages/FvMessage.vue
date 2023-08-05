@@ -57,9 +57,13 @@ const showHeader = computed(
 			1000 * 60 * 5
 );
 
-const mediaUrl = event.value.isImage()
-	? await event.value.decryptAttachment()
-	: "";
+const mediaUrl = ref<string | null>(null);
+
+if (event.value.isImage()) {
+	event.value.decryptAttachment().then(url => {
+		mediaUrl.value = url;
+	});
+}
 
 const timeAgo = useTimeAgo(event.value.event.getDate() ?? Date.now());
 
@@ -199,7 +203,18 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 				<div
 					v-if="event.isImage()"
 					class="max-w-sm rounded shadow overflow-hidden">
-					<img :src="mediaUrl" />
+					<img
+						v-if="mediaUrl"
+						:src="mediaUrl"
+						class="w-full h-full object-fit" />
+					<div
+						v-else
+						class="bg-gray-400 animate-pulse h-full w-full object-fit"
+						:style="{
+							aspectRatio:
+								event.getContent().info.w /
+								event.getContent().info.h,
+						}"></div>
 				</div>
 				<div
 					v-if="event.isVideo()"
