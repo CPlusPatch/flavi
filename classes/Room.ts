@@ -105,6 +105,21 @@ export class MatrixRoom {
 		return new Date(this.room.getLastActiveTimestamp());
 	}
 
+	public getUnreadCount(): number {
+		const lastReadEvent = this.room.getReadReceiptForUserId(
+			this.client.getUserId() ?? ""
+		)?.eventId;
+
+		if (!lastReadEvent) return 0;
+
+		const events = this.timeline.getEvents().toReversed();
+		const lastReadEventIndex = events.findIndex(
+			e => e.getId() === lastReadEvent
+		);
+
+		return lastReadEventIndex;
+	}
+
 	public getAvatarUrl(size = 96) {
 		const url =
 			this.room?.getAvatarUrl(

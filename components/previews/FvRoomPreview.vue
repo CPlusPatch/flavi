@@ -26,7 +26,7 @@ try {
 // Is "online" or "offline"
 const presence = dmUser && dmUser.getPresenceStatus();
 
-const unreadCount = props.room.room.getRoomUnreadNotificationCount();
+const unreadCount = props.room.getUnreadCount();
 </script>
 
 <template>

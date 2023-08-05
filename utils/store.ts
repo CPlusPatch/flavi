@@ -13,7 +13,7 @@ export const useStore = defineStore("store", {
 			client: null as MatrixClient | null,
 			state: {
 				loaded: false,
-				sidebarOpen: true,
+				sidebarOpen: false,
 			},
 			replies: {} as {
 				// Key is Room ID

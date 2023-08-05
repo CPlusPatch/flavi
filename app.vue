@@ -29,7 +29,9 @@ const isLoggedIn = ref(isUserLoggedIn());
 const store = useStore();
 store.state.loaded = false;
 
-if (isLoggedIn.value) {
+const isClientLoaded = ref(false);
+
+const loadClient = async () => {
 	// Create Matrix client
 	const matrixClient = createClient({
 		baseUrl: localStorage.getItem("homeserver") ?? "",
@@ -64,6 +66,12 @@ if (isLoggedIn.value) {
 		});
 		await verifier.verify();
 	});
+};
+
+if (isLoggedIn.value) {
+	loadClient().then(() => {
+		isClientLoaded.value = true;
+	});
 } else {
 	store.state.loaded = true;
 }
@@ -73,6 +81,10 @@ await nextTick();
 </script>
 
 <template>
+	<NuxtLayout v-if="isLoggedIn && isClientLoaded">
+		<NuxtPage />
+	</NuxtLayout>
+	<Login v-else-if="!isLoggedIn" />
 	<div
 		v-if="!store.state.loaded"
 		class="bg-dark-900 fixed z-100 inset-0 flex h-full w-full items-center justify-center">
@@ -83,10 +95,6 @@ await nextTick();
 			</h1>
 		</div>
 	</div>
-	<NuxtLayout v-if="isLoggedIn">
-		<NuxtPage />
-	</NuxtLayout>
-	<Login v-else />
 </template>
 
 <style>

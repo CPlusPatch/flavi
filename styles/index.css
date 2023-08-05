@@ -6,6 +6,11 @@ body, html {
 	margin: 0;
 }
 
+* {
+	-webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
 .no-scrollbar {
 	-ms-overflow-style: none; /* IE and Edge */
 	scrollbar-width: none; /* Firefox */
@@ -15,15 +20,15 @@ body, html {
 }
 
 .bg-gradient-light {
-        background: linear-gradient(
-                115deg,
-                transparent 0,
-                transparent 20%,
-                rgba(176, 148, 88, 0.1) 35%,
-                rgba(230, 153, 9, 0.1) 70%,
-                transparent 80%,
-                transparent 100%
-        );
+	background: linear-gradient(
+		115deg,
+		transparent 0,
+		transparent 20%,
+		rgba(176, 148, 88, 0.1) 35%,
+		rgba(230, 153, 9, 0.1) 70%,
+		transparent 80%,
+		transparent 100%
+	);
 }
 
 .scale-fix {

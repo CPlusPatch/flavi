@@ -138,12 +138,16 @@ useHead({
 			<div
 				class="w-full bg-dark-800 flex flex-row shadow border-b-1 border-dark-900 text-xl text-white items-center">
 				<ButtonFvButton
-					class="flex items-center justify-center h-full !px-4 !py-2 md:hidden"
+					class="flex items-center justify-center hover:bg-dark-700 !rounded-none h-full !px-4 !py-2 md:hidden"
 					@click="store.state.sidebarOpen = true">
 					<Icon name="tabler:menu-2" class="w-5 h-5"
 				/></ButtonFvButton>
-				<div class="px-2 py-3 flex flex-row gap-2 items-center">
-					<Icon name="tabler:hash" /><span>{{ room.getName() }}</span>
+				<div
+					class="px-2 py-3 flex flex-row whitespace-nowrap line-clamp-1 gap-2 items-center">
+					<Icon name="tabler:hash" class="flex-shrink-0" /><span
+						class="grow overflow-hidden text-ellipsis"
+						>{{ room.getName() }}</span
+					>
 				</div>
 			</div>
 			<div

@@ -10,7 +10,10 @@ const { width } = useWindowSize();
 		<SidebarFvSidebar v-if="width > 768" />
 
 		<HeadlessTransitionRoot v-else appear :show="store.state.sidebarOpen">
-			<HeadlessDialog as="div" class="overflow-hidden fixed inset-0 z-50">
+			<HeadlessDialog
+				as="div"
+				class="overflow-hidden fixed inset-0 z-50"
+				@close="store.state.sidebarOpen = false">
 				<div class="overflow-hidden absolute inset-0">
 					<HeadlessTransitionChild
 						enter="ease-in-out duration-300"
