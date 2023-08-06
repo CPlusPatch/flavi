@@ -356,7 +356,7 @@ onMounted(() => {
 </script>
 
 <template>
-	<form class="w-full px-3" @submit.prevent="send">
+	<form autocomplete="off" class="w-full px-3" @submit.prevent="send">
 		<input
 			ref="fileInput"
 			multiple
