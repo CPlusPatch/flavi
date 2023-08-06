@@ -48,15 +48,6 @@ const getDateDifference = (event1: MatrixEvent, event2: MatrixEvent) =>
 const isPreviousEventMessage =
 	props.previousEvent?.getType() === "m.room.message";
 
-const showHeader = computed(
-	() =>
-		!isPreviousEventMessage ||
-		props.previousEvent.sender?.userId !== message.value.sender?.userId ||
-		getDateDifference(event.value.event, props.previousEvent) >
-			// 5 minutes
-			1000 * 60 * 5
-);
-
 const mediaUrl = ref<string | null>(null);
 
 if (event.value.isImage()) {
@@ -74,6 +65,16 @@ const room = new MatrixRoom(
 
 const reply = room.room.findEventById(event.value.event.replyEventId ?? "");
 
+const showHeader = computed(
+	() =>
+		reply ||
+		!isPreviousEventMessage ||
+		props.previousEvent.sender?.userId !== message.value.sender?.userId ||
+		getDateDifference(event.value.event, props.previousEvent) >
+			// 5 minutes
+			1000 * 60 * 5
+);
+
 const log = console.error;
 
 const replyBody = document.createElement("div");
@@ -88,11 +89,15 @@ const formattedBody = (event: MatrixEvent) => {
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;");
 
-	bodyHtml.innerHTML = (
-		(event.getContent().formatted_body ?? escapedBody ?? "") as string
-	).replace(/<mx-reply.*>.*?<\/mx-reply>/gi, "");
+	bodyHtml.innerHTML = (event.getContent().formatted_body ??
+		escapedBody ??
+		"") as string;
 
 	bodyHtml.innerHTML = linkifyHtml(bodyHtml.innerHTML);
+
+	[...bodyHtml.getElementsByTagName("mx-reply")].forEach(tag => {
+		tag.remove();
+	});
 
 	[...bodyHtml.getElementsByTagName("img")].forEach(img => {
 		img.src = store.client?.mxcUrlToHttp(img.src) ?? "";
@@ -178,18 +183,24 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 			showHeader && 'mt-2',
 		]">
 		<div class="flex flex-row gap-4">
-			<div class="w-10 shrink-0"></div>
 			<TwemojiParse v-if="reply?.sender">
 				<button
-					class="text-left flex flex-row gap-1 items-center text-xs"
+					class="text-left flex flex-row gap-1 reply items-center text-sm pl-5"
 					@click="scrollToOriginal">
-					<Icon
-						name="material-symbols:reply-rounded"
-						class="text-white flex-shrink-0" />
-					<span class="text-white">{{ reply.sender.name }}</span>
+					<div
+						class="border-t-2 border-l-2 rounded-lt w-7 h-2 shrink-0 border-accent-500"></div>
+					<img
+						:src="
+							new MatrixUser(
+								reply.sender.userId,
+								store.client as MatrixClient
+							).getAvatarUrl()
+						"
+						class="h-4 w-4 rounded mb-1" />
+					<span class="text-white mb-1">{{ reply.sender.name }}</span>
 					<div
 						v-if="event.isText()"
-						class="text-dark-400 gap-2 break-word line-clamp-1 text-ellipsis"
+						class="text-accent-50 gap-2 mb-1 break-word line-clamp-1 text-ellipsis"
 						v-html="replyBody.innerHTML"></div>
 				</button>
 			</TwemojiParse>
@@ -205,7 +216,7 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 			<div
 				v-if="showHeader"
 				class="h-10 hover:-translate-y-1 duration-200 w-10 rounded-md overflow-hidden flex items-center justify-center shrink-0"
-				@click="log">
+				@click="log(body)">
 				<img
 					:src="user.getAvatarUrl()"
 					class="w-full h-full object-cover" />
