@@ -74,20 +74,18 @@ const navigateRooms = () => {
 			<Icon name="tabler:message" class="w-6 h-6" />
 		</button>
 		<SeparatorsFvSeparator />
-		<TransitionGroup move-class="duration-200 transition-all">
-			<button
-				v-for="space of spaces"
-				:key="space.id"
-				class="h-10 w-10 hover:translate-x-1 duration-200 rounded-md overflow-hidden flex items-center justify-center shrink-0 shadow"
-				@click="navigateSpace(space as MatrixRoom)">
-				<img
-					:src="
-						space.getAvatarUrl() ??
-						`https://api.dicebear.com/6.x/initials/svg?seed=${space.getName()}&chars=1`
-					"
-					class="w-full h-full object-cover" />
-			</button>
-		</TransitionGroup>
+		<button
+			v-for="space of spaces"
+			:key="space.id"
+			class="h-10 w-10 duration-200 transition-transform hover:translate-x-1 duration-200 rounded-md overflow-hidden flex items-center justify-center shrink-0 shadow"
+			@click="navigateSpace(space as MatrixRoom)">
+			<img
+				:src="
+					space.getAvatarUrl() ??
+					`https://api.dicebear.com/6.x/initials/svg?seed=${space.getName()}&chars=1`
+				"
+				class="w-full h-full object-cover" />
+		</button>
 	</div>
 	<div
 		class="bg-dark-900 flex flex-col gap-1 overflow-hidden relative w-70 shrink-0">
