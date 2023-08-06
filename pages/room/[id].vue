@@ -142,7 +142,7 @@ useHead({
 					<Icon name="tabler:menu-2" class="w-5 h-5"
 				/></ButtonFvButton>
 				<div
-					class="px-2 py-3 flex flex-row whitespace-nowrap line-clamp-1 gap-2 items-center">
+					class="px-2 py-3 flex flex-row whitespace-nowrap line-clamp-1 gap-2 items-center font-semibold">
 					<Icon name="tabler:hash" class="flex-shrink-0" /><span
 						class="grow overflow-hidden text-ellipsis"
 						>{{ room.getName() }}</span
