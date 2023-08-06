@@ -81,18 +81,20 @@ await nextTick();
 </script>
 
 <template>
-	<NuxtLayout v-if="isLoggedIn && isClientLoaded">
-		<NuxtPage />
-	</NuxtLayout>
-	<Login v-else-if="!isLoggedIn" />
-	<div
-		v-if="!store.state.loaded"
-		class="bg-dark-900 fixed z-100 inset-0 flex h-full w-full items-center justify-center">
-		<div class="flex flex-col gap-5 items-center">
-			<Spinner theme="accentDark" class="!w-10 !h-10" />
-			<h1 class="font-semibold text-gray-200 text-sm">
-				Initializing Flavi
-			</h1>
+	<div id="root" class="theme-color-darkblue theme-bg-dark">
+		<NuxtLayout v-if="isLoggedIn && isClientLoaded">
+			<NuxtPage />
+		</NuxtLayout>
+		<Login v-else-if="!isLoggedIn" />
+		<div
+			v-if="!store.state.loaded"
+			class="bg-accent-900 fixed z-100 inset-0 flex h-full w-full items-center justify-center">
+			<div class="flex flex-col gap-5 items-center">
+				<Spinner theme="accentDark" class="!w-10 !h-10" />
+				<h1 class="font-semibold text-gray-200 text-sm">
+					Initializing Flavi
+				</h1>
+			</div>
 		</div>
 	</div>
 </template>

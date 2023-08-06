@@ -135,9 +135,9 @@ useHead({
 	<div class="flex overflow-x-hidden flex-row grow">
 		<div class="grow min-w-0 max-h-full flex flex-col justify-between">
 			<div
-				class="w-full bg-dark-800 flex flex-row shadow border-b-1 border-dark-900 text-xl text-white items-center">
+				class="w-full bg-accent-800 flex flex-row shadow border-b-1 border-accent-900 text-xl text-white items-center">
 				<ButtonFvButton
-					class="flex items-center justify-center hover:bg-dark-700 !rounded-none h-full !px-4 !py-2 md:hidden"
+					class="flex items-center justify-center hover:bg-accent-700 !rounded-none h-full !px-4 !py-2 md:hidden"
 					@click="store.state.sidebarOpen = true">
 					<Icon name="tabler:menu-2" class="w-5 h-5"
 				/></ButtonFvButton>
@@ -181,7 +181,7 @@ useHead({
 					leave-to-class="opacity-0 translate-y-5">
 					<button
 						v-if="!isScrolledToBottom"
-						class="absolute -top-8 right-3 py-1 px-3 bg-dark-900 text-dark-50 rounded-xl text-xs flex items-center gap-2"
+						class="absolute -top-8 right-3 py-1 px-3 bg-accent-900 text-dark-50 rounded-xl text-xs flex items-center gap-2"
 						@click="() => scrollToBottom()">
 						<Icon name="tabler:message-2-down" />
 						Jump to latest
@@ -194,7 +194,7 @@ useHead({
 			</div>
 		</div>
 		<div
-			class="bg-dark-900 w-70 h-full p-3 shrink-0 flex-col gap-2 overflow-hidden hidden md:flex">
+			class="bg-accent-900 w-70 h-full p-3 shrink-0 flex-col gap-2 overflow-hidden hidden md:flex">
 			<h3 class="text-gray-100 text-lg font-semibold">Members</h3>
 			<SeparatorsFvSeparator class="w-full" />
 			<div class="flex-col flex gap-1 overflow-y-scroll no-scrollbar">

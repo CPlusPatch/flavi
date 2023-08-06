@@ -143,7 +143,7 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 		v-if="message"
 		ref="messageRef"
 		:class="[
-			'flex flex-col py-1 px-6 py-0 gap-1 hover:bg-dark-700 relative group duration-200',
+			'flex flex-col py-1 px-6 py-0 gap-1 hover:bg-accent-700 relative group duration-200',
 			showHeader && 'mt-2',
 		]">
 		<div class="flex flex-row gap-4">
@@ -250,7 +250,7 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 		<!-- Floating action buttons for reply, more settings -->
 		<div
 			v-if="event.shouldShowMessage()"
-			class="absolute right-10 -top-7 rounded children:p-2 bg-dark-900 hidden group-hover:flex flex-row overflow-hidden ring-1 ring-dark-700">
+			class="absolute right-10 -top-7 rounded children:p-2 bg-accent-900 hidden group-hover:flex flex-row overflow-hidden ring-1 ring-accent-700">
 			<button
 				class="flex items-center justify-center duration-200"
 				@click="setReply">
