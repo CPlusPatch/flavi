@@ -122,6 +122,36 @@ const setReply = () => {
 	};
 };
 
+const scrollToOriginal = () => {
+	if (!reply) throw new Error("Literally How");
+	const messageContainer = document.getElementById("message-container");
+	if (!messageContainer) throw new Error("No message container found?");
+	const messageContainerBox = messageContainer.getBoundingClientRect();
+	const originalElement = document.getElementById(
+		"message-" + reply.event.event_id
+	);
+	if (!originalElement) {
+		// TODO: find this message by loading older events
+		return;
+	}
+	const originalElementBox = originalElement.getBoundingClientRect();
+	if (
+		originalElementBox.top < messageContainerBox.top ||
+		originalElementBox.bottom > messageContainerBox.bottom
+	) {
+		originalElement?.scrollIntoView({
+			behavior: "smooth",
+		});
+	}
+	if (originalElement?.classList.contains("bg-accent-500")) {
+		return;
+	}
+	originalElement?.classList.add("bg-accent-500");
+	setTimeout(() => {
+		originalElement?.classList.remove("bg-accent-500");
+	}, 1000);
+};
+
 // Mark as read on visible
 const messageRef = ref(null);
 useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
@@ -141,6 +171,7 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 <template>
 	<div
 		v-if="message"
+		:id="'message-' + message.getId()"
 		ref="messageRef"
 		:class="[
 			'flex flex-col py-1 px-6 py-0 gap-1 hover:bg-accent-700 relative group duration-200',
@@ -149,7 +180,9 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 		<div class="flex flex-row gap-4">
 			<div class="w-10 shrink-0"></div>
 			<TwemojiParse v-if="reply?.sender">
-				<div class="flex flex-row gap-1 items-center text-xs">
+				<button
+					class="text-left flex flex-row gap-1 items-center text-xs"
+					@click="scrollToOriginal">
 					<Icon
 						name="material-symbols:reply-rounded"
 						class="text-white flex-shrink-0" />
@@ -158,7 +191,7 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 						v-if="event.isText()"
 						class="text-dark-400 gap-2 break-word line-clamp-1 text-ellipsis"
 						v-html="replyBody.innerHTML"></div>
-				</div>
+				</button>
 			</TwemojiParse>
 		</div>
 		<div
@@ -192,7 +225,7 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 				</div>
 				<TwemojiParse v-if="event.isText()">
 					<div
-						class="text-[#dbdee1] gap-2 break-all message-body whitespace-pre-wrap"
+						class="text-[#dbdee1] gap-2 break-word message-body whitespace-pre-wrap"
 						v-html="body"></div>
 				</TwemojiParse>
 				<div

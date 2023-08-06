@@ -16,6 +16,8 @@ const room = ref(new MatrixRoom(id, store.client as MatrixClient));
 const timeline = ref<MatrixEvent[]>([]);
 const roomTimeline = new RoomTimeline(id, store.client as MatrixClient);
 
+const isDirectMessage = room.value.isDirectMessage();
+
 // Initialize message container and messages
 const messageContainer = ref<HTMLDivElement | null>(null);
 const messages = ref<HTMLDivElement | null>(null);
@@ -142,17 +144,23 @@ useHead({
 					<Icon name="tabler:menu-2" class="w-5 h-5"
 				/></ButtonFvButton>
 				<div
-					class="px-2 py-3 flex flex-row whitespace-nowrap line-clamp-1 gap-2 items-center">
-					<Icon name="tabler:hash" class="flex-shrink-0" /><span
+					class="px-2 py-3 flex flex-row whitespace-nowrap line-clamp-1 gap-2 items-center font-semibold">
+					<Icon
+						:name="isDirectMessage ? 'tabler:at' : 'tabler:hash'"
+						class="flex-shrink-0" /><span
 						class="grow overflow-hidden text-ellipsis"
 						>{{ room.getName() }}</span
 					>
 				</div>
 			</div>
 			<div
+				id="message-container"
 				ref="messageContainer"
 				class="grow max-w-full pt-6 pb-4 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col"
 				@scroll="updateIsScrolledToBottom">
+				<!-- this element is used to push messages to the bottom of the message container, such as when there's only a few messages. -->
+				<!-- justify-content: flex-end; should work, but a bug in chrome causes that to break vertical scrolling. -->
+				<div class="m-t-auto"></div>
 				<MessagesFvMessageSkeleton
 					v-if="roomTimeline.canPaginateBackward()" />
 				<div
