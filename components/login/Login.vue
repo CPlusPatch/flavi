@@ -170,7 +170,7 @@ const submit = async (e: Event) => {
 						<div class="text-sm">
 							<a
 								href="#"
-								class="font-semibold text-orange-300 hover:text-orange-400"
+								class="font-semibold text-accent-300 hover:text-accent-400"
 								@click="showingPassword = !showingPassword"
 								>{{ showingPassword ? "Hide" : "Show" }}</a
 							>
@@ -185,7 +185,7 @@ const submit = async (e: Event) => {
 							placeholder="Your password"
 							required
 							:loading="loading"
-							class="block w-full rounded-md !ring-orange-500 !border-gray-600" />
+							class="block w-full rounded-md !ring-accent-500 !border-gray-600" />
 					</div>
 				</div>
 
@@ -202,7 +202,7 @@ const submit = async (e: Event) => {
 					<ButtonFvButton
 						:loading="loading"
 						type="submit"
-						theme="orange"
+						theme="accent"
 						class="flex w-full">
 						{{ flowStage === FlowStage.Login ? "Sign in" : "Next" }}
 					</ButtonFvButton>

@@ -64,12 +64,12 @@ const navigateRooms = () => {
 	<div
 		class="w-16 bg-dark-950 shrink-0 flex flex-col items-center py-2 gap-3">
 		<button
-			class="h-10 w-10 rounded-md flex items-center ring-dark-600 hover:ring-1 bg-dark-800 duration-200 rounded hover:shadow-xl justify-center shrink-0 text-orange-100"
+			class="h-10 w-10 rounded-md flex items-center ring-dark-600 hover:ring-1 bg-dark-800 duration-200 rounded hover:shadow-xl justify-center shrink-0 text-accent-100"
 			@click="navigateDMs">
 			<Icon name="tabler:mail" class="w-6 h-6" />
 		</button>
 		<button
-			class="h-10 w-10 rounded-md flex items-center ring-dark-600 hover:ring-1 bg-dark-800 duration-200 rounded hover:shadow-xl justify-center shrink-0 text-orange-100"
+			class="h-10 w-10 rounded-md flex items-center ring-dark-600 hover:ring-1 bg-dark-800 duration-200 rounded hover:shadow-xl justify-center shrink-0 text-accent-100"
 			@click="navigateRooms">
 			<Icon name="tabler:message" class="w-6 h-6" />
 		</button>

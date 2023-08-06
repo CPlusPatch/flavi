@@ -436,7 +436,7 @@ onMounted(() => {
 								"
 								class="absolute bottom-0 inset-x-0 h-2">
 								<div
-									class="h-full bg-orange-500"
+									class="h-full bg-accent-500"
 									:style="{
 										width: `${
 											currentlyUploadingFileProgress * 100

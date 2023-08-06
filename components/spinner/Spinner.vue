@@ -1,14 +1,14 @@
 <script setup lang="ts">
 const themes = {
-	gray: "text-gray-200 fill-orange-400",
-	orange: "text-orange-400 fill-white",
-	orangeLight:
-		"text-orange-700 dark:text-orange-200 bg-orange-100 dark:bg-orange-800 hover:bg-orange-200 border-transparent",
-	orangeDark: "text-dark-600 fill-orange-600",
+	gray: "text-gray-200 fill-accent-400",
+	accent: "text-accent-400 fill-white",
+	accentLight:
+		"text-accent-700 dark:text-accent-200 bg-accent-100 dark:bg-accent-800 hover:bg-accent-200 border-transparent",
+	accentDark: "text-dark-600 fill-dark-300",
 };
 
 defineProps<{
-	theme?: "gray" | "orange" | "orangeLight" | "orangeDark";
+	theme?: "gray" | "accent" | "accentLight" | "accentDark";
 }>();
 </script>
 
