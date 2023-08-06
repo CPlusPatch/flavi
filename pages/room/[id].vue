@@ -26,7 +26,6 @@ const isScrolledToBottom = ref(true);
 // Update scroll state
 function updateIsScrolledToBottom() {
 	if (!messageContainer.value) return;
-	console.error(messageContainer.value.scrollTop);
 	isScrolledToBottom.value =
 		Math.abs(
 			messageContainer.value.scrollHeight -
