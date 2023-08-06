@@ -378,7 +378,7 @@ onMounted(() => {
 				<span class="text-white">{{
 					eventReplyingTo.sender?.rawDisplayName
 				}}</span>
-				<div class="text-dark-400 gap-2 break-word line-clamp-1">
+				<div class="text-accent-50 gap-2 break-word line-clamp-1">
 					{{ eventReplyingTo.getContent().body }}
 				</div>
 				<button
