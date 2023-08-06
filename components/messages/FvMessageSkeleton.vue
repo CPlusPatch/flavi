@@ -13,7 +13,8 @@ const amountOfSubMessages = Math.ceil(Math.random() * 3);
 				v-else
 				class="h-10 bg-gray-500/40 animate-pulse duration-200 w-10 rounded-md shrink-0"></div>
 			<div
-				class="flex flex-col gap-3 text-sm grow overflow-hidden break-words">
+				class="flex flex-col gap-3 text-sm grow overflow-hidden"
+				style="overflow-wrap: anywhere">
 				<div
 					v-if="index === 1"
 					:class="[

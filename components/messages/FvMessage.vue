@@ -212,7 +212,8 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 			</div>
 			<div
 				:key="String(isLoading)"
-				class="flex flex-col gap-1 text-sm grow break-words">
+				class="flex flex-col gap-1 text-sm grow"
+				style="overflow-wrap: anywhere">
 				<div v-if="showHeader" class="flex flex-row items-center gap-3">
 					<div :class="['font-semibold text-[#f2f3f5]']">
 						{{ user.getDisplayName() }}
