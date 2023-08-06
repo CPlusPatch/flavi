@@ -104,7 +104,7 @@ function shortenBytes(n: number) {
 			class="!p-1 !rounded-full !absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hover:scale-105"
 			@click="loadMedia">
 			<Icon v-if="!loading" name="ic:round-play-arrow" class="w-6 h-6" />
-			<Spinner v-else theme="orangeDark" class="w-6 h-6" />
+			<Spinner v-else theme="accentDark" class="w-6 h-6" />
 		</ButtonFvButton>
 		<div
 			v-if="!videoUrl"
@@ -118,7 +118,7 @@ function shortenBytes(n: number) {
 					fill="none"
 					stroke-width="3"></circle>
 				<circle
-					class="stroke-orange-500"
+					class="stroke-accent-500"
 					cx="13.5"
 					cy="13.5"
 					r="10"

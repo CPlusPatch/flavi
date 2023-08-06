@@ -89,7 +89,7 @@ await nextTick();
 		v-if="!store.state.loaded"
 		class="bg-dark-900 fixed z-100 inset-0 flex h-full w-full items-center justify-center">
 		<div class="flex flex-col gap-5 items-center">
-			<Spinner theme="orangeDark" class="!w-10 !h-10" />
+			<Spinner theme="accentDark" class="!w-10 !h-10" />
 			<h1 class="font-semibold text-gray-200 text-sm">
 				Initializing Flavi
 			</h1>

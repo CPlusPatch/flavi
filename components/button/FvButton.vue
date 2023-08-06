@@ -4,13 +4,13 @@ import Spinner from "../spinner/Spinner.vue";
 
 const themes: { [key: string]: string } = {
 	gray: "text-gray-200 !bg-dark-800 ring-1 ring-inset ring-gray-700 hover:bg-dark-600 outline-none",
-	orange: "!bg-orange-600 hover:!bg-orange-700 text-white border-transparent",
-	orangeLight:
-		"text-orange-700 dark:text-orange-200 !bg-orange-100 dark:bg-orange-800 hover:bg-orange-200 border-transparent",
+	accent: "!bg-accent-600 hover:!bg-accent-700 text-white border-transparent",
+	accentLight:
+		"text-accent-700 dark:text-accent-200 !bg-accent-100 dark:bg-accent-800 hover:bg-accent-200 border-transparent",
 };
 
 interface ButtonProps extends /* @vue-ignore */ ButtonHTMLAttributes {
-	theme?: "gray" | "orange" | "orangeLight";
+	theme?: "gray" | "accent" | "accentLight";
 	loading?: boolean;
 	spinnerClasses?: string;
 	disabled?: boolean;

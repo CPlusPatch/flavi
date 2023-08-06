@@ -198,7 +198,7 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 				<div
 					v-if="isLoading"
 					class="text-gray-400 flex flex-row gap-x-2 items-center">
-					<Spinner theme="orangeDark" /> Decrypting...
+					<Spinner theme="accentDark" /> Decrypting...
 				</div>
 				<div
 					v-if="event.isImage()"
