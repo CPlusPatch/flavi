@@ -291,7 +291,7 @@ const preventOpeningFileDialog = (e: KeyboardEvent) => {
 		if (emojisSuggesterEmojis.value.length === 1) {
 			return (
 				emojiPicker.value?.children[0] as HTMLDivElement
-			).classList.add("bg-dark-800");
+			).classList.add("bg-accent-800");
 		}
 		if (e.key === "ArrowRight" || e.key === "Tab") {
 			emojiFocusIndex.value =
@@ -307,9 +307,9 @@ const preventOpeningFileDialog = (e: KeyboardEvent) => {
 				i
 			] as HTMLDivElement;
 			if (i === emojiFocusIndex.value) {
-				emojiElement.classList.add("bg-dark-800");
+				emojiElement.classList.add("bg-accent-800");
 			} else {
-				emojiElement.classList.remove("bg-dark-800");
+				emojiElement.classList.remove("bg-accent-800");
 			}
 		}
 	}
@@ -370,7 +370,7 @@ onMounted(() => {
 
 		<div
 			v-if="eventReplyingTo"
-			class="w-full bg-dark-900 rounded-md text-sm text-white p-2">
+			class="w-full bg-accent-900 rounded-md text-sm text-white p-2">
 			<div class="flex flex-row gap-1 items-center text-xs">
 				<Icon
 					name="material-symbols:reply-rounded"
@@ -382,7 +382,7 @@ onMounted(() => {
 					{{ eventReplyingTo.getContent().body }}
 				</div>
 				<button
-					class="ml-auto flex items-center justify-center hover:bg-dark-800"
+					class="ml-auto flex items-center justify-center hover:bg-accent-800"
 					@click="delete store.replies[room.id]">
 					<Icon name="tabler:x" class="text-white" />
 				</button>
@@ -390,7 +390,7 @@ onMounted(() => {
 		</div>
 
 		<div
-			class="!bg-dark-700 rounded-md gap-6 flex flex-col ring-1 relative duration-200 grow py-2 text-sm ring-dark-600 text-gray-100">
+			class="!bg-accent-700 rounded-md gap-6 flex flex-col ring-1 relative duration-200 grow py-2 text-sm ring-accent-600 text-gray-100">
 			<div
 				v-if="files.length > 0"
 				class="flex justify-start gap-2 overflow-x-scroll no-scrollbar p-2">
@@ -405,11 +405,11 @@ onMounted(() => {
 						v-for="(file, index) of files"
 						:key="file.name"
 						:class="[
-							'overflow-hidden rounded relative shrink-0 bg-dark-800 p-2',
+							'overflow-hidden rounded relative shrink-0 bg-accent-800 p-2',
 						]">
 						<ButtonFvButton
 							theme="gray"
-							class="!absolute !bg-dark-800 top-1 right-1 !p-1 !rounded"
+							class="!absolute !bg-accent-800 top-1 right-1 !p-1 !rounded"
 							@click="
 								files = files.filter(f => f.name !== file.name)
 							">
@@ -417,7 +417,7 @@ onMounted(() => {
 						</ButtonFvButton>
 						<div
 							:class="[
-								'bg-dark-700 h-30',
+								'bg-accent-700 h-30',
 								!file.type.includes('image') &&
 									'w-30 flex items-center justify-center',
 							]">
@@ -462,11 +462,11 @@ onMounted(() => {
 				<div
 					v-if="emojisSuggesterEmojis.length > 0"
 					ref="emojiPicker"
-					class="absolute w-full overflow-x-scroll no-scrollbar bottom-12/10 flex flex-row gap-1 p-2 bg-dark-900 rounded-md ring-1 shadow ring-dark-700">
+					class="absolute w-full overflow-x-scroll no-scrollbar bottom-12/10 flex flex-row gap-1 p-2 bg-accent-900 rounded-md ring-1 shadow ring-accent-700">
 					<button
 						v-for="emoji in emojisSuggesterEmojis"
 						:key="(emoji as any).char || emoji.name"
-						class="flex items-center gap-2 rounded px-2 py-1.5 duration-200 hover:bg-dark-800"
+						class="flex items-center gap-2 rounded px-2 py-1.5 duration-200 hover:bg-accent-800"
 						:title="emoji.name"
 						type="button"
 						@click="replaceEmoji(emoji.name)">
@@ -484,7 +484,7 @@ onMounted(() => {
 
 			<div class="flex flex-row gap-2 mx-2">
 				<button
-					class="duration-100 ring-dark-600 hover:ring-1 rounded hover:shadow-xl hover:bg-dark-800"
+					class="duration-100 ring-accent-600 hover:ring-1 rounded hover:shadow-xl hover:bg-accent-800"
 					@click.prevent="fileInput?.click()">
 					<Icon
 						name="ic:round-file-upload"
@@ -503,7 +503,7 @@ onMounted(() => {
 				<button
 					:disabled="sending"
 					type="submit"
-					class="duration-100 ring-dark-800 !bg-dark-900 py-1 px-2 flex flex-row items-center gap-1 font-semibold rounded-md ring-1 rounded">
+					class="duration-100 ring-accent-800 !bg-accent-900 py-1 px-2 flex flex-row items-center gap-1 font-semibold rounded-md ring-1 rounded">
 					<!-- <Icon name="tabler:send" class="h-5 h-5 text-white" /> -->
 					Send
 				</button>

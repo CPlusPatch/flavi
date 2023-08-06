@@ -32,7 +32,7 @@ const unreadCount = props.room.getUnreadCount();
 <template>
 	<NuxtLink
 		:to="`/room/${room.id}`"
-		class="flex flex-row gap-2 duration-200 hover:bg-dark-800 p-2 rounded"
+		class="flex flex-row gap-2 duration-200 hover:bg-accent-800 p-2 rounded"
 		@click="store.state.sidebarOpen = false">
 		<div
 			class="h-8 w-8 relative rounded-full shrink-0 flex items-center justify-center shrink-0 shadow">
@@ -41,7 +41,7 @@ const unreadCount = props.room.getUnreadCount();
 				class="w-full h-full object-cover rounded-full" />
 			<div
 				v-if="dmUserId"
-				class="absolute rounded-full p-1 -bottom-1 -right-1 bg-dark-800">
+				class="absolute rounded-full p-1 -bottom-1 -right-1 bg-accent-800">
 				<div
 					v-if="presence === 'online'"
 					class="bg-green-500 w-2 h-2 rounded-full"></div>

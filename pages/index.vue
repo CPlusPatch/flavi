@@ -6,9 +6,9 @@ const store = useStore();
 	<div class="flex overflow-x-hidden flex-row grow">
 		<div class="grow min-w-0 max-h-full flex flex-col justify-between">
 			<div
-				class="w-full bg-dark-800 flex flex-row shadow border-b-1 border-dark-900 text-xl text-white items-center">
+				class="w-full bg-accent-800 flex flex-row shadow border-b-1 border-accent-900 text-xl text-white items-center">
 				<ButtonFvButton
-					class="flex items-center justify-center h-full hover:bg-dark-700 !rounded-none !px-4 !py-2 md:hidden"
+					class="flex items-center justify-center h-full hover:bg-accent-700 !rounded-none !px-4 !py-2 md:hidden"
 					@click="store.state.sidebarOpen = true">
 					<Icon name="tabler:menu-2" class="w-5 h-5"
 				/></ButtonFvButton>

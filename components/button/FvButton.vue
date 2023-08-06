@@ -3,7 +3,7 @@ import { ButtonHTMLAttributes } from "nuxt/dist/app/compat/capi";
 import Spinner from "../spinner/Spinner.vue";
 
 const themes: { [key: string]: string } = {
-	gray: "text-gray-200 !bg-dark-800 ring-1 ring-inset ring-gray-700 hover:bg-dark-600 outline-none",
+	gray: "text-gray-200 !bg-accent-800 ring-1 ring-inset ring-gray-700 hover:bg-accent-600 outline-none",
 	accent: "!bg-accent-600 hover:!bg-accent-700 text-white border-transparent",
 	accentLight:
 		"text-accent-700 dark:text-accent-200 !bg-accent-100 dark:bg-accent-800 hover:bg-accent-200 border-transparent",

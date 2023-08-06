@@ -111,7 +111,7 @@ const submit = async (e: Event) => {
 
 <template>
 	<div
-		class="flex min-h-screen w-full flex-1 flex-col justify-center px-6 py-12 lg:px-8 bg-dark-900">
+		class="flex min-h-screen w-full flex-1 flex-col justify-center px-6 py-12 lg:px-8 bg-accent-900">
 		<div class="sm:mx-auto sm:w-full sm:max-w-sm">
 			<h2
 				class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-50">

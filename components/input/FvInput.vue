@@ -24,7 +24,7 @@ export default {
 			:name="props.name"
 			:disabled="props.loading"
 			:class="[
-				'block peer pr-3 py-1.5 text-white focus:ring-2 duration-200 ring-accent-500 border border-gray-600 placeholder:text-gray-500 w-full pl-3 bg-dark-800 rounded-md shadow-sm duration-200 outline-none disabled:bg-dark-700 focus:outline-none text-sm leading-6',
+				'block peer pr-3 py-1.5 text-white focus:ring-2 duration-200 ring-accent-500 border border-gray-600 placeholder:text-gray-500 w-full pl-3 bg-accent-800 rounded-md shadow-sm duration-200 outline-none disabled:bg-accent-700 focus:outline-none text-sm leading-6',
 				props.icon && (props.hideIcon ? 'focus:pl-8' : 'pl-8'),
 			]"
 			v-bind="$attrs" />

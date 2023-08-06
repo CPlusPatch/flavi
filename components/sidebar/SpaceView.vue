@@ -55,7 +55,7 @@ timelineChange();
 
 <template>
 	<div class="h-full overflow-hidden">
-		<div class="w-full py-3 px-3 border-b border-dark-800">
+		<div class="w-full py-3 px-3 border-b border-accent-800">
 			<h1 class="font-semibold text-lg text-white">
 				{{ space.getName() }}
 			</h1>

@@ -1,0 +1,58 @@
+#root.theme-color-darkblue {
+	/* Assign --theme-color-accent-50 to --theme-color-accent-950 to hex codes */
+	--theme-color-accent-50: #CCC9FF;
+	--theme-color-accent-100: #B2AEED;
+	--theme-color-accent-200: #9490D4;
+	--theme-color-accent-300: #7571B5;
+	--theme-color-accent-400: #524C83;
+	--theme-color-accent-500: #39335E;
+	--theme-color-accent-600: #2D254B;
+	--theme-color-accent-700: #211A39;
+	--theme-color-accent-800: #161026;
+	--theme-color-accent-900: #0B0714;
+	--theme-color-accent-950: #000000;
+}
+
+#root.theme-bg-darkblue {
+	/* Same for --theme-bg-accent */
+	--theme-bg-accent-50: #F3F5FF;
+	--theme-bg-accent-100: #D3D8ED;
+	--theme-bg-accent-200: #AFB7D4;
+	--theme-bg-accent-300: #8A94B5;
+	--theme-bg-accent-400: #5C6483;
+	--theme-bg-accent-500: #3E455E;
+	--theme-bg-accent-600: #30354B;
+	--theme-bg-accent-700: #222739;
+	--theme-bg-accent-800: #161926;
+	--theme-bg-accent-900: #0B0D14;
+	--theme-bg-accent-950: #000000;
+}
+
+#root.theme-bg-dark {
+	--theme-bg-accent-50: #fafafa;
+	--theme-bg-accent-100: #f4f4f5;
+	--theme-bg-accent-200: #e4e4e7;
+	--theme-bg-accent-300: #d4d4d8;
+	--theme-bg-accent-400: #a1a1aa;
+	--theme-bg-accent-500: #71717a;
+	--theme-bg-accent-600: #52525b;
+	--theme-bg-accent-700: #3f3f46;
+	--theme-bg-accent-800: #27272a;
+	--theme-bg-accent-900: #18181b;
+	--theme-bg-accent-950: #09090b;
+}
+
+#root.theme-bg-darkorange {
+	/* Same for --theme-bg-accent */
+	--theme-bg-accent-50: #f9faf9;
+	--theme-bg-accent-100: #f1f1f1;
+	--theme-bg-accent-200: #dfdedf;
+	--theme-bg-accent-300: #bcbbbc;
+	--theme-bg-accent-400: #909291;
+	--theme-bg-accent-500: #71706b;
+	--theme-bg-accent-600: #5a554e;
+	--theme-bg-accent-700: #443f3b;
+	--theme-bg-accent-800: #2e2b29;
+	--theme-bg-accent-900: #1c191a;
+	--theme-bg-accent-950: #09090b;
+}
