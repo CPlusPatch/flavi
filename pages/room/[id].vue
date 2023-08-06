@@ -189,7 +189,7 @@ useHead({
 					leave-to-class="opacity-0 translate-y-5">
 					<button
 						v-if="!isScrolledToBottom"
-						class="absolute -top-8 right-3 py-1 px-3 bg-accent-900 text-dark-50 rounded-xl text-xs flex items-center gap-2"
+						class="absolute -top-8 right-3 py-1 px-3 bg-accent-900 text-accent-50 rounded-xl text-xs flex items-center gap-2"
 						@click="() => scrollToBottom()">
 						<Icon name="tabler:message-2-down" />
 						Jump to latest

@@ -4,7 +4,7 @@ const themes = {
 	accent: "text-accent-400 fill-white",
 	accentLight:
 		"text-accent-700 dark:text-accent-200 bg-accent-100 dark:bg-accent-800 hover:bg-accent-200 border-transparent",
-	accentDark: "text-dark-600 fill-dark-300",
+	accentDark: "text-accent-600 fill-accent-300",
 };
 
 defineProps<{

@@ -29,6 +29,12 @@ export default defineConfig({
 			}),
 		],
 		[
+			/^fill-accent-(\d+)$/,
+			([, d]) => ({
+				fill: `var(--theme-bg-accent-${d})`,
+			}),
+		],
+		[
 			/^ring-accent-(\d+)$/,
 			([, d]) => ({
 				"--un-ring-color": `var(--theme-bg-accent-${d})`,
