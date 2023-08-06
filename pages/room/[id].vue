@@ -26,6 +26,7 @@ const isScrolledToBottom = ref(true);
 // Update scroll state
 function updateIsScrolledToBottom() {
 	if (!messageContainer.value) return;
+	console.error(messageContainer.value.scrollTop);
 	isScrolledToBottom.value =
 		Math.abs(
 			messageContainer.value.scrollHeight -
@@ -36,12 +37,8 @@ function updateIsScrolledToBottom() {
 }
 
 // Scroll to bottom of message container
-const scrollToBottom = (skipScrolledToBottomCheck = false) => {
+const scrollToBottom = () => {
 	if (!messages.value || !messageContainer.value) return;
-
-	if (!skipScrolledToBottomCheck && !updateIsScrolledToBottom()) {
-		return;
-	}
 
 	const lastMessage =
 		messages.value.children[messages.value.children.length - 1];
@@ -53,8 +50,11 @@ const scrollToBottom = (skipScrolledToBottomCheck = false) => {
 // Update timeline on new event
 const newEvent = async () => {
 	timeline.value = [...roomTimeline.timeline];
+	const wasScrolled = updateIsScrolledToBottom();
 	await nextTick();
-	scrollToBottom();
+	if (wasScrolled) {
+		scrollToBottom();
+	}
 };
 
 // Update timeline when ready
@@ -91,7 +91,7 @@ onUnmounted(removeListeners);
 // Scroll to bottom on mount
 onMounted(() => {
 	if (!messages.value) return;
-	scrollToBottom(true);
+	scrollToBottom();
 });
 
 let isBackwards = false;
@@ -108,7 +108,7 @@ const loadMoreEvents = async () => {
 	await nextTick();
 
 	if (!isBackwards) {
-		scrollToBottom(true);
+		scrollToBottom();
 	}
 
 	isBackwards = true;
@@ -183,7 +183,7 @@ useHead({
 					<button
 						v-if="!isScrolledToBottom"
 						class="absolute -top-8 right-3 py-1 px-3 bg-dark-900 text-dark-50 rounded-xl text-xs flex items-center gap-2"
-						@click="() => scrollToBottom(true)">
+						@click="() => scrollToBottom()">
 						<Icon name="tabler:message-2-down" />
 						Jump to latest
 					</button>
