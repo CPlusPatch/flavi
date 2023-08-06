@@ -192,7 +192,7 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 				</div>
 				<TwemojiParse v-if="event.isText()">
 					<div
-						class="text-[#dbdee1] gap-2 break-all message-body whitespace-pre-wrap"
+						class="text-[#dbdee1] gap-2 break-word message-body whitespace-pre-wrap"
 						v-html="body"></div>
 				</TwemojiParse>
 				<div
