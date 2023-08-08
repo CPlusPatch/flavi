@@ -25,25 +25,26 @@ export default defineConfig({
 		[
 			/^bg-accent-(\d+)$/,
 			([, d]) => ({
-				"background-color": `var(--theme-bg-accent-${d})`,
+				"--un-bg-opacity": "1",
+				"background-color": `rgba(var(--theme-bg-accent-${d}), var(--un-bg-opacity))`,
 			}),
 		],
 		[
 			/^fill-accent-(\d+)$/,
 			([, d]) => ({
-				fill: `var(--theme-bg-accent-${d})`,
+				fill: `rgb(var(--theme-bg-accent-${d}))`,
 			}),
 		],
 		[
 			/^ring-accent-(\d+)$/,
 			([, d]) => ({
-				"--un-ring-color": `var(--theme-bg-accent-${d})`,
+				"--un-ring-color": `rgb(var(--theme-bg-accent-${d}))`,
 			}),
 		],
 		[
 			/^border-accent-(\d+)$/,
 			([, d]) => ({
-				"border-color": `var(--theme-bg-accent-${d})`,
+				"border-color": `rgb(var(--theme-bg-accent-${d}))`,
 			}),
 		],
 		// Do the same for text-color

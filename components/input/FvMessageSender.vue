@@ -336,6 +336,19 @@ const onInput = (e: Event) => {
 	}
 };
 
+const preloadUserEmojis = () => {
+	userEmojisMapped.forEach(emoji => {
+		const img = new Image();
+		img.src = store.client?.mxcUrlToHttp(emoji.url) ?? "";
+	});
+
+	// Preload all of jdecked/twemoji's emojis via the jdDeliver cdn
+	/* emojis.forEach(emoji => {
+		const img = new Image();
+		img.src = `https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/svg/${emoji.codes}.svg`;
+	}); */
+};
+
 const eventReplyingTo = computed(
 	() =>
 		store.replies[props.room.id] &&
@@ -352,6 +365,7 @@ watch(files, () => {
 
 onMounted(() => {
 	mainInput.value?.focus();
+	preloadUserEmojis();
 });
 </script>
 
