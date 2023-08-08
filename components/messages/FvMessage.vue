@@ -11,6 +11,7 @@ const store = useStore();
 const props = defineProps<{
 	message: MatrixEvent;
 	previousEvent?: MatrixEvent;
+	hasBeenReadBy: MatrixUser[];
 }>();
 
 const isLoading = ref(props.message.isBeingDecrypted());
@@ -290,6 +291,31 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 						class="align-baseline mb-0.5 mr-1" />Redacted Event
 				</div>
 			</div>
+			<Transition
+				enter-from-class="scale-60 opacity-0"
+				enter-to-class="scale-100 opacity-100"
+				enter-active-class="duration-300"
+				leave-to-class="scale-60 opacity-0"
+				leave-from-class="scale-100 opacity-100"
+				leave-active-class="duration-300">
+				<div v-if="hasBeenReadBy.length > 0" class="flex items-end">
+					<div class="flex-row gap-1 flex">
+						<img
+							v-for="user of hasBeenReadBy.slice(0, 2)"
+							:key="user.id"
+							:src="user.getAvatarUrl()"
+							class="w-4 h-4 rounded-full ring-1 ring-accent-800" />
+						<div
+							v-if="hasBeenReadBy.length > 2"
+							:title="`Read by ${hasBeenReadBy
+								.map(u => u.getDisplayName())
+								.join(', ')}`"
+							class="rounded-full w-4 h-4 flex items-center justify-center bg-accent-800 text-accent-100">
+							<Icon name="tabler:dots" class="w-3.5 h-3.5" />
+						</div>
+					</div>
+				</div>
+			</Transition>
 		</div>
 
 		<!-- Floating action buttons for reply, more settings -->

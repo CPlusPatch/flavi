@@ -64,16 +64,40 @@ const ready = () => {
 };
 
 const typingMembers = ref<Set<string>>(new Set());
+const readReceipts = ref<{
+	[key: string]: MatrixUser[];
+}>({});
 
 const updateTypingMembers = (members: Set<string>) => {
 	typingMembers.value = members;
+};
+
+const updateReadReceipts = () => {
+	const newReadReceipts: any = [];
+	timeline.value.forEach(event => {
+		const users = room.value.room
+			.getReceiptsForEvent(event as MatrixEvent)
+			.filter(
+				r =>
+					r.type === "m.read" &&
+					r.userId !== store.client?.getUserId()
+			)
+			.map(r => new MatrixUser(r.userId, store.client as MatrixClient));
+
+		if (users.length > 0) {
+			newReadReceipts[event.getId() ?? ""] = users;
+		}
+	});
+
+	readReceipts.value = newReadReceipts;
 };
 
 // Add event listeners for timeline updates
 roomTimeline
 	.on(events.events.timeline.EVENT, newEvent)
 	.on(events.events.timeline.READY, ready)
-	.on(events.events.timeline.TYPING_MEMBERS_UPDATED, updateTypingMembers);
+	.on(events.events.timeline.TYPING_MEMBERS_UPDATED, updateTypingMembers)
+	.on(events.events.timeline.LIVE_RECEIPT, updateReadReceipts);
 
 // Remove event listeners on route leave or unmount
 function removeListeners() {
@@ -81,10 +105,8 @@ function removeListeners() {
 	roomTimeline
 		.off(events.events.timeline.EVENT, newEvent)
 		.off(events.events.timeline.READY, ready)
-		.off(
-			events.events.timeline.TYPING_MEMBERS_UPDATED,
-			updateTypingMembers
-		);
+		.off(events.events.timeline.TYPING_MEMBERS_UPDATED, updateTypingMembers)
+		.off(events.events.timeline.LIVE_RECEIPT, updateReadReceipts);
 }
 onBeforeRouteLeave(removeListeners);
 onUnmounted(removeListeners);
@@ -132,6 +154,7 @@ await roomTimeline.loadLiveTimeline();
 useHead({
 	title: `${room.value.getName()} · Flavi`,
 });
+updateReadReceipts();
 </script>
 <template>
 	<div class="flex overflow-x-hidden flex-row grow">
@@ -173,6 +196,9 @@ useHead({
 						v-for="(message, index) in timeline"
 						:key="message.getId()">
 						<FvMessage
+							:has-been-read-by="
+								readReceipts[message.getId() ?? ''] ?? []
+							"
 							:message="(message as MatrixEvent)"
 							:previous-event="(timeline[index - 1] as MatrixEvent)" />
 					</div>
