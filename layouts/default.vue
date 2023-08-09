@@ -2,6 +2,11 @@
 const store = useStore();
 
 const { width } = useWindowSize();
+
+onMounted(() => {
+	store.state.loaded = true;
+	console.info("Loaded app");
+});
 </script>
 
 <template>

@@ -30,11 +30,6 @@ onUnmounted(() => {
 
 timelineChange();
 
-onMounted(() => {
-	store.state.loaded = true;
-	console.info("Loaded app");
-});
-
 enum ViewTab {
 	DirectMessages,
 	Space,

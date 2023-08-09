@@ -15,6 +15,10 @@ import { isUserLoggedIn } from "~/utils/checks";
 
 window.global ||= window;
 
+document
+	.getElementsByTagName("html")[0]
+	.classList.add("theme-color-darkblue", "theme-bg-dark");
+
 // Initialize IndexedDB stores
 const indexedDBStore = new IndexedDBStore({
 	indexedDB,
