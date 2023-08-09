@@ -32,13 +32,13 @@ const unreadCount = props.room.getUnreadCount();
 <template>
 	<NuxtLink
 		:to="`/room/${room.id}`"
-		class="flex flex-row gap-2 duration-200 hover:bg-accent-800 p-2 rounded"
+		class="flex flex-row gap-2 duration-200 hover:bg-accent-800 p-2 rounded items-center"
 		@click="store.state.sidebarOpen = false">
 		<div
 			class="h-8 w-8 relative rounded-full shrink-0 flex items-center justify-center shrink-0 shadow">
 			<img
 				:src="room.getAvatarUrl(96)"
-				class="w-full h-full object-cover rounded-full" />
+				class="w-full h-full object-cover rounded-lg" />
 			<div
 				v-if="dmUserId"
 				class="absolute rounded-full p-1 -bottom-1 -right-1 bg-accent-800">

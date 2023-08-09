@@ -180,8 +180,8 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 		:id="'message-' + message.getId()"
 		ref="messageRef"
 		:class="[
-			'flex flex-col py-1 px-6 py-0 gap-1 hover:bg-accent-700 !bg-opacity-50 relative group duration-200',
-			showHeader && 'mt-2',
+			'flex flex-col pb-1.5 pt-1 px-6 py-0 gap-1 hover:bg-accent-700 !bg-opacity-50 relative group duration-200',
+			showHeader && 'mt-3',
 		]">
 		<div class="flex flex-row gap-4">
 			<TwemojiParse v-if="reply?.sender">
@@ -303,6 +303,7 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 						<img
 							v-for="user of hasBeenReadBy.slice(0, 2)"
 							:key="user.id"
+							:title="`Read by ${user.getDisplayName()}`"
 							:src="user.getAvatarUrl()"
 							class="w-4 h-4 rounded-full ring-1 ring-accent-800" />
 						<div

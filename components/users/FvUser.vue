@@ -17,7 +17,7 @@ const presence = props.user.getPresenceStatus();
 					user.getAvatarUrl(96) ??
 					`https://api.dicebear.com/6.x/initials/svg?seed=${user.getDisplayName()}&chars=1`
 				"
-				class="w-full h-full object-cover rounded-full" />
+				class="w-full h-full object-cover rounded-lg" />
 			<div
 				class="absolute rounded-full p-1 -bottom-1 -right-1 bg-accent-800">
 				<div

@@ -49,22 +49,5 @@ timelineChange();
 </script>
 
 <template>
-	<div class="h-full overflow-hidden">
-		<div class="w-full py-3 px-3 border-b border-accent-800">
-			<h1 class="font-semibold text-lg text-white">Rooms</h1>
-		</div>
-		<div
-			class="p-2 flex-col gap-1 h-full flex no-scrollbar overflow-y-scroll overflow-x-hidden">
-			<TransitionGroup
-				v-if="roomList.length > 0"
-				move-class="duration-200 transition-all">
-				<PreviewsFvRoomPreview
-					v-for="{ room, lastMessage } of roomList"
-					:key="room.id"
-					:room="(room as any)"
-					:last-message="(lastMessage as any)" />
-			</TransitionGroup>
-			<PreviewsFvRoomPreviewSkeleton v-for="i of 15" v-else :key="i" />
-		</div>
-	</div>
+	<SidebarFvSidebarRoomList title="Rooms" :rooms="(roomList as any)" />
 </template>
