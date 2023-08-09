@@ -7,10 +7,11 @@ const themes: { [key: string]: string } = {
 	accent: "!bg-accent-600 hover:!bg-accent-700 text-white border-transparent",
 	accentLight:
 		"text-accent-700 dark:text-accent-200 !bg-accent-100 dark:bg-accent-800 hover:bg-accent-200 border-transparent",
+	transparentIcon: "text-accent-50 !bg-transparent hover:!bg-accent-700",
 };
 
 interface ButtonProps extends /* @vue-ignore */ ButtonHTMLAttributes {
-	theme?: "gray" | "accent" | "accentLight";
+	theme?: "gray" | "accent" | "accentLight" | "transparentIcon";
 	loading?: boolean;
 	spinnerClasses?: string;
 	disabled?: boolean;

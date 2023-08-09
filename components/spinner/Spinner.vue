@@ -5,10 +5,16 @@ const themes = {
 	accentLight:
 		"text-accent-700 dark:text-accent-200 bg-accent-100 dark:bg-accent-800 hover:bg-accent-200 border-transparent",
 	accentDark: "text-accent-600 fill-accent-300",
+	transparentIcon: "text-accent-40 fill-white",
 };
 
 defineProps<{
-	theme?: "gray" | "accent" | "accentLight" | "accentDark";
+	theme?:
+		| "gray"
+		| "accent"
+		| "accentLight"
+		| "accentDark"
+		| "transparentIcon";
 }>();
 </script>
 

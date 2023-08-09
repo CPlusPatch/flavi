@@ -25,6 +25,8 @@ const messages = ref<HTMLDivElement | null>(null);
 // Initialize scroll state
 const isScrolledToBottom = ref(true);
 
+const sidebarShown = ref(true);
+
 // Update scroll state
 function updateIsScrolledToBottom() {
 	if (!messageContainer.value) return;
@@ -155,12 +157,65 @@ useHead({
 	title: `${room.value.getName()} · Flavi`,
 });
 updateReadReceipts();
+
+const sidebarRef = ref<HTMLDivElement | null>(null);
+
+// Slide out the sidebar when function toggleSidebar is called using the Web Animations API
+const toggleSidebar = () => {
+	const sidebarWidth = 280;
+
+	if (sidebarShown.value) {
+		// Also transition width from full to 0px
+		const animation = sidebarRef.value?.animate(
+			[
+				{
+					transform: `translateX(0)`,
+					width: `${sidebarWidth}px`,
+				},
+				{
+					transform: `translateX(${sidebarWidth}px)`,
+					width: `0px`,
+				},
+			],
+			{
+				duration: 200,
+				easing: "ease",
+				fill: "forwards",
+			}
+		);
+
+		animation!.onfinish = () => {
+			sidebarRef.value?.classList.add("!hidden");
+		};
+	} else {
+		sidebarRef.value?.classList.remove("!hidden");
+		sidebarRef.value?.animate(
+			[
+				{
+					transform: `translateX(${sidebarWidth}px)`,
+					width: `0px`,
+				},
+				{
+					transform: `translateX(0)`,
+					width: `${sidebarWidth}px`,
+				},
+			],
+			{
+				duration: 200,
+				easing: "ease",
+				fill: "forwards",
+			}
+		);
+	}
+	sidebarShown.value = !sidebarShown.value;
+};
 </script>
 <template>
 	<div class="flex overflow-x-hidden flex-row grow">
-		<div class="grow min-w-0 max-h-full flex flex-col justify-between">
+		<div
+			class="grow min-w-0 flex-1 max-h-full flex flex-col justify-between">
 			<div
-				class="w-full bg-accent-800 flex flex-row shadow border-b-1 border-accent-900 text-xl text-white items-center">
+				class="w-full bg-accent-800 flex flex-row shadow-sm border-b-0.5 border-accent-900 text-xl text-white items-center">
 				<ButtonFvButton
 					class="flex items-center justify-center hover:bg-accent-700 !rounded-none h-full !px-4 !py-2 md:hidden"
 					@click="store.state.sidebarOpen = true">
@@ -174,6 +229,20 @@ updateReadReceipts();
 						class="grow overflow-hidden text-ellipsis"
 						>{{ room.getName() }}</span
 					>
+				</div>
+				<div class="ml-auto p-3">
+					<ButtonFvButton
+						theme="transparentIcon"
+						class="!p-2"
+						@click="toggleSidebar"
+						><Icon
+							:name="
+								sidebarShown
+									? 'tabler:layout-sidebar-right-collapse-filled'
+									: 'tabler:layout-sidebar-right-expand-filled'
+							"
+							class="w-5 h-5"
+					/></ButtonFvButton>
 				</div>
 			</div>
 			<div
@@ -228,7 +297,8 @@ updateReadReceipts();
 			</div>
 		</div>
 		<div
-			class="bg-accent-900 w-70 h-full p-3 shrink-0 flex-col gap-2 overflow-hidden hidden md:flex">
+			ref="sidebarRef"
+			class="bg-accent-900 w-[280px] h-full p-3 shrink-0 flex-col gap-2 overflow-hidden hidden md:flex">
 			<h3 class="text-gray-100 text-lg font-semibold">Members</h3>
 			<SeparatorsFvSeparator class="w-full" />
 			<div class="flex-col flex gap-1 overflow-y-scroll no-scrollbar">
