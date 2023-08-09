@@ -100,6 +100,7 @@ await nextTick();
 				</h1>
 			</div>
 		</div>
+		<VitePwaManifest />
 	</div>
 </template>
 

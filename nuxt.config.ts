@@ -10,6 +10,7 @@ export default defineNuxtConfig({
 		"@vueuse/nuxt",
 		"@pinia/nuxt",
 		"nuxt-twemoji",
+		"@vite-pwa/nuxt",
 	],
 	spaLoadingTemplate: false,
 	ssr: false,
@@ -44,6 +45,17 @@ export default defineNuxtConfig({
 		pageTransition: {
 			mode: "out-in",
 			name: "page",
+		},
+	},
+	pwa: {
+		registerType: "autoUpdate",
+		manifest: {
+			name: "Flavi",
+			short_name: "Flavi",
+			display: "standalone",
+			orientation: "portrait",
+			scope: "/",
+			start_url: "/",
 		},
 	},
 });
