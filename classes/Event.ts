@@ -16,10 +16,14 @@ export class MatrixMessage {
 
 	shouldShowMessage = () => {
 		return (
-			!this.event.isRedacted() ||
-			["m.text", "m.image", "m.bad.encryption", "m.video"].includes(
-				this.getType() ?? ""
-			)
+			!this.event.isRedacted() &&
+			[
+				"m.text",
+				"m.image",
+				"m.bad.encryption",
+				"m.bad.encrypted",
+				"m.video",
+			].includes(this.getType() ?? "")
 		);
 	};
 

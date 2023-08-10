@@ -11,7 +11,7 @@ onMounted(() => {
 
 <template>
 	<div
-		class="max-w-full w-full h-screen bg-accent-800 flex flex-row divide-gray-400 p-0 overflow-hidden font-['Inter']">
+		class="max-w-full w-full !h-[100dvh] h-screen bg-accent-800 flex flex-row divide-gray-400 p-0 overflow-hidden font-['Inter']">
 		<SidebarFvSidebar v-if="width > 768" />
 
 		<HeadlessTransitionRoot v-else appear :show="store.state.sidebarOpen">

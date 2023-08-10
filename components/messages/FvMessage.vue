@@ -22,6 +22,10 @@ const onDecrypted = () => {
 	message.value = props.message;
 };
 
+if (isLoading) {
+	props.message.getDecryptionPromise()?.then(onDecrypted);
+}
+
 props.message.on(MatrixEventEvent.Decrypted, onDecrypted);
 
 onUnmounted(() => {
@@ -40,6 +44,10 @@ const event = computed(
 			store.client as MatrixClient
 		)
 );
+
+if (!event.value.shouldShowMessage()) {
+	console.error(event.value.getType());
+}
 
 // Function to check the time difference between two events
 const getDateDifference = (event1: MatrixEvent, event2: MatrixEvent) =>
@@ -176,7 +184,7 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 
 <template>
 	<div
-		v-if="message"
+		v-if="message && event.shouldShowMessage()"
 		:id="'message-' + message.getId()"
 		ref="messageRef"
 		:class="[
@@ -242,7 +250,11 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 						v-html="body"></div>
 				</TwemojiParse>
 				<div
-					v-if="isLoading"
+					v-if="
+						event.getType() === 'm.bad.encrypted' ||
+						event.getContent().cyphertext ||
+						isLoading
+					"
 					class="text-gray-400 flex flex-row gap-x-2 items-center">
 					<Spinner theme="accentDark" /> Decrypting...
 				</div>
@@ -273,16 +285,17 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 						:thumbnail-info="event.getContent().info.thumbnail_info"
 						:info="event.getContent().info" />
 				</div>
-				<div
+				<!-- <div
 					v-if="
 						event.getType() === 'm.bad.encrypted' ||
-						event.getContent().cyphertext
+						event.getContent().cyphertext ||
+						!isLoading
 					"
 					class="text-gray-200 font-italic">
 					<Icon
 						name="ic:round-lock"
 						class="align-baseline mb-0.5 mr-1" />Encrypted message
-				</div>
+				</div> -->
 				<div
 					v-if="event.isRedacted()"
 					class="text-red-200 font-semibold">
@@ -333,6 +346,13 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 			<button class="flex items-center justify-center duration-200">
 				<Icon
 					name="tabler:pencil"
+					class="text-gray-400 w-5 h-5 hover:text-gray-200 duration-200" />
+			</button>
+			<button
+				class="flex items-center justify-center duration-200"
+				@click="log(event)">
+				<Icon
+					name="tabler:bug"
 					class="text-gray-400 w-5 h-5 hover:text-gray-200 duration-200" />
 			</button>
 		</div>

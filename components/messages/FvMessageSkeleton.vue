@@ -33,7 +33,6 @@ const amountOfSubMessages = Math.ceil(Math.random() * 3);
 					<img :src="media_url" />
 				</div> -->
 			</div>
-			<div class="text-gray-300 text-xs">EEEEEEEEEEEE</div>
 		</div>
 	</div>
 </template>
