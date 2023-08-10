@@ -26,6 +26,7 @@
 		"@pinia/nuxt": "^0.4.11",
 		"@unocss/nuxt": "^0.53.1",
 		"@vite-pwa/nuxt": "^0.1.0",
+		"@vueuse/math": "^10.3.0",
 		"@vueuse/nuxt": "^10.2.0",
 		"blurhash": "^2.0.5",
 		"emoji.json": "^14.0.0",

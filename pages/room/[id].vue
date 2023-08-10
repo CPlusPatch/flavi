@@ -211,14 +211,15 @@ const toggleSidebar = () => {
 };
 </script>
 <template>
-	<div class="flex overflow-x-hidden flex-row grow">
+	<div
+		class="flex overflow-x-hidden flex-row grow min-w-screen md:min-w-auto md:w-auto">
 		<div
 			class="grow min-w-0 flex-1 max-h-full flex flex-col justify-between">
 			<div
 				class="w-full bg-accent-800 flex flex-row shadow-sm border-b-0.5 border-accent-900 text-xl text-white items-center">
 				<ButtonFvButton
 					class="flex items-center justify-center hover:bg-accent-700 !rounded-none h-full !px-4 !py-2 md:hidden"
-					@click="store.state.sidebarOpen = true">
+					@click="store.state.sidebarOpen = !store.state.sidebarOpen">
 					<Icon name="tabler:menu-2" class="w-5 h-5"
 				/></ButtonFvButton>
 				<div
