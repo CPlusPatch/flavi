@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ClientEvent, CryptoEvent, MatrixEventEvent } from "matrix-js-sdk";
+import { CryptoEvent } from "matrix-js-sdk";
 import {
 	VerificationRequest,
 	VerificationRequestEvent,
-	VerifierEvent,
 } from "matrix-js-sdk/lib/crypto-api";
 
 const store = useStore();
@@ -25,9 +24,6 @@ const { lengthX, isSwiping } = useSwipe(sidebarDialog, {
 });
 
 const oldOffsetX = ref(0);
-
-const clamp = (num: number, min: number, max: number) =>
-	Math.min(Math.max(num, min), max);
 
 const offsetX = computed(() => (isSwiping.value ? lengthX.value : 0));
 

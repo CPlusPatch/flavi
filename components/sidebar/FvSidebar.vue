@@ -97,8 +97,8 @@ const navigateRooms = () => {
 			<SidebarRoomsView v-else-if="currentTab === ViewTab.Rooms" />
 			<SidebarSpaceView
 				v-else-if="currentTab === ViewTab.Space"
-				:key="(currentSpace as any)"
-				:space="(currentSpace as MatrixRoom)" />
+				:key="currentSpace as any"
+				:space="currentSpace as MatrixRoom" />
 		</Transition>
 	</div>
 </template>
