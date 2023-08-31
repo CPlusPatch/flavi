@@ -266,11 +266,56 @@ const toggleSidebar = () => {
 						v-for="(message, index) in timeline"
 						:key="message.getId()">
 						<FvMessage
-							:has-been-read-by="
-								readReceipts[message.getId() ?? ''] ?? []
-							"
-							:message="(message as MatrixEvent)"
-							:previous-event="(timeline[index - 1] as MatrixEvent)" />
+							:has-been-read-by="[]"
+							:message="message as MatrixEvent"
+							:previous-event="
+								timeline[index - 1] as MatrixEvent
+							" />
+						<Transition
+							enter-from-class="scale-60 opacity-0"
+							enter-to-class="scale-100 opacity-100"
+							enter-active-class="duration-300"
+							leave-to-class="scale-60 opacity-0"
+							leave-from-class="scale-100 opacity-100"
+							leave-active-class="duration-300">
+							<div
+								v-if="
+									(readReceipts[message.getId() ?? ''] ?? [])
+										.length > 0
+								"
+								class="flex justify-end w-full px-4 py-1">
+								<div class="flex-row gap-1 flex">
+									<img
+										v-for="user of readReceipts[
+											message.getId() ?? ''
+										] ?? []"
+										:key="user.id"
+										:title="`Read by ${user.getDisplayName()}`"
+										:src="user.getAvatarUrl()"
+										class="w-4 h-4 rounded-full ring-1 ring-accent-800" />
+									<div
+										v-if="
+											(
+												readReceipts[
+													message.getId() ?? ''
+												] ?? []
+											).length > 2
+										"
+										:title="`Read by ${(
+											readReceipts[
+												message.getId() ?? ''
+											] ?? []
+										)
+											.map(u => u.getDisplayName())
+											.join(', ')}`"
+										class="rounded-full w-4 h-4 flex items-center justify-center bg-accent-800 text-accent-100">
+										<Icon
+											name="tabler:dots"
+											class="w-3.5 h-3.5" />
+									</div>
+								</div>
+							</div>
+						</Transition>
 					</div>
 				</div>
 				<MessagesFvMessageSkeleton
@@ -293,7 +338,7 @@ const toggleSidebar = () => {
 				</Transition>
 				<InputFvMessageSender
 					:typing="typingMembers"
-					:room="(room as MatrixRoom)"
+					:room="room as MatrixRoom"
 					@send="event_id => {}" />
 			</div>
 		</div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MatrixClient } from "matrix-js-sdk";
-import { MatrixMessage } from "classes/Event";
+import { MatrixMessage } from "~/classes/Event";
 import { MatrixRoom } from "~/classes/Room";
 import { MatrixUser } from "~/classes/User";
 

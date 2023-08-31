@@ -17,9 +17,9 @@ const store = useStore();
 					<Icon name="tabler:hash" /><span>Home</span>
 				</div>
 			</div>
-			<div class="w-full h-full flex flex-col p-4">
-				<h1 class="text-gray-200 font-bold">
-					Select a conversation to begin
+			<div class="w-full h-full flex flex-col p-4 justify-center">
+				<h1 class="text-gray-200 font-bold text-lg w-full text-center">
+					Welcome to Flavi!
 				</h1>
 			</div>
 		</div>
