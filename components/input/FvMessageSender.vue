@@ -3,8 +3,8 @@
 import { encryptAttachment } from "matrix-encrypt-attachment";
 import { UploadProgress } from "matrix-js-sdk";
 import uneditedEmojis from "emoji.json";
-import parse from "snarkdown";
 import { matchSorter } from "match-sorter";
+import { marked } from "marked";
 import { MatrixRoom } from "~/classes/Room";
 import { useStore } from "~/utils/store";
 import { getBlobSafeMimeType } from "~/utils/mime";
@@ -223,9 +223,9 @@ const send = async () => {
 			}
 		});
 
-		if (parse(body) !== body || customEmojisFound > 0) {
+		if (marked(body) !== body || customEmojisFound > 0) {
 			content.format = "org.matrix.custom.html";
-			content.formatted_body = parse(body);
+			content.formatted_body = marked(body).trim();
 
 			userEmojisMapped.forEach(userEmoji => {
 				content.formatted_body = content.formatted_body.replace(
@@ -271,8 +271,8 @@ const replaceEmoji = (emojiName: string) => {
 
 const preventOpeningFileDialog = (e: KeyboardEvent) => {
 	if (e.key === "Enter") {
-		e.preventDefault();
 		if (emojiFocusIndex.value >= 0) {
+			e.preventDefault();
 			// Replace the half typed emoji with the actual emoji
 
 			// const target = e.target as HTMLInputElement;
@@ -280,7 +280,8 @@ const preventOpeningFileDialog = (e: KeyboardEvent) => {
 			const emoji = emojisSuggesterEmojis.value[emojiFocusIndex.value];
 
 			replaceEmoji(emoji.name);
-		} else {
+		} else if (!e.shiftKey) {
+			e.preventDefault();
 			send();
 		}
 	}
@@ -317,6 +318,9 @@ const preventOpeningFileDialog = (e: KeyboardEvent) => {
 
 const onInput = (e: Event) => {
 	const target = e.target as HTMLInputElement;
+
+	target.style.height = "20px";
+	target.style.height = `${target.scrollHeight}px`;
 
 	// Match emoji characters that are half typed, such as ":plead" or ":face_with_r"
 	const matched = target.value.match(/:[a-zA-Z0-9_]*((?<!:):$|$)/g);
@@ -490,13 +494,17 @@ onMounted(() => {
 							size="25" />
 						<img
 							v-else
-							:src="store.client?.mxcUrlToHttp((emoji as any).url) ?? ''"
+							:src="
+								store.client?.mxcUrlToHttp(
+									(emoji as any).url
+								) ?? ''
+							"
 							class="w-[25px] h-[25px]" />
 					</button>
 				</div>
 			</Transition>
 
-			<div class="flex flex-row gap-2 mx-2">
+			<div class="flex flex-row gap-2 mx-2 items-center">
 				<button
 					class="duration-100 ring-accent-600 hover:ring-1 rounded hover:shadow-xl hover:bg-accent-800"
 					@click.prevent="fileInput?.click()">
@@ -504,15 +512,17 @@ onMounted(() => {
 						name="ic:round-file-upload"
 						class="h-6 w-6 text-white" />
 				</button>
-				<input
+				<textarea
 					ref="mainInput"
 					v-model="messageBody"
 					name="message"
-					class="bg-transparent w-full outline-none focus:outline-none"
+					style="max-height: 200px; height: 20px; overflow-y: hidden"
+					class="bg-transparent w-full outline-none focus:outline-none mx-0 mb-0 resize-none border-0 !ring-0 p-0"
 					:placeholder="`Message in ${room.getName()}`"
+					rows="1"
 					@input="onInput"
 					@paste="pasteFile"
-					@keydown="preventOpeningFileDialog" />
+					@keydown="preventOpeningFileDialog"></textarea>
 
 				<button
 					:disabled="sending"
