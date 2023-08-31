@@ -360,7 +360,6 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 
 .message-body pre {
 	padding: 0px !important;
-	padding-bottom: 1.25rem !important;
 }
 
 .message-body ol {
