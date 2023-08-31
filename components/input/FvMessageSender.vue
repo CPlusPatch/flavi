@@ -282,7 +282,9 @@ const preventOpeningFileDialog = (e: KeyboardEvent) => {
 			replaceEmoji(emoji.name);
 		} else if (!e.shiftKey) {
 			e.preventDefault();
+			if (!mainInput.value) return;
 			send();
+			mainInput.value.style.height = "20px";
 		}
 	}
 	if (e.key === "ArrowRight" || e.key === "ArrowLeft" || e.key === "Tab") {

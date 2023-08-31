@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { MatrixClient, MatrixEvent, MatrixEventEvent } from "matrix-js-sdk";
 import linkifyHtml from "linkify-html";
+import hljs from "highlight.js";
 import { MatrixUser } from "~/classes/User";
 import { MatrixMessage } from "~/classes/Event";
 import { useStore } from "~/utils/store";
 import { MatrixRoom } from "~/classes/Room";
+import "highlight.js/styles/github-dark.css";
 
 const store = useStore();
 
@@ -101,6 +103,11 @@ const formattedBody = (event: MatrixEvent) => {
 	bodyHtml.innerHTML = (event.getContent().formatted_body ??
 		escapedBody ??
 		"") as string;
+
+	// Highlight all <code> elements in string
+	[...bodyHtml.getElementsByTagName("code")].forEach(code => {
+		hljs.highlightElement(code);
+	});
 
 	bodyHtml.innerHTML = linkifyHtml(bodyHtml.innerHTML);
 
@@ -349,6 +356,11 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 	padding: 0.2rem 0.4rem;
 	border-radius: 0.2rem;
 	display: inline;
+}
+
+.message-body pre {
+	padding: 0px !important;
+	padding-bottom: 1.25rem !important;
 }
 
 .message-body ol {
