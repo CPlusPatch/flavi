@@ -1,8 +1,8 @@
 import { MatrixClient } from "matrix-js-sdk";
 import { createPinia, defineStore } from "pinia";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
-import { MatrixMessage } from "classes/Event";
-import { MatrixRoom } from "classes/Room";
+import { MatrixMessage } from "~/classes/Event";
+import { MatrixRoom } from "~/classes/Room";
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
@@ -15,6 +15,7 @@ export const useStore = defineStore("store", {
 				loaded: false,
 				sidebarOpen: false,
 			},
+			lightboxElementUrl: null as string | null,
 			replies: {} as {
 				// Key is Room ID
 				[key: string]: {

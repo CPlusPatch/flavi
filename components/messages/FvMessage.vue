@@ -267,7 +267,8 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 					<img
 						v-if="mediaUrl"
 						:src="mediaUrl"
-						class="w-full h-full object-fit" />
+						class="w-full h-full object-fit"
+						@click="store.lightboxElementUrl = mediaUrl" />
 					<div
 						v-else
 						class="bg-gray-400 animate-pulse h-full w-full object-fit"

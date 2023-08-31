@@ -74,6 +74,7 @@ await nextTick();
 
 <template>
 	<NotificationsFvNotifier />
+	<LightboxFvLightbox />
 	<div id="root" class="theme-color-darkorange theme-bg-dark dark">
 		<NuxtLayout v-if="isLoggedIn && isClientLoaded">
 			<NuxtPage />
