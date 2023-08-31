@@ -6,7 +6,7 @@ const themes: { [key: string]: string } = {
 	gray: "text-gray-200 !bg-accent-800 ring-1 ring-inset ring-gray-700 hover:bg-accent-600 outline-none",
 	accent: "!bg-accent-600 hover:!bg-accent-700 text-white border-transparent",
 	accentLight:
-		"text-accent-700 dark:text-accent-200 !bg-accent-100 dark:bg-accent-800 hover:bg-accent-200 border-transparent",
+		"text-accent-100 dark:text-accent-100 bg-transparent hover:underline border-transparent",
 	transparentIcon: "text-accent-50 !bg-transparent hover:!bg-accent-700",
 };
 

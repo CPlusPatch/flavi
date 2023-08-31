@@ -212,7 +212,7 @@ const submit = async (e: Event) => {
 					class="relative flex flex-row justify-center items-center text-sm">
 					<div class="h-0.5 bg-gray-700 w-1/4 rounded"></div>
 					<span class="px-2 text-gray-400 w-1/2 text-center">
-						Or continue with
+						OpenID support soon!
 					</span>
 					<div class="h-0.5 bg-gray-700 w-1/4 rounded"></div>
 				</div>

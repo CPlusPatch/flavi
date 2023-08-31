@@ -1,9 +1,8 @@
 <script setup lang="ts">
 const themes = {
 	gray: "text-gray-200 fill-accent-400",
-	accent: "text-accent-400 fill-white",
-	accentLight:
-		"text-accent-700 dark:text-accent-200 bg-accent-100 dark:bg-accent-800 hover:bg-accent-200 border-transparent",
+	accent: "text-accent-300 fill-white",
+	accentLight: "text-accent-500 fill-white border-transparent",
 	accentDark: "text-accent-600 fill-accent-300",
 	transparentIcon: "text-accent-40 fill-white",
 };

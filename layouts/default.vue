@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import { ClientEvent, CryptoEvent, MatrixEventEvent } from "matrix-js-sdk";
+import {
+	VerificationRequest,
+	VerificationRequestEvent,
+	VerifierEvent,
+} from "matrix-js-sdk/lib/crypto-api";
+
 const store = useStore();
 
 const { width } = useWindowSize();
@@ -22,18 +29,13 @@ const oldOffsetX = ref(0);
 const clamp = (num: number, min: number, max: number) =>
 	Math.min(Math.max(num, min), max);
 
-const offsetX = computed(() =>
-	clamp(
-		isSwiping.value ? lengthX.value : 0,
-		-width.value,
-		store.state.sidebarOpen ? width.value : 0
-	)
-);
+const offsetX = computed(() => (isSwiping.value ? lengthX.value : 0));
 
 watch(offsetX, () => {
 	if (offsetX.value !== 0) {
 		oldOffsetX.value = offsetX.value;
 	}
+	sidebarScrollerX.value = offsetX.value;
 });
 
 watch(isSwiping, () => {
@@ -47,19 +49,41 @@ watch(
 	}
 );
 
+const isVerified = ref(await store.client?.getCrypto()?.isCrossSigningReady());
+
+const handleRequest = (request: VerificationRequest) => {
+	request.on(VerificationRequestEvent.Change, async () => {
+		isVerified.value = await store.client
+			?.getCrypto()
+			?.isCrossSigningReady();
+	});
+};
+
+store.client?.on(CryptoEvent.VerificationRequest, handleRequest);
+
 onMounted(() => {
 	store.state.loaded = true;
 	console.info("Loaded app");
+});
+
+onUnmounted(() => {
+	store.client?.off(CryptoEvent.VerificationRequest, handleRequest);
 });
 </script>
 
 <template>
 	<div
 		ref="sidebarDialog"
-		class="!h-[100dvh] h-screen relative bg-accent-800 flex overflow-hidden flex-row divide-gray-400 p-0 font-['Inter']">
+		class="!h-[100dvh] h-screen relative bg-accent-800 flex overflow-hidden flex-col divide-gray-400 p-0 font-['Inter']">
+		<div
+			v-if="!isVerified"
+			class="px-4 py-2 text-center text-gray-50 text-sm bg-red-950">
+			You are <strong class="font-semibold">not verified</strong>.
+			Encrypted message history will not be available.
+		</div>
 		<div
 			ref="sidebarScroller"
-			class="flex flex-row overflow-x-hidden z-100 max-w-screen w-full">
+			class="flex flex-row grow overflow-x-hidden z-100 max-w-screen w-full">
 			<!-- <SidebarFvSidebar v-if="width > 768" /> -->
 
 			<!-- <HeadlessTransitionRoot v-else appear :show="store.state.sidebarOpen"> -->
@@ -71,4 +95,5 @@ onMounted(() => {
 			<slot />
 		</div>
 	</div>
+	<VerificationVerificator />
 </template>

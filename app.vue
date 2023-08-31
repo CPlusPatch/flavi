@@ -60,16 +60,6 @@ const loadClient = async () => {
 			resolve();
 		});
 	});
-
-	// Handle verification requests
-	matrixClient.on(CryptoEvent.VerificationRequest, async request => {
-		await request.accept();
-		const verifier = request.beginKeyVerification(verificationMethods.SAS);
-		verifier.on(VerifierEvent.ShowSas, async sasData => {
-			await sasData.confirm();
-		});
-		await verifier.verify();
-	});
 };
 
 if (isLoggedIn.value) {
@@ -85,7 +75,7 @@ await nextTick();
 </script>
 
 <template>
-	<div id="root" class="theme-color-darkblue theme-bg-dark">
+	<div id="root" class="theme-color-darkorange theme-bg-dark dark">
 		<NuxtLayout v-if="isLoggedIn && isClientLoaded">
 			<NuxtPage />
 		</NuxtLayout>

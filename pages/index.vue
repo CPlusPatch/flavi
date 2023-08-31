@@ -3,7 +3,8 @@ const store = useStore();
 </script>
 
 <template>
-	<div class="flex overflow-x-hidden flex-row grow">
+	<div
+		class="flex overflow-x-hidden flex-row grow min-w-screen md:min-w-auto md:w-auto">
 		<div class="grow min-w-0 max-h-full flex flex-col justify-between">
 			<div
 				class="w-full bg-accent-800 flex flex-row shadow border-b-1 border-accent-900 text-xl text-white items-center">
