@@ -23,6 +23,13 @@ export const useStore = defineStore("store", {
 					text: string;
 				};
 			},
+			edits: {} as {
+				// Key is Room ID
+				[key: string]: {
+					eventId: string;
+					text: string;
+				};
+			},
 		};
 	},
 	persist: {

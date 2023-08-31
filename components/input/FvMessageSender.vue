@@ -94,6 +94,12 @@ const uploadFile = async (
 const send = async () => {
 	const body = messageBody.value;
 
+	if (isReplyingOrEditing.value === "editing") {
+		// Return false if the reply is the same as the edited event
+		if (eventEditing.value?.getContent().body.trim() === body.trim())
+			return;
+	}
+
 	sending.value = true;
 
 	messageBody.value = "";
@@ -206,7 +212,7 @@ const send = async () => {
 		};
 
 		// If is a reply, send as a reply instead
-		if (store.replies[props.room.id]) {
+		if (isReplyingOrEditing.value === "replying") {
 			const reply = store.replies[props.room.id];
 			content["m.relates_to"] = {
 				"m.in_reply_to": {
@@ -214,6 +220,14 @@ const send = async () => {
 				},
 			};
 			delete store.replies[props.room.id];
+		} else if (isReplyingOrEditing.value === "editing") {
+			const edit = store.edits[props.room.id];
+			content["m.new_content"] = { ...content };
+			content["m.relates_to"] = {
+				event_id: edit.eventId,
+				rel_type: "m.replace",
+			};
+			delete store.edits[props.room.id];
 		}
 
 		let customEmojisFound = 0;
@@ -274,11 +288,7 @@ const preventOpeningFileDialog = (e: KeyboardEvent) => {
 		if (emojiFocusIndex.value >= 0) {
 			e.preventDefault();
 			// Replace the half typed emoji with the actual emoji
-
-			// const target = e.target as HTMLInputElement;
-
 			const emoji = emojisSuggesterEmojis.value[emojiFocusIndex.value];
-
 			replaceEmoji(emoji.name);
 		} else if (!e.shiftKey) {
 			e.preventDefault();
@@ -347,12 +357,6 @@ const preloadUserEmojis = () => {
 		const img = new Image();
 		img.src = store.client?.mxcUrlToHttp(emoji.url) ?? "";
 	});
-
-	// Preload all of jdecked/twemoji's emojis via the jdDeliver cdn
-	/* emojis.forEach(emoji => {
-		const img = new Image();
-		img.src = `https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/svg/${emoji.codes}.svg`;
-	}); */
 };
 
 const eventReplyingTo = computed(
@@ -361,7 +365,31 @@ const eventReplyingTo = computed(
 		props.room.room.findEventById(store.replies[props.room.id].eventId)
 );
 
-watch(eventReplyingTo, () => {
+const eventEditing = computed(
+	() =>
+		store.edits[props.room.id] &&
+		props.room.room.findEventById(store.edits[props.room.id].eventId)
+);
+
+const isReplyingOrEditing = computed(() => {
+	// Editing takes precedence over replying
+	if (
+		(eventEditing.value && eventReplyingTo.value) ||
+		(eventEditing.value && !eventReplyingTo.value)
+	)
+		return "editing";
+	else if (eventReplyingTo.value) return "replying";
+	else return null;
+});
+
+watch(eventEditing, () => {
+	// Set text to event's text
+	if (eventEditing.value) {
+		messageBody.value = eventEditing.value.getContent().body;
+	}
+});
+
+watch([eventReplyingTo, eventEditing], () => {
 	mainInput.value?.focus();
 });
 
@@ -392,21 +420,42 @@ onStartTyping(() => {
 			" />
 
 		<div
-			v-if="eventReplyingTo"
+			v-if="isReplyingOrEditing === 'replying'"
 			class="w-full bg-accent-900 rounded-md text-sm text-white p-2">
 			<div class="flex flex-row gap-1 items-center text-xs">
 				<Icon
 					name="material-symbols:reply-rounded"
 					class="text-white flex-shrink-0" />
 				<span class="text-white">{{
-					eventReplyingTo.sender?.rawDisplayName
+					eventReplyingTo?.sender?.rawDisplayName
 				}}</span>
 				<div class="text-accent-50 gap-2 break-word line-clamp-1">
-					{{ eventReplyingTo.getContent().body }}
+					{{ eventReplyingTo?.getContent().body }}
 				</div>
 				<button
 					class="ml-auto flex items-center justify-center hover:bg-accent-800"
 					@click="delete store.replies[room.id]">
+					<Icon name="tabler:x" class="text-white" />
+				</button>
+			</div>
+		</div>
+
+		<div
+			v-if="isReplyingOrEditing === 'editing'"
+			class="w-full bg-accent-900 rounded-md text-sm text-white p-2">
+			<div class="flex flex-row gap-1 items-center text-xs">
+				<Icon
+					name="material-symbols:edit"
+					class="text-white flex-shrink-0" />
+				<span class="text-white">{{
+					eventEditing?.sender?.rawDisplayName
+				}}</span>
+				<div class="text-accent-50 gap-2 break-word line-clamp-1">
+					{{ eventEditing?.getContent().body }}
+				</div>
+				<button
+					class="ml-auto flex items-center justify-center hover:bg-accent-800"
+					@click="delete store.edits[room.id]">
 					<Icon name="tabler:x" class="text-white" />
 				</button>
 			</div>

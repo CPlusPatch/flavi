@@ -139,6 +139,14 @@ const setReply = () => {
 	};
 };
 
+const setEdit = () => {
+	if (event.value.event.sender?.userId !== store.client?.getUserId()) return;
+	store.edits[room.id] = {
+		eventId: event.value.event.getId()!,
+		text: "",
+	};
+};
+
 const scrollToOriginal = () => {
 	if (!reply) throw new Error("Literally How");
 	const messageContainer = document.getElementById("message-container");
@@ -321,7 +329,10 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 					name="tabler:message-circle"
 					class="text-gray-400 w-5 h-5 hover:text-gray-200 duration-200" />
 			</button>
-			<button class="flex items-center justify-center duration-200">
+			<button
+				v-if="event.event.sender?.userId === store.client?.getUserId()"
+				class="flex items-center justify-center duration-200"
+				@click="setEdit">
 				<Icon
 					name="tabler:pencil"
 					class="text-gray-400 w-5 h-5 hover:text-gray-200 duration-200" />
