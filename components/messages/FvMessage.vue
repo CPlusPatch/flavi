@@ -47,10 +47,6 @@ const event = computed(
 		)
 );
 
-if (!event.value.shouldShowMessage()) {
-	console.error(event.value.getType());
-}
-
 // Function to check the time difference between two events
 const getDateDifference = (event1: MatrixEvent, event2: MatrixEvent) =>
 	(event1.getDate()?.getTime() ?? 0) - (event2.getDate()?.getTime() ?? 0);

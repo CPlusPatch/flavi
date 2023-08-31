@@ -41,7 +41,7 @@ const userEmojisMapped = Object.entries(userEmojis).map(([key, value]) => ({
 	url: value.url,
 }));
 
-const mainInput = ref<null | HTMLInputElement>(null);
+const mainInput = ref<null | HTMLTextAreaElement>(null);
 const messageBody = ref("");
 const fileInput = ref<HTMLInputElement | null>(null);
 const sending = ref(false);
@@ -370,8 +370,11 @@ watch(files, () => {
 });
 
 onMounted(() => {
-	mainInput.value?.focus();
 	preloadUserEmojis();
+});
+
+onStartTyping(() => {
+	if (document.activeElement !== mainInput.value) mainInput.value!.focus();
 });
 </script>
 

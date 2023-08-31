@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import {
 	ClientEvent,
-	CryptoEvent,
 	IndexedDBCryptoStore,
 	IndexedDBStore,
 	createClient,
 } from "matrix-js-sdk";
 import "~/styles/index.css";
 import "@unocss/reset/tailwind.css";
-import { VerifierEvent } from "matrix-js-sdk/lib/crypto-api";
 import { verificationMethods } from "matrix-js-sdk/lib/crypto";
 import { useStore } from "~/utils/store";
 import { isUserLoggedIn } from "~/utils/checks";
@@ -75,6 +73,7 @@ await nextTick();
 </script>
 
 <template>
+	<NotificationsFvNotifier />
 	<div id="root" class="theme-color-darkorange theme-bg-dark dark">
 		<NuxtLayout v-if="isLoggedIn && isClientLoaded">
 			<NuxtPage />
