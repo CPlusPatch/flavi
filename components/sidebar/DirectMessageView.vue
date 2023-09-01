@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MatrixClient, RoomEvent } from "matrix-js-sdk";
+import { ClientEvent, MatrixClient, RoomEvent } from "matrix-js-sdk";
 import { MatrixMessage } from "~/classes/Event";
 import { MatrixRoom } from "~/classes/Room";
 import { useStore } from "~/utils/store";
@@ -36,11 +36,11 @@ const timelineChange = async () => {
 		}));
 };
 
-store.client?.on(RoomEvent.Timeline, timelineChange);
+store.client?.on(ClientEvent.Event, timelineChange);
 store.client?.on(RoomEvent.Receipt, timelineChange);
 
 onUnmounted(() => {
-	store.client?.off(RoomEvent.Timeline, timelineChange);
+	store.client?.off(ClientEvent.Event, timelineChange);
 	store.client?.off(RoomEvent.Receipt, timelineChange);
 });
 
@@ -50,5 +50,5 @@ timelineChange();
 <template>
 	<SidebarFvSidebarRoomList
 		title="Direct Messages"
-		:rooms="(roomList as any)" />
+		:rooms="roomList as any" />
 </template>

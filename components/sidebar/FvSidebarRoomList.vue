@@ -23,8 +23,8 @@ defineProps<{
 				<PreviewsFvRoomPreview
 					v-for="{ room, lastMessage } of rooms"
 					:key="room.id"
-					:room="(room as any)"
-					:last-message="(lastMessage as any)" />
+					:room="room as any"
+					:last-message="lastMessage as any" />
 			</TransitionGroup>
 			<PreviewsFvRoomPreviewSkeleton v-for="i of 15" v-else :key="i" />
 		</div>

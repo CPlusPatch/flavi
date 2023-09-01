@@ -139,9 +139,11 @@ const loadMoreEvents = async () => {
 };
 
 useInfiniteScroll(messages, loadMoreEvents, {
-	distance: 500,
+	distance: 10,
 	direction: "top",
-	behavior: "instant",
+	eventListenerOptions: {
+		passive: true,
+	},
 });
 
 // Get members of the room

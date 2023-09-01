@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MatrixClient, RoomEvent } from "matrix-js-sdk";
+import { ClientEvent, MatrixClient } from "matrix-js-sdk";
 import { useStore } from "~/utils/store";
 import { MatrixRoom } from "~/classes/Room";
 const store = useStore();
@@ -22,10 +22,10 @@ const timelineChange = async () => {
 	spaces.value = rooms.filter(r => r.isSpace());
 };
 
-store.client?.on(RoomEvent.Timeline, timelineChange);
+store.client?.on(ClientEvent.Event, timelineChange);
 
 onUnmounted(() => {
-	store.client?.off(RoomEvent.Timeline, timelineChange);
+	store.client?.off(ClientEvent.Event, timelineChange);
 });
 
 timelineChange();
