@@ -10,7 +10,7 @@ const store = useStore();
 				class="w-full bg-accent-800 flex flex-row shadow border-b-1 border-accent-900 text-xl text-white items-center">
 				<ButtonFvButton
 					class="flex items-center justify-center h-full hover:bg-accent-700 !rounded-none !px-4 !py-2 md:hidden"
-					@click="store.state.sidebarOpen = true">
+					@click="store.state.sidebarOpen = !store.state.sidebarOpen">
 					<Icon name="tabler:menu-2" class="w-5 h-5"
 				/></ButtonFvButton>
 				<div class="px-2 py-3 flex flex-row gap-2 items-center">

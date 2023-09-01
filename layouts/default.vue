@@ -10,40 +10,12 @@ const store = useStore();
 const { width } = useWindowSize();
 const sidebarDialog = ref<HTMLDivElement | null>(null);
 const sidebarScroller = ref<HTMLDivElement | null>(null);
-const sidebar = ref<HTMLDivElement | null>(null);
 
-const { x: sidebarScrollerX } = useScroll(sidebarScroller, {
-	behavior: "smooth",
-	eventListenerOptions: {
-		passive: true,
-	},
-});
-const { lengthX, isSwiping } = useSwipe(sidebarDialog, {
-	threshold: 200,
-	passive: true,
-});
-
-const oldOffsetX = ref(0);
-
-const offsetX = computed(() => (isSwiping.value ? lengthX.value : 0));
-
-watch(offsetX, () => {
-	if (offsetX.value !== 0) {
-		oldOffsetX.value = offsetX.value;
-	}
-	sidebarScrollerX.value = offsetX.value;
-});
-
-watch(isSwiping, () => {
-	store.state.sidebarOpen = oldOffsetX.value < -width.value / 2;
-});
-
-watch(
-	() => store.state.sidebarOpen,
-	() => {
-		sidebarScrollerX.value = store.state.sidebarOpen ? 0 : width.value;
-	}
-);
+// Let the user swipe the sidebar to open/close it, if the user
+// stops mid-swipe then automatically open/close it depending on
+// where their finger is. This is a bit janky but it works.
+// sidebarScrollerX controls the sidebar open/close UI
+// The higher sidebarscrollX is, the more the sidebar is closed
 
 const isVerified = ref(await store.client?.getCrypto()?.isCrossSigningReady());
 
@@ -79,14 +51,40 @@ onUnmounted(() => {
 		</div>
 		<div
 			ref="sidebarScroller"
-			class="flex flex-row grow overflow-x-hidden z-100 max-w-screen w-full">
-			<!-- <SidebarFvSidebar v-if="width > 768" /> -->
+			class="flex flex-row grow overflow-hidden z-100 max-w-screen w-full">
+			<SidebarFvSidebar v-if="width > 768" />
 
-			<!-- <HeadlessTransitionRoot v-else appear :show="store.state.sidebarOpen"> -->
-			<div ref="sidebar" class="z-10 flex duration-100">
-				<SidebarFvSidebar />
-			</div>
-			<!-- </HeadlessTransitionRoot> -->
+			<HeadlessTransitionRoot
+				v-else
+				appear
+				:show="store.state.sidebarOpen">
+				<HeadlessDialog @close="store.state.sidebarOpen = false">
+					<HeadlessTransitionChild
+						enter="transition ease-in-out duration-300 transform"
+						enter-from="opacity-0"
+						enter-to="opacity-100"
+						leave="transition ease-in-out duration-300 transform"
+						leave-from="opacity-100"
+						leave-to="opacity-0"
+						class="flex flex-row grow overflow-hidden z-100 max-w-screen w-full">
+						<HeadlessDialogOverlay
+							class="fixed inset-0 z-100 bg-dark-400/60" />
+					</HeadlessTransitionChild>
+					<HeadlessTransitionChild
+						enter="transition ease-in-out duration-200 transform"
+						enter-from="-translate-x-full"
+						enter-to="translate-x-0"
+						leave="transition ease-in-out duration-200 transform"
+						leave-from="translate-x-0"
+						leave-to="-translate-x-full"
+						class="flex flex-row grow overflow-hidden z-100 max-w-screen w-full">
+						<HeadlessDialogPanel
+							class="fixed inset-0 z-100 flex flex-row">
+							<SidebarFvSidebar />
+						</HeadlessDialogPanel>
+					</HeadlessTransitionChild>
+				</HeadlessDialog>
+			</HeadlessTransitionRoot>
 
 			<slot />
 		</div>
