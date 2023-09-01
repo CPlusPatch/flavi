@@ -23,21 +23,22 @@ const messageContainer = ref<HTMLDivElement | null>(null);
 const messages = ref<HTMLDivElement | null>(null);
 
 // Initialize scroll state
-const isScrolledToBottom = ref(true);
 
 const sidebarShown = ref(true);
 
-// Update scroll state
-function updateIsScrolledToBottom() {
-	if (!messageContainer.value) return;
-	isScrolledToBottom.value =
-		Math.abs(
-			messageContainer.value.scrollHeight -
-				messageContainer.value.scrollTop -
-				messageContainer.value.clientHeight
-		) < 1;
-	return isScrolledToBottom.value;
-}
+const isScrolledToBottom = ref(true);
+
+useScroll(messageContainer, {
+	onScroll: e => {
+		const target = e.target as any;
+		isScrolledToBottom.value =
+			Math.abs(
+				(target.scrollHeight ?? 0) -
+					(target.scrollTop ?? 0) -
+					(messageContainer.value?.clientHeight ?? 0)
+			) < 1;
+	},
+});
 
 // Scroll to bottom of message container
 const scrollToBottom = () => {
@@ -53,9 +54,9 @@ const scrollToBottom = () => {
 // Update timeline on new event
 const newEvent = async () => {
 	timeline.value = [...roomTimeline.timeline];
-	const wasScrolled = updateIsScrolledToBottom();
+	const scrolledToBottom = isScrolledToBottom.value;
 	await nextTick();
-	if (wasScrolled) {
+	if (scrolledToBottom) {
 		scrollToBottom();
 	}
 };
@@ -115,7 +116,6 @@ onUnmounted(removeListeners);
 
 // Scroll to bottom on mount
 onMounted(() => {
-	if (!messages.value) return;
 	scrollToBottom();
 });
 
@@ -128,9 +128,9 @@ const loadMoreEvents = async () => {
 	}
 
 	timeline.value = roomTimeline.timeline;
-	const wasScrolled = updateIsScrolledToBottom();
+	const scrolledToBottom = isScrolledToBottom.value;
 	await nextTick();
-	if (wasScrolled) {
+	if (scrolledToBottom) {
 		scrollToBottom();
 	}
 };
@@ -251,8 +251,7 @@ const toggleSidebar = () => {
 			<div
 				id="message-container"
 				ref="messageContainer"
-				class="grow max-w-full pt-6 pb-4 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col"
-				@scroll="updateIsScrolledToBottom">
+				class="grow max-w-full pt-6 pb-4 overflow-y-scroll children:[overflow-anchor:none] last-children:[overflow-anchor:auto] no-scrollbar flex flex-col">
 				<!-- this element is used to push messages to the bottom of the message container, such as when there's only a few messages. -->
 				<!-- justify-content: flex-end; should work, but a bug in chrome causes that to break vertical scrolling. -->
 				<div class="m-t-auto"></div>
