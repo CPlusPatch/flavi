@@ -14,6 +14,7 @@ export const useStore = defineStore("store", {
 			state: {
 				loaded: false,
 				sidebarOpen: false,
+				viewingUser: null as string | null,
 			},
 			lightboxElementUrl: null as string | null,
 			replies: {} as {

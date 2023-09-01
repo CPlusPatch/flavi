@@ -1,4 +1,4 @@
-import { MatrixClient, User } from "matrix-js-sdk";
+import { DeviceMap, MatrixClient, User } from "matrix-js-sdk";
 
 export class MatrixUser {
 	private user: User;
@@ -17,6 +17,13 @@ export class MatrixUser {
 
 	public getStatus() {
 		return this.user.presenceStatusMsg;
+	}
+
+	public async getDevices() {
+		return (
+			(await this.client.getCrypto()?.getUserDeviceInfo([this.id])) ??
+			(new Map() as DeviceMap)
+		);
 	}
 
 	public getDisplayName(): string | null {

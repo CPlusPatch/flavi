@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MatrixClient, RoomEvent, ClientEvent } from "matrix-js-sdk";
+import { MatrixClient, ClientEvent } from "matrix-js-sdk";
 import { MatrixMessage } from "~/classes/Event";
 import { MatrixRoom } from "~/classes/Room";
 import { useStore } from "~/utils/store";
@@ -43,11 +43,9 @@ const timelineChange = () => {
 };
 
 store.client?.on(ClientEvent.Event, timelineChange);
-store.client?.on(RoomEvent.Receipt, timelineChange);
 
 onUnmounted(() => {
 	store.client?.off(ClientEvent.Event, timelineChange);
-	store.client?.off(RoomEvent.Receipt, timelineChange);
 });
 
 timelineChange();

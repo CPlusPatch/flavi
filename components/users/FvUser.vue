@@ -5,11 +5,14 @@ const props = defineProps<{
 	user: MatrixUser;
 }>();
 
+const store = useStore();
+
 const presence = props.user.getPresenceStatus();
 </script>
 <template>
 	<div
-		class="flex flex-row gap-2 duration-200 hover:bg-accent-800 p-2 rounded items-center">
+		class="flex flex-row gap-2 duration-200 hover:bg-accent-800 p-2 rounded items-center"
+		@click="store.state.viewingUser = user.id">
 		<div
 			class="h-8 w-8 relative rounded-full shrink-0 flex items-center justify-center shrink-0 shadow">
 			<img
