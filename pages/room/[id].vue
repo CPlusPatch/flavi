@@ -119,25 +119,27 @@ onMounted(() => {
 	scrollToBottom();
 });
 
-let isBackwards = false;
-
 // Load more events when scrolling upwards
 const loadMoreEvents = async () => {
-	if (roomTimeline.isOngoingPagination) return false;
+	if (roomTimeline.isOngoingPagination) return;
 
 	if (roomTimeline.canPaginateBackward()) {
 		await roomTimeline.paginateTimeline(true);
 	}
 
 	timeline.value = roomTimeline.timeline;
+	const wasScrolled = updateIsScrolledToBottom();
 	await nextTick();
-
-	if (!isBackwards) {
+	if (wasScrolled) {
 		scrollToBottom();
 	}
-
-	isBackwards = true;
 };
+
+useInfiniteScroll(messages, loadMoreEvents, {
+	distance: 500,
+	direction: "top",
+	behavior: "instant",
+});
 
 // Get members of the room
 const members: MatrixUser[] = room.value.room
@@ -254,13 +256,17 @@ const toggleSidebar = () => {
 				<!-- this element is used to push messages to the bottom of the message container, such as when there's only a few messages. -->
 				<!-- justify-content: flex-end; should work, but a bug in chrome causes that to break vertical scrolling. -->
 				<div class="m-t-auto"></div>
-				<MessagesFvMessageSkeleton
+				<!-- <MessagesFvMessageSkeleton
 					v-if="roomTimeline.canPaginateBackward()" />
 				<div
 					v-if="roomTimeline.canPaginateBackward()"
 					v-is-visible="loadMoreEvents">
 					<MessagesFvMessageSkeleton />
-				</div>
+				</div> -->
+				<MessagesFvMessageSkeleton
+					v-if="roomTimeline.canPaginateBackward()" />
+				<MessagesFvMessageSkeleton
+					v-if="roomTimeline.canPaginateBackward()" />
 				<div ref="messages" class="flex flex-col">
 					<div
 						v-for="(message, index) in timeline"
