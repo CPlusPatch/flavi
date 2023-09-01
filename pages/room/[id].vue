@@ -144,6 +144,7 @@ useInfiniteScroll(messages, loadMoreEvents, {
 	eventListenerOptions: {
 		passive: true,
 	},
+	throttle: 100,
 });
 
 // Get members of the room
