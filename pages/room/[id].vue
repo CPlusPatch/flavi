@@ -38,6 +38,9 @@ useScroll(messageContainer, {
 					(messageContainer.value?.clientHeight ?? 0)
 			) < 1;
 	},
+	eventListenerOptions: {
+		passive: true,
+	},
 });
 
 // Scroll to bottom of message container
