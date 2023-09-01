@@ -368,6 +368,11 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 
 .message-body pre {
 	padding: 0px !important;
+	white-space: pre-wrap;
+}
+
+.message-body pre code {
+	display: block !important;
 }
 
 .message-body ol {
