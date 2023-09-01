@@ -112,10 +112,10 @@ export class MatrixRoom {
 
 		if (!lastReadEvent) return 0;
 
-		const events = this.timeline.getEvents().toReversed();
-		const lastReadEventIndex = events.findIndex(
-			e => e.getId() === lastReadEvent
-		);
+		const events: MatrixEvent[] = this.timeline.getEvents().toReversed();
+		const lastReadEventIndex = events
+			.filter(e => e.getType() === "m.room.message")
+			.findIndex(e => e.getId() === lastReadEvent);
 
 		return lastReadEventIndex;
 	}

@@ -1,15 +1,13 @@
 <script setup lang="ts">
 // Thanks https://github.com/cinnyapp/cinny/blob/f14d70ea3508a8467c0a27b9d61c8ab6661054ab/src/client/state/RoomsInput.js for some code
-import { encryptAttachment } from "matrix-encrypt-attachment";
-import { UploadProgress } from "matrix-js-sdk";
+import { MatrixClient } from "matrix-js-sdk";
 import uneditedEmojis from "emoji.json";
 import { matchSorter } from "match-sorter";
 import { marked } from "marked";
 import { MatrixRoom } from "~/classes/Room";
 import { useStore } from "~/utils/store";
 import { getBlobSafeMimeType } from "~/utils/mime";
-import { encodeBlurhash } from "~/utils/blurhash";
-import { getVideoThumbnail, loadVideo } from "~/utils/video";
+import { setFileMetadata, uploadFile } from "~/utils/uploading";
 
 const props = defineProps<{
 	room: MatrixRoom;
@@ -52,44 +50,8 @@ const emojis = uneditedEmojis.map(e => ({
 	...e,
 	name: e.name.replace(" ", "_"),
 }));
-const emojisSuggesterEmojis = ref<
-	Array<(typeof emojis)[0] | (typeof userEmojisMapped)[0]>
->([]);
 const emojiPicker = ref<HTMLDivElement | null>(null);
 const emojiFocusIndex = ref(-1);
-
-const uploadFile = async (
-	file: File | Blob,
-	progressHandler: (progress: UploadProgress) => void
-) => {
-	let encryptInfo: any = {};
-	let encryptBlob: any = {};
-
-	const isEncryptedRoom = store.client?.isRoomEncrypted(props.room.id);
-
-	if (isEncryptedRoom) {
-		const buffer = await file.arrayBuffer();
-		const encryptedResult = await encryptAttachment(buffer);
-
-		encryptInfo = encryptedResult.info;
-		encryptBlob = new Blob([encryptedResult.data]);
-	}
-
-	const response = await store.client?.uploadContent(
-		isEncryptedRoom ? encryptBlob! : file,
-		{
-			progressHandler,
-		}
-	);
-
-	if (isEncryptedRoom) {
-		encryptInfo.url = response?.content_uri;
-		if (file.type) encryptInfo.mimetype = file.type;
-		return { file: encryptInfo };
-	} else {
-		return { url: response?.content_uri };
-	}
-};
 
 const send = async () => {
 	const body = messageBody.value;
@@ -108,7 +70,7 @@ const send = async () => {
 		const isEncryptedRoom = store.client?.isRoomEncrypted(props.room.id);
 
 		files.value.forEach(async file => {
-			const content: any = {};
+			let content: any = {};
 
 			content.info = {
 				mimetype: file.type,
@@ -120,76 +82,23 @@ const send = async () => {
 				file.type.indexOf("/")
 			);
 
-			switch (fileType) {
-				case "image": {
-					const img: HTMLImageElement = await new Promise(
-						(resolve, reject) => {
-							const img = new Image();
-							img.onload = () => resolve(img);
-							img.onerror = err => reject(err);
-							img.src = URL.createObjectURL(file);
-						}
-					);
+			content = await setFileMetadata(
+				content,
+				file,
+				fileType,
+				isEncryptedRoom ?? false,
+				store.client as MatrixClient
+			);
 
-					content.info.w = img.width;
-					content.info.h = img.height;
-					content.info["xyz.amorgan.blurhash"] = encodeBlurhash(img);
-
-					content.msgtype = "m.image";
-					content.body = file.name || "Image";
-
-					break;
-				}
-
-				case "video": {
-					const video = await loadVideo(file);
-
-					content.info.w = video.videoWidth;
-					content.info.h = video.videoHeight;
-					content.info["xyz.amorgan.blurhash"] =
-						encodeBlurhash(video);
-
-					const thumbnailData = await getVideoThumbnail(
-						video,
-						video.videoWidth,
-						video.videoHeight,
-						"image/webp"
-					);
-					const thumbnailUploadData = await uploadFile(
-						thumbnailData.thumbnail!,
-						() => {}
-					);
-
-					content.info.thumbnail_info = thumbnailData.info;
-
-					if (isEncryptedRoom) {
-						content.info.thumbnail_file = thumbnailUploadData.file;
-					} else {
-						content.info.thumbnail_url = thumbnailUploadData.url;
-					}
-
-					content.msgtype = "m.video";
-					content.body = file.name || "Video";
-
-					break;
-				}
-
-				case "audio": {
-					content.msgtype = "m.audio";
-					content.body = file.name || "Audio";
-
-					break;
-				}
-
-				default: {
-					content.msgtype = "m.file";
-					content.body = file.name || "File";
-				}
-			}
-
-			const uploadData = await uploadFile(file, data => {
-				currentlyUploadingFileProgress.value = data.loaded / data.total;
-			});
+			const uploadData = await uploadFile(
+				file,
+				data => {
+					currentlyUploadingFileProgress.value =
+						data.loaded / data.total;
+				},
+				isEncryptedRoom ?? false,
+				store.client as MatrixClient
+			);
 
 			if (isEncryptedRoom) {
 				content.file = uploadData.file;
@@ -279,51 +188,49 @@ const replaceEmoji = (emojiName: string) => {
 		replaceTo
 	);
 
-	emojisSuggesterEmojis.value = [];
 	emojiFocusIndex.value = -1;
 };
 
 const preventOpeningFileDialog = (e: KeyboardEvent) => {
-	if (e.key === "Enter") {
+	const isEnterKey = e.key === "Enter";
+	const isArrowRightOrTab = e.key === "ArrowRight" || e.key === "Tab";
+	const isArrowLeft = e.key === "ArrowLeft";
+
+	if (isEnterKey) {
 		if (emojiFocusIndex.value >= 0) {
 			e.preventDefault();
-			// Replace the half typed emoji with the actual emoji
 			const emoji = emojisSuggesterEmojis.value[emojiFocusIndex.value];
 			replaceEmoji(emoji.name);
-		} else if (!e.shiftKey) {
+		} else if (!e.shiftKey && mainInput.value) {
 			e.preventDefault();
-			if (!mainInput.value) return;
 			send();
 			mainInput.value.style.height = "20px";
 		}
 	}
-	if (e.key === "ArrowRight" || e.key === "ArrowLeft" || e.key === "Tab") {
+
+	if (isArrowRightOrTab || isArrowLeft) {
 		if (emojisSuggesterEmojis.value.length > 0) {
 			e.preventDefault();
 		}
+
 		if (emojisSuggesterEmojis.value.length === 1) {
-			return (
-				emojiPicker.value?.children[0] as HTMLDivElement
-			).classList.add("bg-accent-800");
+			const emojiElement = emojiPicker.value
+				?.children[0] as HTMLDivElement;
+			emojiElement.classList.toggle("bg-accent-800", isArrowRightOrTab);
 		}
-		if (e.key === "ArrowRight" || e.key === "Tab") {
-			emojiFocusIndex.value =
-				(emojiFocusIndex.value + 1) %
-				emojisSuggesterEmojis.value.length;
-		} else if (e.key === "ArrowLeft") {
-			emojiFocusIndex.value =
-				(emojiFocusIndex.value - 1) %
-				emojisSuggesterEmojis.value.length;
-		}
+
+		emojiFocusIndex.value =
+			(emojiFocusIndex.value + (isArrowRightOrTab ? 1 : -1)) %
+			emojisSuggesterEmojis.value.length;
+
 		for (let i = 0; i < emojisSuggesterEmojis.value.length; i++) {
 			const emojiElement = emojiPicker.value?.children[
 				i
 			] as HTMLDivElement;
-			if (i === emojiFocusIndex.value) {
-				emojiElement.classList.add("bg-accent-800");
-			} else {
-				emojiElement.classList.remove("bg-accent-800");
-			}
+			emojiElement.classList.toggle(
+				"bg-accent-800",
+				i === emojiFocusIndex.value
+			);
 		}
 	}
 };
@@ -333,24 +240,24 @@ const onInput = (e: Event) => {
 
 	target.style.height = "20px";
 	target.style.height = `${target.scrollHeight}px`;
+};
 
+const emojisSuggesterEmojis = computed<
+	Array<(typeof emojis)[0] | (typeof userEmojisMapped)[0]>
+>(() => {
 	// Match emoji characters that are half typed, such as ":plead" or ":face_with_r"
-	const matched = target.value.match(/:[a-zA-Z0-9_]*((?<!:):$|$)/g);
+	const matched = messageBody.value.match(/:[a-zA-Z0-9_]*((?<!:):$|$)/g);
 	if (matched && matched.length > 0) {
 		// Remove first ":" which is found when the regex is execited
 		const emojiToSearchFor = matched[0].replace(":", "");
-		emojisSuggesterEmojis.value = matchSorter(
-			[...emojis, ...userEmojisMapped],
-			emojiToSearchFor,
-			{
-				keys: ["name"],
-			}
-		).slice(0, 30);
+		return matchSorter([...emojis, ...userEmojisMapped], emojiToSearchFor, {
+			keys: ["name"],
+		}).slice(0, 30);
 	} else {
-		emojisSuggesterEmojis.value = [];
 		emojiFocusIndex.value = -1;
+		return [];
 	}
-};
+});
 
 const preloadUserEmojis = () => {
 	userEmojisMapped.forEach(emoji => {
@@ -538,7 +445,7 @@ onStartTyping(() => {
 					<button
 						v-for="emoji in emojisSuggesterEmojis"
 						:key="(emoji as any).char || emoji.name"
-						class="flex items-center gap-2 rounded px-2 py-1.5 duration-200 hover:bg-accent-800"
+						class="flex items-center gap-2 rounded px-2 py-1.5 duration-200 hover:bg-accent-800 shrink-0"
 						:title="emoji.name"
 						type="button"
 						@click="replaceEmoji(emoji.name)">
