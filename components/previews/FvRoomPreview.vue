@@ -26,7 +26,17 @@ try {
 // Is "online" or "offline"
 const presence = dmUser && dmUser.getPresenceStatus();
 
-const unreadCount = props.room.getUnreadCount();
+const unreadCount = ref(0);
+
+watch(
+	() => props.lastMessage,
+	() => {
+		unreadCount.value = props.room.getUnreadCount();
+	},
+	{
+		immediate: true,
+	}
+);
 </script>
 
 <template>

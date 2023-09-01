@@ -4,6 +4,7 @@ import {
 	EventTimelineSet,
 	MatrixClient,
 	MatrixEvent,
+	NotificationCountType,
 	Room,
 } from "matrix-js-sdk";
 import { MatrixMessage } from "./Event";
@@ -106,7 +107,7 @@ export class MatrixRoom {
 	}
 
 	public getUnreadCount(): number {
-		const lastReadEvent = this.room.getReadReceiptForUserId(
+		/* const lastReadEvent = this.room.getReadReceiptForUserId(
 			this.client.getUserId() ?? ""
 		)?.eventId;
 
@@ -115,9 +116,11 @@ export class MatrixRoom {
 		const events: MatrixEvent[] = this.timeline.getEvents().toReversed();
 		const lastReadEventIndex = events
 			.filter(e => e.getType() === "m.room.message")
-			.findIndex(e => e.getId() === lastReadEvent);
+			.findIndex(e => e.getId() === lastReadEvent); */
 
-		return lastReadEventIndex;
+		return this.room.getUnreadNotificationCount(
+			NotificationCountType.Total
+		);
 	}
 
 	public getAvatarUrl(size = 96) {

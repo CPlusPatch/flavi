@@ -78,7 +78,7 @@ const updateTypingMembers = (members: Set<string>) => {
 	typingMembers.value = members;
 };
 
-const updateReadReceipts = () => {
+const updateReadReceipts = async () => {
 	const newReadReceipts: any = [];
 	timeline.value.forEach(event => {
 		const users = room.value.room
@@ -95,7 +95,12 @@ const updateReadReceipts = () => {
 		}
 	});
 
+	const scrolledToBottom = isScrolledToBottom.value;
 	readReceipts.value = newReadReceipts;
+	await nextTick();
+	if (scrolledToBottom) {
+		scrollToBottom();
+	}
 };
 
 // Add event listeners for timeline updates
