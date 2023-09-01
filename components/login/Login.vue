@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { createClient } from "matrix-js-sdk";
+import {
+	IIdentityProvider,
+	ILoginFlow,
+	SSOAction,
+} from "matrix-js-sdk/lib/@types/auth";
 
 const loading = ref(false);
 
@@ -16,6 +21,17 @@ const homeserverData = ref<{
 	baseUrl: string;
 	normalUrl: string;
 } | null>(null);
+const flows = ref<ILoginFlow[] | null>(null);
+const isPassword = computed(
+	() => flows.value?.find(flow => flow.type === "m.login.password")
+);
+const ssoProviders = computed(
+	() =>
+		(
+			flows.value?.filter(flow => flow.type === "m.login.sso")[0] ??
+			({} as any)
+		).identity_providers as IIdentityProvider[] | null
+);
 
 const submit = async (e: Event) => {
 	loading.value = true;
@@ -71,6 +87,12 @@ const submit = async (e: Event) => {
 		};
 
 		flowStage.value = FlowStage.Login;
+
+		const client = createClient({
+			baseUrl: homeserverData.value?.baseUrl,
+		});
+
+		flows.value = (await client.loginFlows()).flows;
 		error.value = null;
 		loading.value = false;
 	} else if (flowStage.value === FlowStage.Login) {
@@ -107,6 +129,30 @@ const submit = async (e: Event) => {
 		window.location.reload();
 	}
 };
+
+const loginWithSso = (provider: IIdentityProvider) => {
+	const client = createClient({
+		baseUrl: homeserverData.value?.baseUrl ?? "",
+	});
+
+	let url;
+	try {
+		url = client.getSsoLoginUrl(
+			`${window.location.origin}/auth/redirect`,
+			"sso",
+			provider.id,
+			SSOAction.LOGIN
+		);
+	} catch {
+		error.value = "Invalid username or password";
+		loading.value = false;
+		return;
+	}
+
+	localStorage.setItem("homeserver", client.baseUrl);
+
+	window.location.replace(url);
+};
 </script>
 
 <template>
@@ -142,7 +188,7 @@ const submit = async (e: Event) => {
 					</div>
 				</div>
 
-				<div v-if="flowStage === FlowStage.Login">
+				<div v-if="flowStage === FlowStage.Login && isPassword">
 					<label
 						for="email"
 						class="block text-sm font-medium leading-6 text-gray-50"
@@ -160,7 +206,7 @@ const submit = async (e: Event) => {
 					</div>
 				</div>
 
-				<div v-if="flowStage === FlowStage.Login">
+				<div v-if="flowStage === FlowStage.Login && isPassword">
 					<div class="flex items-center justify-between">
 						<label
 							for="password"
@@ -208,15 +254,34 @@ const submit = async (e: Event) => {
 					</ButtonFvButton>
 				</div>
 				<div
-					v-if="flowStage === FlowStage.Login"
+					v-if="
+						flowStage === FlowStage.Login &&
+						(ssoProviders?.length ?? 0) > 0
+					"
 					class="relative flex flex-row justify-center items-center text-sm">
 					<div class="h-0.5 bg-gray-700 w-1/4 rounded"></div>
 					<span class="px-2 text-gray-400 w-1/2 text-center">
-						OpenID support soon!
+						Login with
 					</span>
 					<div class="h-0.5 bg-gray-700 w-1/4 rounded"></div>
 				</div>
-				<div class="grid grid-cols-2 w-full gap-2"></div>
+				<div class="grid grid-cols-2 w-full gap-2">
+					<ButtonFvButton
+						v-for="provider of ssoProviders"
+						:key="provider.id"
+						theme="gray"
+						@click="loginWithSso(provider)"
+						><img
+							:src="
+								createClient({
+									baseUrl: homeserverData?.baseUrl ?? '',
+								}).mxcUrlToHttp(provider.icon ?? '') ?? ''
+							"
+							class="mr-1.5 w-4 h-4 rounded-sm" />{{
+							provider.name
+						}}</ButtonFvButton
+					>
+				</div>
 			</form>
 		</div>
 	</div>

@@ -17,6 +17,8 @@ document
 	.getElementsByTagName("html")[0]
 	.classList.add("theme-color-darkblue", "theme-bg-dark");
 
+const location = window.location;
+
 // Initialize IndexedDB stores
 const indexedDBStore = new IndexedDBStore({
 	indexedDB,
@@ -77,7 +79,11 @@ await nextTick();
 	<LightboxFvLightbox />
 	<UsersFvUserViewer />
 	<div id="root" class="theme-color-darkorange theme-bg-dark dark">
-		<NuxtLayout v-if="isLoggedIn && isClientLoaded">
+		<NuxtLayout
+			v-if="
+				(isLoggedIn && isClientLoaded) ||
+				location.pathname == '/auth/redirect'
+			">
 			<NuxtPage />
 		</NuxtLayout>
 		<Login v-else-if="!isLoggedIn" />
