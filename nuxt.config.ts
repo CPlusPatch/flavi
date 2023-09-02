@@ -43,10 +43,6 @@ export default defineNuxtConfig({
 				},
 			],
 		},
-		pageTransition: {
-			mode: "out-in",
-			name: "page",
-		},
 	},
 	pwa: {
 		registerType: "autoUpdate",
@@ -66,5 +62,8 @@ export default defineNuxtConfig({
 				},
 			],
 		},
+	},
+	experimental: {
+		viewTransition: true,
 	},
 });
