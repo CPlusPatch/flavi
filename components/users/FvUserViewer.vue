@@ -78,11 +78,8 @@ watch(user, async () => {
 											<h2 class="font-semibold text-lg">
 												{{ user?.getDisplayName() }}
 											</h2>
-											<h3 class="text-sm">
-												{{
-													user?.getStatus() ??
-													user?.getPresenceStatus()
-												}}
+											<h3 class="text-sm text-gray-200">
+												{{ user?.id ?? "unknown" }}
 											</h3>
 										</div>
 									</div>
