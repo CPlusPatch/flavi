@@ -222,6 +222,17 @@ const toggleSidebar = () => {
 	}
 	sidebarShown.value = !sidebarShown.value;
 };
+
+onMounted(() => {
+	// When elements with data-user-id are clicked, open the user details
+	document.querySelectorAll("span[data-user-id]").forEach(mention => {
+		mention.addEventListener("click", () => {
+			const userId = (mention as HTMLSpanElement).dataset.userId;
+			if (!userId) return;
+			store.state.viewingUser = userId;
+		});
+	});
+});
 </script>
 <template>
 	<div

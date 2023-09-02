@@ -105,6 +105,33 @@ const formattedBody = (event: MatrixEvent) => {
 		hljs.highlightElement(code);
 	});
 
+	// Replace all <a> elements that are mentions with mentions
+	[...bodyHtml.getElementsByTagName("a")].forEach(a => {
+		const userLink = decodeURIComponent(a.href).match(
+			/^https?:\/\/matrix.to\/#\/(@.+:.+)/
+		);
+		if (userLink) {
+			const userId = userLink[1];
+			const span = document.createElement("span");
+
+			span.classList.add(
+				"text-accent-000",
+				"rounded",
+				"bg-accent-500",
+				"p-0.5",
+				"font-semibold",
+				"cursor-pointer"
+			);
+			span.innerText = `@${new MatrixUser(
+				userId,
+				store.client as MatrixClient
+			).getDisplayName()}`;
+			span.dataset.userId = userId;
+
+			a.replaceWith(span);
+		}
+	});
+
 	bodyHtml.innerHTML = linkifyHtml(bodyHtml.innerHTML);
 
 	[...bodyHtml.getElementsByTagName("mx-reply")].forEach(tag => {
