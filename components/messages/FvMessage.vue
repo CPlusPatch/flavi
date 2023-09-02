@@ -205,7 +205,7 @@ const scrollToOriginal = () => {
 };
 
 // Mark as read on visible
-const messageRef = ref(null);
+const messageRef = ref<HTMLDivElement | null>(null);
 useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 	if (isIntersecting) {
 		if (
@@ -217,6 +217,19 @@ useIntersectionObserver(messageRef, ([{ isIntersecting }]) => {
 			store.client?.sendReadReceipt(event.value.event as MatrixEvent);
 		}
 	}
+});
+
+onMounted(() => {
+	// When elements with data-user-id are clicked, open the user details
+	messageRef.value
+		?.querySelectorAll("span[data-user-id]")
+		?.forEach(mention => {
+			mention.addEventListener("click", () => {
+				const userId = (mention as HTMLSpanElement).dataset.userId;
+				if (!userId) return;
+				store.state.viewingUser = userId;
+			});
+		});
 });
 </script>
 
