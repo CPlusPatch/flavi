@@ -8,6 +8,7 @@ import { MatrixRoom } from "~/classes/Room";
 import { useStore } from "~/utils/store";
 import { getBlobSafeMimeType } from "~/utils/mime";
 import { setFileMetadata, uploadFile } from "~/utils/uploading";
+import { MatrixUser } from "~/classes/User";
 
 const props = defineProps<{
 	room: MatrixRoom;
@@ -50,8 +51,45 @@ const emojis = uneditedEmojis.map(e => ({
 	...e,
 	name: e.name.replace(" ", "_"),
 }));
-const emojiPicker = ref<HTMLDivElement | null>(null);
-const emojiFocusIndex = ref(-1);
+
+// Mention picker
+const mentionPicker = computed(() => {
+	// Match half typed mentions, starting with an "@" symbol
+	const matched = messageBody.value.match(/@[a-zA-Z0-9_:.]*$/g);
+	if (matched && matched.length > 0) {
+		// Remove first ":" which is found when the regex is execited
+		const memberToSearchFor = matched[0].replace(":", "");
+		return matchSorter(
+			props.room.getMembers().map(m => m.id),
+			memberToSearchFor
+		)
+			.slice(0, 30)
+			.map(
+				userId => new MatrixUser(userId, store.client as MatrixClient)
+			);
+	} else {
+		pickerFocusIndex.value = -1;
+		return [];
+	}
+});
+
+const emojiPicker = computed<
+	Array<(typeof emojis)[0] | (typeof userEmojisMapped)[0]>
+>(() => {
+	// Match emoji characters that are half typed, such as ":plead" or ":face_with_r"
+	const matched = messageBody.value.match(/:[a-zA-Z0-9_]*((?<!:):$|$)/g);
+	if (matched && matched.length > 0) {
+		// Remove first ":" which is found when the regex is execited
+		const emojiToSearchFor = matched[0].replace(":", "");
+		return matchSorter([...emojis, ...userEmojisMapped], emojiToSearchFor, {
+			keys: ["name"],
+		}).slice(0, 30);
+	} else {
+		pickerFocusIndex.value = -1;
+		return [];
+	}
+});
+const pickerFocusIndex = ref(-1);
 
 const send = async () => {
 	const body = messageBody.value;
@@ -65,6 +103,9 @@ const send = async () => {
 	sending.value = true;
 
 	messageBody.value = "";
+
+	if (!mainInput.value) return;
+	mainInput.value.style.height = "20px";
 
 	if (files.value.length > 0) {
 		const isEncryptedRoom = store.client?.isRoomEncrypted(props.room.id);
@@ -146,7 +187,18 @@ const send = async () => {
 			}
 		});
 
-		if (marked(body) !== body || customEmojisFound > 0) {
+		let mentionsFound = 0;
+		props.room.getMembers().forEach(member => {
+			if (content.body.includes(`${member.id}`)) {
+				mentionsFound++;
+			}
+		});
+
+		if (
+			marked(body) !== body ||
+			customEmojisFound > 0 ||
+			mentionsFound > 0
+		) {
 			content.format = "org.matrix.custom.html";
 			content.formatted_body = marked(body).trim();
 
@@ -154,6 +206,15 @@ const send = async () => {
 				content.formatted_body = content.formatted_body.replace(
 					new RegExp(`:${userEmoji.name}:`, "g"),
 					`<img data-mx-emoticon src="${userEmoji.url}" alt=":${userEmoji.name}:" title=":${userEmoji.name}:" height="32" />`
+				);
+			});
+
+			props.room.getMembers().forEach(member => {
+				content.formatted_body = content.formatted_body.replace(
+					new RegExp(`${member.id}`, "g"),
+					`<a href="https://matrix.to/#/${encodeURIComponent(
+						member.id
+					)}">${member.getDisplayName() ?? member.id}</a>`
 				);
 			});
 		}
@@ -188,50 +249,75 @@ const replaceEmoji = (emojiName: string) => {
 		replaceTo
 	);
 
-	emojiFocusIndex.value = -1;
+	pickerFocusIndex.value = -1;
 };
 
-const preventOpeningFileDialog = (e: KeyboardEvent) => {
-	const isEnterKey = e.key === "Enter";
-	const isArrowRightOrTab = e.key === "ArrowRight" || e.key === "Tab";
-	const isArrowLeft = e.key === "ArrowLeft";
+const replaceMention = (userId: string) => {
+	messageBody.value = messageBody.value.replace(
+		messageBody.value.match(/@[a-zA-Z0-9_:.]*$/g)![0],
+		`${userId} `
+	);
 
-	if (isEnterKey) {
-		if (emojiFocusIndex.value >= 0) {
-			e.preventDefault();
-			const emoji = emojisSuggesterEmojis.value[emojiFocusIndex.value];
-			replaceEmoji(emoji.name);
-		} else if (!e.shiftKey && mainInput.value) {
-			e.preventDefault();
-			send();
-			mainInput.value.style.height = "20px";
-		}
+	pickerFocusIndex.value = -1;
+};
+
+const keys = useMagicKeys();
+const leftArrow = keys.ArrowLeft;
+const rightArrow = keys.ArrowRight;
+const enter = keys.Enter;
+const shift = keys.Shift;
+
+watch(leftArrow, () => {
+	if (
+		(mentionPicker.value.length > 0 || emojiPicker.value.length > 0) &&
+		leftArrow.value
+	) {
+		pickerFocusIndex.value = Math.max(pickerFocusIndex.value - 1, 0);
+	}
+});
+
+watch(rightArrow, () => {
+	if (
+		(mentionPicker.value.length > 0 || emojiPicker.value.length > 0) &&
+		rightArrow.value
+	) {
+		pickerFocusIndex.value = Math.min(
+			pickerFocusIndex.value + 1,
+			(mentionPicker.value.length > 0
+				? mentionPicker.value.length
+				: emojiPicker.value.length) - 1
+		);
+	}
+});
+
+watch(enter, () => {
+	// Depending on which picker is opened, insert the selected emoji/mention
+	if (mentionPicker.value.length > 0 && enter.value) {
+		const user = mentionPicker.value[pickerFocusIndex.value];
+		replaceMention(user.id);
+	} else if (emojiPicker.value.length > 0 && enter.value) {
+		const emoji = emojiPicker.value[pickerFocusIndex.value];
+		replaceEmoji(emoji.name);
+	} else if (
+		enter.value &&
+		emojiPicker.value.length === 0 &&
+		mentionPicker.value.length === 0 &&
+		!shift.value
+	) {
+		send();
+	}
+});
+
+const preventOpeningFileDialog = (e: KeyboardEvent) => {
+	if (
+		(e.key === "ArrowRight" || e.key === "ArrowLeft") &&
+		(mentionPicker.value.length > 0 || emojiPicker.value.length > 0)
+	) {
+		e.preventDefault();
 	}
 
-	if (isArrowRightOrTab || isArrowLeft) {
-		if (emojisSuggesterEmojis.value.length > 0) {
-			e.preventDefault();
-		}
-
-		if (emojisSuggesterEmojis.value.length === 1) {
-			const emojiElement = emojiPicker.value
-				?.children[0] as HTMLDivElement;
-			emojiElement.classList.toggle("bg-accent-800", isArrowRightOrTab);
-		}
-
-		emojiFocusIndex.value =
-			(emojiFocusIndex.value + (isArrowRightOrTab ? 1 : -1)) %
-			emojisSuggesterEmojis.value.length;
-
-		for (let i = 0; i < emojisSuggesterEmojis.value.length; i++) {
-			const emojiElement = emojiPicker.value?.children[
-				i
-			] as HTMLDivElement;
-			emojiElement.classList.toggle(
-				"bg-accent-800",
-				i === emojiFocusIndex.value
-			);
-		}
+	if (e.key === "Enter" && !e.shiftKey) {
+		e.preventDefault();
 	}
 };
 
@@ -241,23 +327,6 @@ const onInput = (e: Event) => {
 	target.style.height = "20px";
 	target.style.height = `${target.scrollHeight}px`;
 };
-
-const emojisSuggesterEmojis = computed<
-	Array<(typeof emojis)[0] | (typeof userEmojisMapped)[0]>
->(() => {
-	// Match emoji characters that are half typed, such as ":plead" or ":face_with_r"
-	const matched = messageBody.value.match(/:[a-zA-Z0-9_]*((?<!:):$|$)/g);
-	if (matched && matched.length > 0) {
-		// Remove first ":" which is found when the regex is execited
-		const emojiToSearchFor = matched[0].replace(":", "");
-		return matchSorter([...emojis, ...userEmojisMapped], emojiToSearchFor, {
-			keys: ["name"],
-		}).slice(0, 30);
-	} else {
-		emojiFocusIndex.value = -1;
-		return [];
-	}
-});
 
 const preloadUserEmojis = () => {
 	userEmojisMapped.forEach(emoji => {
@@ -439,13 +508,15 @@ onStartTyping(() => {
 				leave-from-class="translate-y-0 opacity-100"
 				leave-to-class="translate-y-5 opacity-0">
 				<div
-					v-if="emojisSuggesterEmojis.length > 0"
-					ref="emojiPicker"
+					v-if="emojiPicker.length > 0"
 					class="absolute w-full overflow-x-scroll no-scrollbar bottom-12/10 flex flex-row gap-1 p-2 bg-accent-900 rounded-md ring-1 shadow ring-accent-700">
 					<button
-						v-for="emoji in emojisSuggesterEmojis"
+						v-for="(emoji, index) in emojiPicker"
 						:key="(emoji as any).char || emoji.name"
-						class="flex items-center gap-2 rounded px-2 py-1.5 duration-200 hover:bg-accent-800 shrink-0"
+						:class="[
+							'flex items-center gap-2 rounded px-2 py-1.5 duration-200 hover:bg-accent-800 shrink-0',
+							pickerFocusIndex === index && '!bg-accent-800',
+						]"
 						:title="emoji.name"
 						type="button"
 						@click="replaceEmoji(emoji.name)">
@@ -461,6 +532,33 @@ onStartTyping(() => {
 								) ?? ''
 							"
 							class="w-[25px] h-[25px]" />
+					</button>
+				</div>
+			</Transition>
+
+			<Transition
+				enter-active-class="duration-200 ease-in-out"
+				enter-from-class="translate-y-5 opacity-0"
+				enter-to-class="translate-y-0 opacity-100"
+				leave-active-class="duration-200 ease-in-out"
+				leave-from-class="translate-y-0 opacity-100"
+				leave-to-class="translate-y-5 opacity-0">
+				<div
+					v-if="mentionPicker.length > 0"
+					class="absolute w-full overflow-x-scroll no-scrollbar bottom-12/10 flex flex-row gap-1 p-2 bg-accent-900 rounded-md ring-1 shadow ring-accent-700">
+					<button
+						v-for="(user, index) in mentionPicker"
+						:key="user.id"
+						:class="[
+							'flex items-center gap-2 rounded px-2 py-1.5 duration-200 hover:bg-accent-800 shrink-0',
+							pickerFocusIndex === index && '!bg-accent-800',
+						]"
+						:title="user.getDisplayName() || ''"
+						type="button"
+						@click="replaceMention(user.id)">
+						<img
+							:src="user.getAvatarUrl()"
+							class="w-[25px] h-[25px] rounded" />
 					</button>
 				</div>
 			</Transition>

@@ -8,6 +8,7 @@ import {
 	Room,
 } from "matrix-js-sdk";
 import { MatrixMessage } from "./Event";
+import { MatrixUser } from "./User";
 export class MatrixRoom {
 	room: Room;
 	private client: MatrixClient;
@@ -121,6 +122,12 @@ export class MatrixRoom {
 		return this.room.getUnreadNotificationCount(
 			NotificationCountType.Total
 		);
+	}
+
+	public getMembers() {
+		return this.room
+			.getJoinedMembers()
+			.map(m => new MatrixUser(m.userId, this.client));
 	}
 
 	public getAvatarUrl(size = 96) {

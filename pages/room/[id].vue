@@ -153,15 +153,7 @@ useInfiniteScroll(messages, loadMoreEvents, {
 });
 
 // Get members of the room
-const members: MatrixUser[] = room.value.room
-	.getMembers()
-	.map(
-		m =>
-			(store.client?.getUser(m.userId) &&
-				new MatrixUser(m.userId, store.client as MatrixClient)) ||
-			null
-	)
-	.filter(m => m) as any;
+const members: MatrixUser[] = room.value.getMembers();
 
 // Load live timeline
 await roomTimeline.loadLiveTimeline();
