@@ -239,7 +239,7 @@ onMounted(() => {
 		:id="'message-' + message.getId()"
 		ref="messageRef"
 		:class="[
-			'flex flex-col pb-1.5 pt-1 px-6 py-0 gap-1 hover:bg-accent-700 !bg-opacity-50 relative group duration-200',
+			'flex flex-col pb-1.5 pt-1 md:px-6 px-3 py-0 gap-1 hover:bg-accent-700 !bg-opacity-50 relative group duration-200',
 			showHeader && 'mt-3',
 		]">
 		<div class="flex flex-row gap-4">

@@ -116,12 +116,13 @@ watch(
 				"
 				@swiper="handleSwiper">
 				<SwiperSlide class="max-w-[21.5rem]">
-					<div class="flex flex-row max-h-full">
+					<div class="flex flex-row max-h-full h-full">
 						<SidebarFvSidebar />
 					</div>
 				</SwiperSlide>
 				<SwiperSlide>
-					<div class="flex flex-row overflow-hidden max-h-full">
+					<div
+						class="flex flex-row overflow-hidden max-h-full h-full">
 						<slot />
 					</div>
 				</SwiperSlide>
