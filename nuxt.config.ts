@@ -11,6 +11,7 @@ export default defineNuxtConfig({
 		"@pinia/nuxt",
 		"nuxt-twemoji",
 		"@vite-pwa/nuxt",
+		"nuxt-swiper",
 	],
 	spaLoadingTemplate: false,
 	ssr: false,

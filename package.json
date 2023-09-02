@@ -42,6 +42,7 @@
     "nanoid": "^4.0.2",
     "nuxt-headlessui": "^1.1.4",
     "nuxt-icon": "latest",
+    "nuxt-swiper": "^1.2.2",
     "pinia-plugin-persistedstate": "^3.1.0",
     "snarkdown": "^2.0.0",
     "vite-plugin-node-polyfills": "^0.9.0",

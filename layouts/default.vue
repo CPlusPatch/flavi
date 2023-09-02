@@ -37,12 +37,29 @@ onMounted(() => {
 onUnmounted(() => {
 	store.client?.off(CryptoEvent.VerificationRequest, handleRequest);
 });
+
+const swiper = ref<any | null>(null);
+
+const handleSwiper = (s: any) => {
+	swiper.value = s;
+};
+
+watch(
+	() => store.state.sidebarOpen,
+	() => {
+		if (store.state.sidebarOpen) {
+			swiper.value?.slideTo(0);
+		} else {
+			swiper.value?.slideTo(1);
+		}
+	}
+);
 </script>
 
 <template>
 	<div
 		ref="sidebarDialog"
-		class="!h-[100dvh] h-screen relative bg-accent-800 flex overflow-hidden flex-col divide-gray-400 p-0 font-['Inter']">
+		class="!h-[100dvh] h-screen relative bg-accent-800 flex overflow-hidden flex-col divide-gray-400 p-0">
 		<div
 			v-if="!isVerified"
 			class="px-4 py-2 text-center text-gray-50 text-sm bg-red-950">
@@ -54,7 +71,9 @@ onUnmounted(() => {
 			class="flex flex-row grow overflow-hidden z-100 max-w-screen w-full">
 			<SidebarFvSidebar v-if="width > 768" />
 
-			<HeadlessTransitionRoot
+			<slot v-if="width > 768" />
+
+			<!-- <HeadlessTransitionRoot
 				v-else
 				appear
 				:show="store.state.sidebarOpen">
@@ -80,13 +99,33 @@ onUnmounted(() => {
 						class="flex flex-row grow overflow-hidden z-100 max-w-screen w-full">
 						<HeadlessDialogPanel
 							class="fixed inset-0 z-100 flex flex-row">
-							<SidebarFvSidebar />
+							
 						</HeadlessDialogPanel>
 					</HeadlessTransitionChild>
 				</HeadlessDialog>
-			</HeadlessTransitionRoot>
+			</HeadlessTransitionRoot> -->
 
-			<slot />
+			<Swiper
+				v-else
+				:slide-to-clicked-slide="true"
+				slides-per-view="auto"
+				:resistance-ratio="0"
+				:initial-slide="1"
+				@slide-change-transition-end="
+					store.state.sidebarOpen = $event.activeIndex === 0
+				"
+				@swiper="handleSwiper">
+				<SwiperSlide class="max-w-[21.5rem]">
+					<div class="flex flex-row max-h-full">
+						<SidebarFvSidebar />
+					</div>
+				</SwiperSlide>
+				<SwiperSlide>
+					<div class="flex flex-row overflow-hidden max-h-full">
+						<slot />
+					</div>
+				</SwiperSlide>
+			</Swiper>
 		</div>
 	</div>
 	<VerificationVerificator />
