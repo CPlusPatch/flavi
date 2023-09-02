@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-	ClientEvent,
 	IndexedDBCryptoStore,
 	IndexedDBStore,
 	createClient,
@@ -8,8 +7,8 @@ import {
 import "~/styles/index.css";
 import "@unocss/reset/tailwind.css";
 import { verificationMethods } from "matrix-js-sdk/lib/crypto";
+import { sha256Hash } from "./utils/crypto";
 import { useStore } from "~/utils/store";
-import { isUserLoggedIn } from "~/utils/checks";
 
 window.global ||= window;
 
@@ -19,59 +18,81 @@ document
 
 const location = window.location;
 
-// Initialize IndexedDB stores
-const indexedDBStore = new IndexedDBStore({
-	indexedDB,
-	localStorage,
-	dbName: "web-sync-store",
-});
-const cryptoStore = new IndexedDBCryptoStore(indexedDB, "crypto-store");
-await indexedDBStore.startup();
+const userId = useLocalStorage("userId", "");
+const users = useLocalStorage<
+	{
+		id: string;
+		avatar: string;
+		name: string;
+		accessToken: string;
+		baseUrl: string;
+		deviceId: string;
+	}[]
+>("users", []);
+const currentUser = computed(
+	() => users.value.find(u => u.id === userId.value) || null
+);
 
-const isLoggedIn = ref(isUserLoggedIn());
+const isClientLoaded = ref(false);
 
 const store = useStore();
 store.state.loaded = false;
 
-const isClientLoaded = ref(false);
+watch(
+	() => currentUser.value?.id,
+	async () => {
+		if (currentUser.value) {
+			const userHash = await sha256Hash(currentUser.value.id);
+			isClientLoaded.value = false;
+			await nextTick();
 
-const loadClient = async () => {
-	// Create Matrix client
-	const matrixClient = createClient({
-		baseUrl: localStorage.getItem("homeserver") ?? "",
-		accessToken: localStorage.getItem("token") ?? undefined,
-		userId: localStorage.getItem("user_id") ?? "",
-		store: indexedDBStore,
-		deviceId: localStorage.getItem("device_id") ?? "",
-		cryptoStore,
-		verificationMethods: [verificationMethods.SAS],
-		timelineSupport: true,
-	});
+			// Initialize IndexedDB stores
+			const indexedDBStore = new IndexedDBStore({
+				indexedDB,
+				localStorage,
+				dbName: `${userHash}-web-sync-store`,
+			});
+			const cryptoStore = new IndexedDBCryptoStore(
+				indexedDB,
+				`${userHash}-crypto-store`
+			);
+			await indexedDBStore.startup();
 
-	// Initialize and start Matrix client
-	await matrixClient.initCrypto();
-	await matrixClient.startClient();
-	matrixClient.setGlobalErrorOnUnknownDevices(false);
-	store.client = matrixClient;
+			// Create Matrix client
+			const matrixClient = createClient({
+				baseUrl: currentUser.value.baseUrl,
+				accessToken: currentUser.value.accessToken,
+				userId: currentUser.value.id,
+				store: indexedDBStore,
+				deviceId: currentUser.value.deviceId,
+				cryptoStore,
+				verificationMethods: [verificationMethods.SAS],
+				timelineSupport: true,
+			});
 
-	// Wait for initial sync
-	await new Promise<void>(resolve => {
-		matrixClient.once(ClientEvent.Sync, () => {
-			resolve();
-		});
-	});
-};
+			// Initialize and start Matrix client
+			await matrixClient.initCrypto();
+			await matrixClient.startClient();
+			matrixClient.setGlobalErrorOnUnknownDevices(false);
+			store.client = matrixClient;
 
-if (isLoggedIn.value) {
-	loadClient().then(() => {
-		isClientLoaded.value = true;
-	});
-} else {
-	store.state.loaded = true;
+			isClientLoaded.value = true;
+
+			if (window.location.pathname !== "/") {
+				window.location.href = "/";
+			}
+		} else {
+			store.state.loaded = true;
+		}
+	},
+	{
+		immediate: true,
+	}
+);
+
+if (users.value.length > 0) {
+	userId.value = users.value[0].id;
 }
-
-// Wait until page is initialized
-await nextTick();
 </script>
 
 <template>
@@ -81,12 +102,12 @@ await nextTick();
 	<div id="root" class="theme-color-darkorange theme-bg-dark dark">
 		<NuxtLayout
 			v-if="
-				(isLoggedIn && isClientLoaded) ||
+				(currentUser && isClientLoaded) ||
 				location.pathname == '/auth/redirect'
 			">
 			<NuxtPage />
 		</NuxtLayout>
-		<Login v-else-if="!isLoggedIn" />
+		<Login v-else-if="!currentUser" />
 		<div
 			v-if="!store.state.loaded"
 			class="bg-accent-900 fixed z-100 inset-0 flex h-full w-full items-center justify-center">

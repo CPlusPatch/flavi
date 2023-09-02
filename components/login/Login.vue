@@ -11,6 +11,18 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const showingPassword = ref(false);
 
+const userId = useLocalStorage("userId", "");
+const users = useLocalStorage<
+	{
+		id: string;
+		avatar: string;
+		name: string;
+		accessToken: string;
+		baseUrl: string;
+		deviceId: string;
+	}[]
+>("users", []);
+
 enum FlowStage {
 	Homeserver,
 	Login,
@@ -121,12 +133,17 @@ const submit = async (e: Event) => {
 			return;
 		}
 
-		localStorage.setItem("homeserver", client.baseUrl);
-		localStorage.setItem("token", session.access_token);
-		localStorage.setItem("user_id", session.user_id);
-		localStorage.setItem("device_id", session.device_id);
+		users.value.push({
+			id: session.user_id,
+			avatar: "",
+			name: session.user_id,
+			accessToken: session.access_token,
+			baseUrl: client.baseUrl,
+			deviceId: session.device_id,
+		});
+		userId.value = session.user_id;
+
 		loading.value = false;
-		window.location.reload();
 	}
 };
 

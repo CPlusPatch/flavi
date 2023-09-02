@@ -4,6 +4,18 @@ import { createClient } from "matrix-js-sdk";
 const homeserver = localStorage.getItem("homeserver");
 const token = useRoute().query.loginToken as string;
 
+const userId = useLocalStorage("userId", "");
+const users = useLocalStorage<
+	{
+		id: string;
+		avatar: string;
+		name: string;
+		accessToken: string;
+		baseUrl: string;
+		deviceId: string;
+	}[]
+>("users", []);
+
 const client = createClient({
 	baseUrl: homeserver ?? "",
 });
@@ -14,10 +26,15 @@ try {
 		initial_device_display_name: "Flavi Web",
 	});
 
-	localStorage.setItem("homeserver", client.baseUrl);
-	localStorage.setItem("token", session.access_token);
-	localStorage.setItem("user_id", session.user_id);
-	localStorage.setItem("device_id", session.device_id);
+	users.value.push({
+		id: session.user_id,
+		avatar: "",
+		name: session.user_id,
+		accessToken: session.access_token,
+		baseUrl: client.baseUrl,
+		deviceId: session.device_id,
+	});
+	userId.value = session.user_id;
 	window.location.replace("/");
 } catch (e) {
 	console.error(e);
