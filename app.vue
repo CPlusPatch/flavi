@@ -93,6 +93,10 @@ watch(
 if (users.value.length > 0) {
 	userId.value = users.value[0].id;
 }
+
+useHead({
+	title: `sFlavi`,
+});
 </script>
 
 <template>
