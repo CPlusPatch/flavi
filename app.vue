@@ -95,7 +95,7 @@ if (users.value.length > 0) {
 }
 
 useHead({
-	title: `sFlavi`,
+	title: `Flavi`,
 });
 </script>
 
