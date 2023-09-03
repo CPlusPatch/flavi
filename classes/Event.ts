@@ -27,6 +27,10 @@ export class MatrixMessage {
 		);
 	};
 
+	isMessage = () => {
+		return this.event.getType() === "m.room.message";
+	};
+
 	getContent() {
 		return this.event.getContent();
 	}
@@ -78,7 +82,7 @@ export class MatrixMessage {
 	};
 
 	isMemberEvent = () => {
-		return this.event.event.type === "m.room.member";
+		return this.event.getType() === "m.room.member";
 	};
 
 	isRoomEvent = () => {

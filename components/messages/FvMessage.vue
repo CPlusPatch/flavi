@@ -235,14 +235,20 @@ onMounted(() => {
 
 <template>
 	<div
-		v-if="message && event.shouldShowMessage()"
+		v-if="
+			event.shouldShowMessage() ||
+			event.isMessage() ||
+			event.isMemberEvent()
+		"
 		:id="'message-' + message.getId()"
 		ref="messageRef"
 		:class="[
 			'flex flex-col pb-1.5 pt-1 md:px-6 px-3 py-0 gap-1 hover:bg-accent-700 !bg-opacity-50 relative group duration-200',
 			showHeader && 'mt-3',
 		]">
-		<div class="flex flex-row gap-4">
+		<div
+			v-if="event.shouldShowMessage() && event.isMessage()"
+			class="flex flex-row gap-4">
 			<TwemojiParse v-if="reply?.sender">
 				<button
 					class="text-left flex flex-row gap-1 reply items-center text-sm pl-5"
@@ -266,11 +272,7 @@ onMounted(() => {
 			</TwemojiParse>
 		</div>
 		<div
-			v-if="
-				event.shouldShowMessage() &&
-				!event.isMemberEvent() &&
-				event.event.getType() == 'm.room.message'
-			"
+			v-if="event.shouldShowMessage() && event.isMessage()"
 			class="flex flex-row gap-4 w-full max-w-full">
 			<div v-if="!showHeader" class="w-10 shrink-0"></div>
 			<div
@@ -360,7 +362,7 @@ onMounted(() => {
 
 		<!-- Floating action buttons for reply, more settings -->
 		<div
-			v-if="event.shouldShowMessage()"
+			v-if="event.shouldShowMessage() && event.isMessage()"
 			class="absolute right-10 -top-7 rounded children:p-2 bg-accent-900 hidden group-hover:flex flex-row overflow-hidden ring-1 ring-accent-700">
 			<button
 				class="flex items-center justify-center duration-200"
@@ -387,7 +389,7 @@ onMounted(() => {
 		</div>
 
 		<MessagesFvStateEvent
-			v-if="event.event.getType() !== 'm.room.message'"
+			v-if="event.isMemberEvent()"
 			:event="event as MatrixMessage" />
 	</div>
 </template>
