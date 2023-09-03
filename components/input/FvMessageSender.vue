@@ -92,6 +92,7 @@ const emojiPicker = computed<
 const pickerFocusIndex = ref(-1);
 
 const send = async () => {
+	if (sending.value) return false;
 	const body = messageBody.value;
 
 	if (isReplyingOrEditing.value === "editing") {
@@ -110,7 +111,9 @@ const send = async () => {
 	if (files.value.length > 0) {
 		const isEncryptedRoom = store.client?.isRoomEncrypted(props.room.id);
 
-		files.value.forEach(async file => {
+		const filesCopy = files.value;
+
+		for (const file of filesCopy) {
 			let content: any = {};
 
 			content.info = {
@@ -152,7 +155,9 @@ const send = async () => {
 			currentlyUploadingFileProgress.value = 0;
 
 			files.value.splice(0, 1);
-		});
+		}
+
+		files.value = [];
 	}
 
 	if (body !== "") {
@@ -219,14 +224,13 @@ const send = async () => {
 			});
 		}
 
+		sending.value = false;
 		const response = await store.client?.sendMessage(
 			props.room.id,
 			content
 		);
 		emit("send", response?.event_id ?? "");
 	}
-
-	sending.value = false;
 };
 
 const pasteFile = (e: ClipboardEvent) => {
@@ -292,6 +296,7 @@ watch(rightArrow, () => {
 
 watch(enter, () => {
 	// Depending on which picker is opened, insert the selected emoji/mention
+	if (sending.value) return false;
 	if (mentionPicker.value.length > 0 && enter.value) {
 		const user = mentionPicker.value[pickerFocusIndex.value];
 		replaceMention(user.id);
@@ -302,7 +307,8 @@ watch(enter, () => {
 		enter.value &&
 		emojiPicker.value.length === 0 &&
 		mentionPicker.value.length === 0 &&
-		!shift.value
+		!shift.value &&
+		!sending.value
 	) {
 		send();
 	}
@@ -371,6 +377,7 @@ watch([eventReplyingTo, eventEditing], () => {
 
 watch(files, () => {
 	mainInput.value?.focus();
+	console.error(files.value);
 });
 
 onMounted(() => {
@@ -389,10 +396,13 @@ onStartTyping(() => {
 			multiple
 			type="file"
 			class="w-0 h-0 hidden"
-			@change="
-				files = Array.from(
-					($event.target as HTMLInputElement).files as any
-				)
+			@input="
+				e => {
+					files = Array.from(
+						(e.target as HTMLInputElement).files as any
+					);
+					fileInput!.value = '';
+				}
 			" />
 
 		<div
@@ -575,6 +585,7 @@ onStartTyping(() => {
 					ref="mainInput"
 					v-model="messageBody"
 					name="message"
+					:disabled="sending"
 					style="max-height: 200px; height: 20px; overflow-y: hidden"
 					class="bg-transparent w-full outline-none focus:outline-none mx-0 mb-0 resize-none border-0 !ring-0 p-0"
 					:placeholder="`Message in ${room.getName()}`"
